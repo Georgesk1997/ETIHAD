@@ -78,39 +78,80 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // ==================== SYSTEM INITIALIZATION ====================
 async function initializeSystem() {
+    console.log("Initializing system...");
     try {
         const response = await fetch('questions.csv');
         if (response.ok) {
             const csvData = await response.text();
+            console.log("CSV loaded successfully");
             allQuestions = processCSV(csvData);
+            console.log(`Processed ${allQuestions.length} questions`);
             updateQuestionCount();
             displayCategories();
         } else {
+            console.log("CSV not found, loading sample data");
             loadSampleData();
         }
     } catch (error) {
-        console.log("Loading sample data...");
+        console.error("Error loading CSV:", error);
+        console.log("Loading sample data as fallback");
         loadSampleData();
     }
 }
 
 function processCSV(csvText) {
+    console.log("Processing CSV data...");
     const questions = [];
     const rows = csvText.split('\n');
     
     // Skip header row
     for (let i = 1; i < rows.length; i++) {
         const row = rows[i].trim();
-        if (!row) continue;
+        if (!row || row === '') continue;
         
         try {
-            const columns = parseCSVRow(row);
+            // Simple CSV parsing - split by comma but handle quotes
+            const columns = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let char of row) {
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    columns.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            columns.push(current);
+            
+            // We need at least 7 columns (category, question, 4 answers, correct)
             if (columns.length >= 7) {
-                // Clean up image path - handle spaces
-                let imagePath = columns[7] ? columns[7].trim() : "";
-                if (imagePath) {
-                    // Encode spaces for URL
-                    imagePath = encodeURI(imagePath);
+                // Parse correct answer (1-4 to 0-3)
+                let correctIndex = parseInt(columns[6].trim()) - 1;
+                if (isNaN(correctIndex) || correctIndex < 0 || correctIndex > 3) {
+                    console.warn(`Invalid correct answer on line ${i}: ${columns[6]}`);
+                    correctIndex = 0;
+                }
+                
+                // Clean up image path
+                let imagePath = '';
+                if (columns.length > 7 && columns[7]) {
+                    imagePath = columns[7].trim();
+                    if (imagePath) {
+                        // Ensure proper path format
+                        if (!imagePath.startsWith('/')) {
+                            imagePath = '/' + imagePath;
+                        }
+                    }
+                }
+                
+                // Get explanation if exists
+                let explanation = '';
+                if (columns.length > 8 && columns[8]) {
+                    explanation = columns[8].trim();
                 }
                 
                 const question = {
@@ -122,87 +163,58 @@ function processCSV(csvText) {
                         columns[4].trim(),
                         columns[5].trim()
                     ],
-                    correct: parseInt(columns[6]) - 1,
+                    correct: correctIndex,
                     image: imagePath,
-                    explanation: columns[8] ? columns[8].trim() : ""
+                    explanation: explanation
                 };
                 
-                // Validate question
+                // Validate required fields
                 if (question.text && question.options[0] && 
-                    !isNaN(question.correct) && question.correct >= 0 && question.correct <= 3) {
+                    !isNaN(question.correct)) {
                     questions.push(question);
+                } else {
+                    console.warn(`Skipping invalid question on line ${i}`);
                 }
             }
         } catch (e) {
-            console.warn("Skipping invalid row:", row);
+            console.warn(`Error parsing line ${i}:`, e);
         }
     }
     
+    console.log(`Successfully parsed ${questions.length} questions`);
     return questions;
 }
 
-function parseCSVRow(row) {
-    const result = [];
-    let current = '';
-    let inQuotes = false;
-    let quoteChar = '';
-    
-    for (let i = 0; i < row.length; i++) {
-        const char = row[i];
-        
-        if ((char === '"' || char === "'") && (row[i-1] !== '\\')) {
-            if (!inQuotes) {
-                inQuotes = true;
-                quoteChar = char;
-            } else if (char === quoteChar) {
-                inQuotes = false;
-            } else {
-                current += char;
-            }
-        } else if (char === ',' && !inQuotes) {
-            result.push(current);
-            current = '';
-        } else {
-            current += char;
-        }
-    }
-    
-    // Add the last column
-    result.push(current);
-    
-    // Clean up quotes
-    return result.map(col => {
-        col = col.trim();
-        // Remove surrounding quotes
-        if ((col.startsWith('"') && col.endsWith('"')) || 
-            (col.startsWith("'") && col.endsWith("'"))) {
-            col = col.substring(1, col.length - 1);
-        }
-        // Unescape double quotes
-        col = col.replace(/""/g, '"');
-        return col;
-    });
-}
 function loadSampleData() {
+    console.log("Loading sample questions...");
     allQuestions = [
         {
             category: "Flight Plan",
-            text: "Minimum IFR fuel includes:",
-            options: ["Destination only", "Destination + 30min", "Destination + Alternate + 45min", "At pilot's discretion"],
-            correct: 2,
-            image: encodeURI("/images/Flight Plan/fuel-sample.png"),
-            explanation: "FAR 91.167 requires fuel to destination, then alternate, plus 45 minutes reserve."
+            text: "What does this flight planning chart show?",
+            options: ["Standard instrument departure", "Enroute navigation chart", "Standard terminal arrival", "Weather minimums chart"],
+            correct: 0,
+            image: "/images/Flight Plan/site-1.jpg",
+            explanation: "This is a Standard Instrument Departure (SID) chart."
+        },
+        {
+            category: "Flight Plan",
+            text: "What is the minimum fuel required for an IFR flight?",
+            options: ["Fuel to destination only", "Fuel to destination plus 30 minutes", "Fuel to alternate plus 30 minutes", "Fuel to destination plus alternate plus 45 minutes"],
+            correct: 3,
+            image: "",
+            explanation: "FAR 91.167 requires fuel to destination, then to alternate, plus 45 minutes reserve."
         },
         {
             category: "IFR Comms",
-            text: "Read back is required for:",
-            options: ["All transmissions", "Only clearances", "Altitude assignments", "Weather reports"],
+            text: "What phrase should be used to acknowledge an altitude assignment?",
+            options: ["Roger, climbing", "Climbing to assigned altitude", "Cessna 123AB climbing to 5000", "Wilco, climbing"],
             correct: 2,
-            image: encodeURI("/images/IFR Comms/comms-sample.png"),
-            explanation: "Always read back altitude assignments and runway assignments."
+            image: "",
+            explanation: "Always include aircraft identification when acknowledging assignments."
         }
     ];
     
+    console.log(`Loaded ${allQuestions.length} sample questions`);
     updateQuestionCount();
     displayCategories();
 }
@@ -217,6 +229,8 @@ function displayCategories() {
     allQuestions.forEach(q => {
         categoryStats[q.category] = (categoryStats[q.category] || 0) + 1;
     });
+    
+    console.log("Category stats:", categoryStats);
     
     // Create category cards
     Object.keys(CATEGORY_CONFIG).forEach(categoryName => {
@@ -239,15 +253,21 @@ function displayCategories() {
     });
     
     // Update category count
-    document.getElementById('categoryCount').textContent = Object.keys(CATEGORY_CONFIG).length;
+    const categoryCount = Object.keys(CATEGORY_CONFIG).length;
+    document.getElementById('categoryCount').textContent = categoryCount;
+    console.log(`Displayed ${categoryCount} categories`);
 }
 
 // ==================== QUIZ FUNCTIONS ====================
 function startCategory(categoryName) {
+    console.log(`Starting category: ${categoryName}`);
+    
     currentCategory = categoryName;
     categoryQuestions = allQuestions.filter(q => q.category === categoryName);
     currentQuestionIndex = 0;
     userScore = { correct: 0, attempted: 0 };
+    
+    console.log(`Found ${categoryQuestions.length} questions for ${categoryName}`);
     
     // Update UI
     document.getElementById('categorySection').style.display = 'none';
@@ -263,14 +283,24 @@ function startCategory(categoryName) {
     updateProgress();
     updateScoreDisplay();
     
-    showMessage(`Starting ${categoryName} training`, 'info');
+    showMessage(`Starting ${categoryName} - ${categoryQuestions.length} questions`, 'info');
 }
 
 function displayQuestion() {
-    if (!categoryQuestions.length) return;
+    if (!categoryQuestions || categoryQuestions.length === 0) {
+        console.error("No questions available!");
+        document.getElementById('questionDisplay').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i> No questions available for this category.
+            </div>
+        `;
+        return;
+    }
     
     const question = categoryQuestions[currentQuestionIndex];
     const container = document.getElementById('questionDisplay');
+    
+    console.log(`Displaying question ${currentQuestionIndex + 1}:`, question.text.substring(0, 50) + "...");
     
     let html = `
         <div class="question-box active-question">
@@ -278,13 +308,13 @@ function displayQuestion() {
     `;
     
     // Add image if available
-    if (question.image) {
-        // Decode for display but keep encoded for onclick
-        const displayImage = decodeURI(question.image);
+    if (question.image && question.image.trim() !== '') {
+        console.log(`Adding image: ${question.image}`);
+        const encodedImage = encodeURI(question.image);
         html += `
-            <div class="chart-image" onclick="viewImage('${question.image}')">
-                <img src="${displayImage}" alt="Aviation chart" 
-                     onerror="this.onerror=null; this.src='https://via.placeholder.com/600x300/e0e7ff/0056a6?text=Chart+Not+Found'">
+            <div class="chart-image" onclick="viewImage('${encodedImage}')">
+                <img src="${encodedImage}" alt="Aviation chart" 
+                     onerror="handleImageError(this, '${encodedImage}')">
                 <div class="image-label">Click to enlarge</div>
             </div>
         `;
@@ -310,13 +340,30 @@ function displayQuestion() {
     
     // Update navigation buttons
     document.getElementById('prevButton').disabled = currentQuestionIndex === 0;
-    document.getElementById('nextButton').textContent = 
-        currentQuestionIndex === categoryQuestions.length - 1 ? 'Finish' : 'Next';
+    const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
+    const nextBtn = document.getElementById('nextButton');
+    nextBtn.innerHTML = isLastQuestion 
+        ? 'Finish <i class="fas fa-flag-checkered"></i>' 
+        : 'Next <i class="fas fa-arrow-right"></i>';
+    
+    // Reset answer buttons
+    resetAnswerButtons();
+}
+
+function handleImageError(img, imageUrl) {
+    console.error(`Failed to load image: ${decodeURI(imageUrl)}`);
+    img.src = 'https://via.placeholder.com/600x300/e0e7ff/0056a6?text=Chart+Not+Found';
+    img.style.border = '2px dashed #0056a6';
+    img.alt = 'Image not available';
+    img.parentElement.querySelector('.image-label').innerHTML = 
+        '<i class="fas fa-exclamation-triangle me-1"></i> Image not available';
 }
 
 function selectAnswer(selectedIndex) {
     const question = categoryQuestions[currentQuestionIndex];
     const buttons = document.querySelectorAll('.answer-option');
+    
+    console.log(`Selected answer ${selectedIndex}, correct is ${question.correct}`);
     
     // Disable all buttons
     buttons.forEach(btn => btn.disabled = true);
@@ -345,13 +392,21 @@ function selectAnswer(selectedIndex) {
     updateProgress();
 }
 
+function resetAnswerButtons() {
+    const buttons = document.querySelectorAll('.answer-option');
+    buttons.forEach(btn => {
+        btn.classList.remove('answer-correct', 'answer-incorrect');
+        btn.disabled = false;
+    });
+}
+
 function nextQuestion() {
     if (currentQuestionIndex < categoryQuestions.length - 1) {
         currentQuestionIndex++;
         displayQuestion();
         updateProgress();
     } else {
-        showMessage("Category completed!", "success");
+        showMessage("Category completed! Review your statistics.", "success");
     }
 }
 
@@ -377,7 +432,7 @@ function randomizeQuestions() {
     shuffleArray(categoryQuestions);
     currentQuestionIndex = 0;
     displayQuestion();
-    showMessage("Questions randomized", "info");
+    showMessage("Questions shuffled", "info");
 }
 
 function randomizeAnswers() {
@@ -398,7 +453,7 @@ function randomizeAnswers() {
     
     // Redisplay
     displayQuestion();
-    showMessage("Answers randomized", "info");
+    showMessage("Answers shuffled", "info");
 }
 
 function shuffleArray(array) {
@@ -414,6 +469,10 @@ function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     // Decode URL for display
     document.getElementById('enlargedImage').src = decodeURI(imageUrl);
+    document.getElementById('enlargedImage').onerror = function() {
+        this.src = 'https://via.placeholder.com/800x600/e0e7ff/0056a6?text=Image+Not+Available';
+        this.alt = 'Image failed to load';
+    };
     modal.show();
 }
 
@@ -446,7 +505,9 @@ function updateStatistics() {
 }
 
 function updateQuestionCount() {
-    document.getElementById('questionCount').textContent = allQuestions.length;
+    const totalQuestions = allQuestions.length;
+    document.getElementById('questionCount').textContent = totalQuestions;
+    console.log(`Total questions: ${totalQuestions}`);
 }
 
 // ==================== MESSAGING ====================
@@ -483,7 +544,11 @@ function showMessage(text, type = 'info') {
     // Auto-remove
     setTimeout(() => {
         message.style.animation = 'slideOut 0.3s';
-        setTimeout(() => message.remove(), 300);
+        setTimeout(() => {
+            if (message.parentNode) {
+                message.parentNode.removeChild(message);
+            }
+        }, 300);
     }, 3000);
 }
 
@@ -503,3 +568,24 @@ if (!document.querySelector('#animations')) {
     `;
     document.head.appendChild(style);
 }
+
+// Debug function - can be called from browser console
+window.debugInfo = function() {
+    console.log('=== DEBUG INFORMATION ===');
+    console.log('Total questions:', allQuestions.length);
+    console.log('Current category:', currentCategory);
+    console.log('Category questions:', categoryQuestions.length);
+    console.log('All questions:', allQuestions);
+    console.log('Category stats:');
+    const stats = {};
+    allQuestions.forEach(q => {
+        stats[q.category] = (stats[q.category] || 0) + 1;
+    });
+    console.log(stats);
+    
+    // Show in alert
+    const categories = Object.keys(stats);
+    const message = `Loaded ${allQuestions.length} questions\n\n` +
+                   categories.map(cat => `${cat}: ${stats[cat]} questions`).join('\n');
+    alert(message);
+};
