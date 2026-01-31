@@ -44,11 +44,127 @@ window.onload = function() {
     }
 };
 
-// ========== QUESTION LOADING ==========
-function loadQuestions() {
-    // In real implementation, this would load from CSV
-    // For now, using sample data
+// ========== QUESTION LOADING FROM CSV ==========
+async function loadQuestions() {
+    try {
+        console.log("Loading questions from CSV file...");
+        
+        // Load the CSV file
+        const response = await fetch('questions.csv');
+        if (!response.ok) {
+            throw new Error(`Failed to load CSV: ${response.status}`);
+        }
+        
+        const csvText = await response.text();
+        console.log("CSV loaded successfully, parsing...");
+        
+        // Parse CSV to questions
+        allQuestions = parseCSV(csvText);
+        
+        console.log(`Successfully loaded ${allQuestions.length} questions from CSV`);
+        
+        if (allQuestions.length === 0) {
+            console.log("No questions loaded from CSV, using sample data");
+            loadSampleQuestions();
+        } else {
+            // Load categories from CSV data
+            loadCategories();
+        }
+    } catch (error) {
+        console.error("Error loading CSV:", error);
+        console.log("Using sample questions as fallback");
+        // Fallback to sample questions
+        loadSampleQuestions();
+    }
+}
+
+// Function to parse CSV text
+function parseCSV(csvText) {
+    const questions = [];
+    const lines = csvText.split('\n');
     
+    console.log(`CSV has ${lines.length} lines`);
+    
+    // Skip header line (first line)
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line === '' || line.startsWith('#') || line.startsWith('//')) {
+            continue; // Skip empty lines and comments
+        }
+        
+        try {
+            // Parse the CSV line
+            const columns = parseCSVLine(line);
+            
+            if (columns.length >= 7) {
+                // Get correct answer index (1-based in CSV: 1=A, 2=B, 3=C, 4=D)
+                // Convert to 0-based for JavaScript (0=A, 1=B, 2=C, 3=D)
+                let correctIndex = parseInt(columns[5]) - 1;
+                
+                // If parsing failed or out of range, default to 0
+                if (isNaN(correctIndex) || correctIndex < 0 || correctIndex > 3) {
+                    console.warn(`Invalid correct answer for line ${i}: ${columns[5]}, defaulting to 0`);
+                    correctIndex = 0;
+                }
+                
+                // Create question object
+                const question = {
+                    category: columns[0] ? columns[0].trim() : "Uncategorized",
+                    question: columns[1] ? columns[1].trim() : "",
+                    answers: [
+                        columns[2] ? columns[2].trim() : "",
+                        columns[3] ? columns[3].trim() : "",
+                        columns[4] ? columns[4].trim() : "",
+                        columns[5] ? columns[5].trim() : ""
+                    ],
+                    correct: correctIndex,
+                    explanation: columns[7] ? columns[7].trim() : "No explanation provided"
+                };
+                
+                // Validate the question has all required fields
+                if (question.question && question.answers[0] && question.answers[1]) {
+                    questions.push(question);
+                } else {
+                    console.warn(`Skipping invalid question at line ${i}:`, question);
+                }
+            } else {
+                console.warn(`Skipping line ${i} - not enough columns:`, columns);
+            }
+        } catch (error) {
+            console.error(`Error parsing line ${i}: ${line}`, error);
+        }
+    }
+    
+    console.log(`Parsed ${questions.length} valid questions from CSV`);
+    return questions;
+}
+
+// Helper function to parse CSV line correctly (handles commas in quotes)
+function parseCSVLine(line) {
+    const columns = [];
+    let current = '';
+    let insideQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+            insideQuotes = !insideQuotes;
+        } else if (char === ',' && !insideQuotes) {
+            columns.push(current);
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    columns.push(current); // Add last column
+    return columns;
+}
+
+// Keep the sample questions as fallback
+function loadSampleQuestions() {
+    console.log("Loading sample questions...");
     allQuestions = [
         {
             category: "Math",
@@ -87,44 +203,88 @@ function loadQuestions() {
         }
     ];
     
-    // Load categories
     loadCategories();
 }
 
+// ========== CATEGORY MANAGEMENT ==========
 function loadCategories() {
+    // Get unique categories
     const categories = [...new Set(allQuestions.map(q => q.category))];
     const container = document.getElementById('categoryButtons');
+    container.innerHTML = ''; // Clear existing buttons
     
+    console.log(`Found ${categories.length} categories:`, categories);
+    
+    // Create button for each category
     categories.forEach(category => {
+        // Count questions in this category
+        const count = allQuestions.filter(q => q.category === category).length;
+        
+        // Create category button
         const button = document.createElement('button');
         button.className = 'category-btn';
-        button.innerHTML = `<i class="fas fa-folder-open"></i> ${category}`;
+        button.innerHTML = `
+            <i class="fas fa-folder-open"></i> ${category} 
+            <span class="badge bg-light text-dark ms-2">${count}</span>
+        `;
         button.onclick = () => selectCategory(category);
         container.appendChild(button);
     });
+    
+    // If no categories found, show message
+    if (categories.length === 0) {
+        container.innerHTML = `
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> 
+                No categories found. Check your CSV file format.
+            </div>
+        `;
+    }
 }
 
 // ========== CATEGORY SELECTION ==========
 function selectCategory(category) {
+    console.log(`Selected category: ${category}`);
     currentCategory = category;
+    
+    // Filter questions for this category
     currentQuestions = allQuestions.filter(q => q.category === category);
+    console.log(`Found ${currentQuestions.length} questions in ${category}`);
+    
+    // Reset to first question
     currentQuestionIndex = 0;
     
-    // Hide category selector, show quiz
+    // Hide category selector, show quiz area
     document.getElementById('categoryButtons').style.display = 'none';
     document.getElementById('quizArea').style.display = 'block';
     document.getElementById('currentCategory').textContent = `Category: ${category}`;
     
     // Shuffle questions initially
     shuffleArray(currentQuestions);
+    
+    // Load first question
     loadQuestion();
+    
+    // Update UI
     updateProgress();
     updateStatistics();
+    
+    // Show success message
+    showNotification(`Loaded ${currentQuestions.length} questions from ${category}`);
 }
 
 // ========== QUESTION DISPLAY ==========
 function loadQuestion() {
-    if (currentQuestions.length === 0) return;
+    if (currentQuestions.length === 0) {
+        console.error("No questions to display!");
+        document.getElementById('questionsContainer').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                No questions available for this category.
+            </div>
+        `;
+        return;
+    }
     
     const question = currentQuestions[currentQuestionIndex];
     const container = document.getElementById('questionsContainer');
@@ -152,13 +312,16 @@ function loadQuestion() {
     
     container.appendChild(card);
     
-    // Update UI
+    // Update UI counters
     document.getElementById('currentQuestionNum').textContent = currentQuestionIndex + 1;
     document.getElementById('totalQuestions').textContent = currentQuestions.length;
     
     // Update navigation buttons
     document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
-    document.getElementById('nextBtn').disabled = currentQuestionIndex === currentQuestions.length - 1;
+    document.getElementById('nextBtn').textContent = 
+        currentQuestionIndex === currentQuestions.length - 1 ? 
+        'Finish <i class="fas fa-flag-checkered"></i>' : 
+        'Next <i class="fas fa-arrow-right"></i>';
     
     // Reset answer selection
     resetAnswerButtons();
@@ -184,8 +347,10 @@ function selectAnswer(answerIndex) {
     if (answerIndex === question.correct) {
         score.correct++;
         score.total++;
+        showNotification('Correct! ✓', 'success');
     } else if (answerIndex !== undefined) {
         score.total++;
+        showNotification('Incorrect ✗', 'error');
     }
     
     // Show explanation
@@ -203,7 +368,10 @@ function resetAnswerButtons() {
         btn.classList.remove('correct', 'incorrect');
         btn.disabled = false;
     });
-    document.getElementById('explanation').style.display = 'none';
+    const explanation = document.getElementById('explanation');
+    if (explanation) {
+        explanation.style.display = 'none';
+    }
 }
 
 // ========== NAVIGATION ==========
@@ -212,6 +380,9 @@ function nextQuestion() {
         currentQuestionIndex++;
         loadQuestion();
         updateProgress();
+    } else {
+        // Last question - show completion message
+        showNotification('Quiz completed! Check your statistics below.', 'success');
     }
 }
 
@@ -228,7 +399,7 @@ function shuffleQuestions() {
     shuffleArray(currentQuestions);
     currentQuestionIndex = 0;
     loadQuestion();
-    showNotification('Questions shuffled!');
+    showNotification('Questions shuffled!', 'info');
 }
 
 function shuffleAnswers() {
@@ -247,7 +418,7 @@ function shuffleAnswers() {
     
     // Reload question
     loadQuestion();
-    showNotification('Answers shuffled!');
+    showNotification('Answers shuffled!', 'info');
 }
 
 function shuffleArray(array) {
@@ -282,22 +453,45 @@ function updateStatistics() {
     }
 }
 
-function showNotification(message) {
+// ========== NOTIFICATION SYSTEM ==========
+function showNotification(message, type = 'info') {
+    // Colors for different types
+    const colors = {
+        'success': '#28a745',
+        'error': '#dc3545',
+        'info': '#17a2b8',
+        'warning': '#ffc107'
+    };
+    
+    const color = colors[type] || colors['info'];
+    
     // Create notification element
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        background: #28a745;
+        background: ${color};
         color: white;
         padding: 15px 25px;
         border-radius: 10px;
         z-index: 1000;
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         animation: slideIn 0.3s;
+        max-width: 400px;
+        font-weight: bold;
     `;
-    notification.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+    
+    // Icon based on type
+    const icons = {
+        'success': 'fa-check-circle',
+        'error': 'fa-times-circle',
+        'info': 'fa-info-circle',
+        'warning': 'fa-exclamation-circle'
+    };
+    
+    const icon = icons[type] || icons['info'];
+    notification.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
     document.body.appendChild(notification);
     
     // Remove after 3 seconds
@@ -307,16 +501,78 @@ function showNotification(message) {
     }, 3000);
 }
 
-// Add CSS for notifications
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-`;
-document.head.appendChild(style);
+// ========== DEBUG FUNCTIONS ==========
+function debugQuestions() {
+    console.log("=== DEBUG INFORMATION ===");
+    console.log(`Total questions loaded: ${allQuestions.length}`);
+    console.log(`Current category: ${currentCategory}`);
+    console.log(`Questions in current category: ${currentQuestions.length}`);
+    console.log("All categories:", [...new Set(allQuestions.map(q => q.category))]);
+    
+    // Show in alert
+    const categories = [...new Set(allQuestions.map(q => q.category))];
+    const categoryCounts = categories.map(cat => {
+        const count = allQuestions.filter(q => q.category === cat).length;
+        return `${cat} (${count})`;
+    });
+    
+    alert(`Loaded ${allQuestions.length} questions\n\nCategories:\n${categoryCounts.join('\n')}`);
+}
+
+// ========== EXPORT/IMPORT FUNCTIONS ==========
+function exportQuestions() {
+    // Convert questions to CSV format
+    let csv = 'category,question,answer1,answer2,answer3,answer4,correct,explanation\n';
+    
+    allQuestions.forEach(q => {
+        const row = [
+            q.category,
+            q.question,
+            q.answers[0],
+            q.answers[1],
+            q.answers[2],
+            q.answers[3],
+            q.correct + 1, // Convert back to 1-based for CSV
+            q.explanation
+        ].map(field => `"${field.replace(/"/g, '""')}"`).join(',');
+        
+        csv += row + '\n';
+    });
+    
+    // Create download link
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `questions_backup_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    showNotification('Questions exported to CSV file!', 'success');
+}
+
+// ========== INITIALIZE CSS ANIMATIONS ==========
+// Add CSS for notifications if not already present
+if (!document.querySelector('#notification-styles')) {
+    const style = document.createElement('style');
+    style.id = 'notification-styles';
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ========== ADMIN FUNCTIONS ==========
+// To add an admin panel later, uncomment this:
+// function showAdminPanel() {
+//     // Add admin functions here
+// }
