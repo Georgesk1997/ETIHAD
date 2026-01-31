@@ -1,5 +1,5 @@
 // ==================== SYSTEM CONFIGURATION ====================
-const SYSTEM_PASSWORD = "etihad2024";  // CHANGE THIS TO YOUR PASSWORD
+const SYSTEM_PASSWORD = "etihad2026";  // CHANGE THIS TO YOUR PASSWORD
 
 // Category Configuration - Matches YOUR folder structure
 const CATEGORY_CONFIG = {
