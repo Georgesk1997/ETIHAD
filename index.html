@@ -222,6 +222,31 @@
             color: white;
         }
         
+        /* Auto-advance animations */
+        @keyframes autoAdvancePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        
+        .auto-advance {
+            animation: autoAdvancePulse 1.5s ease-in-out;
+        }
+        
+        /* Next button emphasis for wrong answers */
+        .next-emphasis {
+            animation: pulse 1s infinite;
+            background: var(--accent-red) !important;
+            color: white !important;
+            border-color: var(--accent-red) !important;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .aviation-container {
