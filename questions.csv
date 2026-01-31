@@ -1,15 +1,10 @@
 category,question,optionA,optionB,optionC,optionD,correct,image,explanation
-Flight Plan,Minimum IFR fuel requirement?,Fuel to destination,Fuel to destination + 30 min,Fuel to alternate + 30 min,Fuel to destination + alternate + 45 min,4,/images/Flight Plan/site-1.jpg,FAR 91.167: Destination → Alternate → 45 min reserve
-Flight Plan,What information must be in an IFR flight plan?,Aircraft type & equipment,Only departure/destination,Pilot certificate number,Estimated time enroute only,1,,Required: Aircraft type, equipment suffix, departure, destination
-IFR Comms,Read back is required for?,All ATC communications,Only route clearances,Altitude assignments,Weather reports,3,/images/IFR Comms/readback-guide.png,Always read back altitude assignments, headings, runway assignments
-IFR Comms,How to acknowledge a clearance?,"Roger, wilco","Cessna 123AB cleared as filed",Affirmative,"Read back entire clearance",2,,Read back clearance with aircraft identification
-Mass And Balance,Definition of 'arm'?,Weight × distance,Distance from datum,Moment ÷ weight,Center of gravity limit,2,/images/Mass And Balance/arm-diagram.png,Arm = horizontal distance from reference datum
-Mass And Balance,How to calculate moment?,Weight × arm,Weight ÷ arm,Weight + arm,Weight - arm,1,,Moment = Weight × Arm (distance from datum)
-OPS,Night VFR minimum equipment?,Position lights,Anti-collision light,Landing light,All of the above,4,/images/OPS/night-equipment.png,FAR 91.205(c): All listed equipment required for night VFR
-OPS,Minimum equipment for IFR flight?,Gyroscopic instruments,Altimeter,Airspeed indicator,All of the above,4,,FAR 91.205(d): All instruments required for IFR
-Performance,Factor that increases takeoff distance most?,Headwind,Tailwind,Low temperature,Low pressure altitude,2,,Tailwind significantly increases ground roll and distance
-Performance,Density altitude calculation uses?,Pressure altitude & temperature,True altitude only,Indicated altitude,Field elevation only,1,/images/Performance/density-alt.png,Density Altitude = Pressure Altitude + (120 × (OAT - ISA Temp))
-RNAV,RNP 0.3 is used for?,RNAV approaches,Oceanic navigation,Enroute navigation,Departure procedures,1,/images/RNAV/rnp-chart.png,RNP 0.3 is typical for RNAV (RNP) approach procedures
-RNAV,Required accuracy for RNP 1?,±1 NM,±2 NM,±5 NM,±10 NM,1,,RNP 1 requires navigation within ±1 nautical mile
-VFR Comms,Correct position report in pattern?,Downwind,"Cessna 123AB downwind","Traffic pattern downwind","Position downwind",2,,Always include aircraft identification: "Cessna 123AB downwind"
-VFR Comms,How to request taxi?,Ready to taxi,Request taxi,"Taxi instructions please","Cessna 123AB at ramp, request taxi",4,,"Use: [Aircraft ID] + [Location] + ""request taxi"""
+Flight Plan,What does this flight planning chart show?,Standard instrument departure,Enroute navigation chart,Standard terminal arrival,Weather minimums chart,1,/images/Flight Plan/site-1.jpg,This is a Standard Instrument Departure (SID) chart.
+Flight Plan,What is the minimum fuel required for an IFR flight?,Fuel to destination only,Fuel to destination plus 30 minutes,Fuel to alternate plus 30 minutes,Fuel to destination plus alternate plus 45 minutes,4,,FAR 91.167 requires fuel to destination, then to alternate, plus 45 minutes reserve.
+Flight Plan,When must a flight plan be filed for an IFR flight?,At least 30 minutes before departure,At least 1 hour before departure,At least 2 hours before departure,No specific time requirement,1,,IFR flight plans should be filed at least 30 minutes before departure.
+IFR Comms,What phrase should be used to acknowledge an altitude assignment?,"Roger, climbing","Climbing to assigned altitude","Cessna 123AB climbing to 5000","Wilco, climbing",3,,Always include aircraft identification when acknowledging assignments.
+Mass And Balance,What does the term arm refer to in weight and balance?,Weight of an item,Distance from datum,Moment divided by weight,Center of gravity limit,2,,Arm is the horizontal distance from the reference datum.
+OPS,What is the minimum equipment for day VFR flight?,Fuel gauge and oil pressure,Airspeed indicator and altimeter,Tachometer and oil temperature,All of the above,4,,FAR 91.205 specifies required instruments and equipment.
+Performance,What factor most increases takeoff distance?,Headwind,Tailwind,Low temperature,Low humidity,2,,Tailwind significantly increases takeoff distance.
+RNAV,What does RNAV stand for?,Area Navigation,Radio Navigation,Required Navigation,Regional Navigation,1,,RNAV stands for Area Navigation.
+VFR Comms,How should you report position in the traffic pattern?,"Downwind","Cessna 123AB downwind","Traffic pattern downwind","Position downwind",2,,Always include aircraft identification when reporting position.
