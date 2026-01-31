@@ -129,16 +129,6 @@
             transition: width 0.5s;
         }
         
-        .login-screen {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
-            max-width: 450px;
-            margin: 50px auto;
-            text-align: center;
-        }
-        
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -218,7 +208,7 @@
             font-size: 14px;
         }
         
-        .logout-btn {
+        .refresh-btn {
             background: transparent;
             border: 2px solid var(--primary-blue);
             color: var(--primary-blue);
@@ -227,7 +217,7 @@
             font-weight: 600;
         }
         
-        .logout-btn:hover {
+        .refresh-btn:hover {
             background: var(--primary-blue);
             color: white;
         }
@@ -251,36 +241,8 @@
     </style>
 </head>
 <body>
-    <!-- Login Screen -->
-    <div id="loginScreen" class="login-screen">
-        <div class="mb-4">
-            <i class="fas fa-plane fa-4x" style="color: var(--primary-blue);"></i>
-        </div>
-        <h2 style="color: var(--primary-blue);">ETIHAD CP Aviation</h2>
-        <p class="text-muted mb-4">Pilot Certification Preparation System</p>
-        
-        <div class="mb-4">
-            <input type="password" id="passwordField" class="form-control" 
-                   placeholder="Enter access code" style="border-color: var(--primary-blue); height: 50px;">
-            <div id="loginError" class="text-danger mt-2" style="display: none;">
-                <i class="fas fa-exclamation-circle"></i> Invalid access code
-            </div>
-        </div>
-        
-        <button onclick="verifyAccess()" class="btn w-100" 
-                style="background: var(--primary-blue); color: white; height: 50px;">
-            <i class="fas fa-unlock-alt"></i> Enter System
-        </button>
-        
-        <div class="mt-4">
-            <small class="text-muted">
-                <i class="fas fa-shield-alt"></i> Secure aviation training portal
-            </small>
-        </div>
-    </div>
-
     <!-- Main Application -->
-    <div id="mainApp" style="display: none;">
+    <div id="mainApp">
         <div class="aviation-container">
             <!-- Header -->
             <div class="header-section">
@@ -290,8 +252,8 @@
                         <p class="mb-0">Aviation Certification & Training System</p>
                     </div>
                     <div class="col-md-3 text-end">
-                        <button onclick="exitSystem()" class="logout-btn">
-                            <i class="fas fa-sign-out-alt"></i> Exit
+                        <button onclick="refreshApp()" class="refresh-btn">
+                            <i class="fas fa-sync-alt"></i> Refresh
                         </button>
                     </div>
                 </div>
