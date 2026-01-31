@@ -1,6 +1,5 @@
 category,question,optionA,optionB,optionC,optionD,correct,image,explanation
 Flight Plan,What does this flight planning chart show?,Standard instrument departure,Enroute navigation chart,Standard terminal arrival,Weather minimums chart,1,/images/Flight Plan/site-1.jpg,This is a Standard Instrument Departure (SID) chart.
-Flight Plan,What is the minimum fuel required for an IFR flight?,Fuel to destination only,Fuel to destination plus 30 minutes,Fuel to alternate plus 30 minutes,Fuel to destination plus alternate plus 45 minutes,4,,FAR 91.167 requires fuel to destination, then to alternate, plus 45 minutes reserve.
 Flight Plan,When must a flight plan be filed for an IFR flight?,At least 30 minutes before departure,At least 1 hour before departure,At least 2 hours before departure,No specific time requirement,1,,IFR flight plans should be filed at least 30 minutes before departure.
 IFR Comms,What phrase should be used to acknowledge an altitude assignment?,"Roger, climbing","Climbing to assigned altitude","Cessna 123AB climbing to 5000","Wilco, climbing",3,,Always include aircraft identification when acknowledging assignments.
 Mass And Balance,What does the term arm refer to in weight and balance?,Weight of an item,Distance from datum,Moment divided by weight,Center of gravity limit,2,,Arm is the horizontal distance from the reference datum.
