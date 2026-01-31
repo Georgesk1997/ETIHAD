@@ -1,5 +1,15 @@
-category,question,answer1,answer2,answer3,answer4,correct,explanation
-Math,What is 2+2?,3,4,5,6,2,Basic addition gives 4
-Science,What is H₂O?,Oxygen,Hydrogen,Water,Carbon Dioxide,3,H₂O is water
-History,First US president?,Jefferson,Adams,Washington,Lincoln,3,George Washington
-Geograhpie,First US president?,Jefferson,Adams,Washington,Lincoln,3,George Washington
+category,question,optionA,optionB,optionC,optionD,correct,image,explanation
+Flight Plan,Minimum IFR fuel requirement?,Fuel to destination,Fuel to destination + 30 min,Fuel to alternate + 30 min,Fuel to destination + alternate + 45 min,4,/images/flight-plan/fuel-chart.png,FAR 91.167: Destination → Alternate → 45 min reserve
+Flight Plan,What information must be in an IFR flight plan?,Aircraft type & equipment,Only departure/destination,Pilot certificate number,Estimated time enroute only,1,,Required: Aircraft type, equipment suffix, departure, destination
+IFR Comms,Read back is required for?,All ATC communications,Only route clearances,Altitude assignments,Weather reports,3,/images/ifr-comms/readback-guide.png,Always read back altitude assignments, headings, runway assignments
+IFR Comms,How to acknowledge a clearance?,"Roger, wilco","Cessna 123AB cleared as filed","Affirmative",Read back entire clearance,2,,Read back clearance with aircraft identification
+Mass And Balance,Definition of 'arm'?,Weight × distance,Distance from datum,Moment ÷ weight,Center of gravity limit,2,/images/mass-balance/arm-diagram.png,Arm = horizontal distance from reference datum
+Mass And Balance,How to calculate moment?,Weight × arm,Weight ÷ arm,Weight + arm,Weight - arm,1,,Moment = Weight × Arm (distance from datum)
+OPS,Night VFR minimum equipment?,Position lights,Anti-collision light,Landing light,All of the above,4,/images/ops/night-equipment.png,FAR 91.205(c): All listed equipment required for night VFR
+OPS,Minimum equipment for IFR flight?,Gyroscopic instruments,Altimeter,Airspeed indicator,All of the above,4,,FAR 91.205(d): All instruments required for IFR
+Performance,Factor that increases takeoff distance most?,Headwind,Tailwind,Low temperature,Low pressure altitude,2,,Tailwind significantly increases ground roll and distance
+Performance,Density altitude calculation uses?,Pressure altitude & temperature,True altitude only,Indicated altitude,Field elevation only,1,/images/performance/density-alt.png,Density Altitude = Pressure Altitude + (120 × (OAT - ISA Temp))
+RNAV,RNP 0.3 is used for?,RNAV approaches,Oceanic navigation,Enroute navigation,Departure procedures,1,/images/rnav/rnp-chart.png,RNP 0.3 is typical for RNAV (RNP) approach procedures
+RNAV,Required accuracy for RNP 1?,±1 NM,±2 NM,±5 NM,±10 NM,1,,RNP 1 requires navigation within ±1 nautical mile
+VFR Comms,Correct position report in pattern?,"Downwind","Cessna 123AB downwind","Traffic pattern downwind","Position downwind",2,,Always include aircraft identification: "Cessna 123AB downwind"
+VFR Comms,How to request taxi?,Ready to taxi,Request taxi,Taxi instructions please,Cessna 123AB at ramp, request taxi,4,,Use: [Aircraft ID] + [Location] + "request taxi"
