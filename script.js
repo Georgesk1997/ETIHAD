@@ -319,12 +319,23 @@ function displayQuestion() {
     
     document.getElementById('questionCounter').textContent = currentQuestionIndex + 1;
     document.getElementById('totalCounter').textContent = categoryQuestions.length;
+    
+    // Update navigation buttons
     document.getElementById('prevButton').disabled = currentQuestionIndex === 0;
     
     const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
-    document.getElementById('nextButton').innerHTML = isLastQuestion 
+    const nextBtn = document.getElementById('nextButton');
+    
+    // Remove any emphasis from previous wrong answer
+    nextBtn.classList.remove('next-emphasis');
+    
+    // Reset Next button to normal state
+    nextBtn.disabled = false;
+    nextBtn.innerHTML = isLastQuestion 
         ? 'Finish <i class="fas fa-flag-checkered"></i>' 
         : 'Next <i class="fas fa-arrow-right"></i>';
+    nextBtn.style.background = 'var(--primary-blue)';
+    nextBtn.style.color = 'white';
     
     resetAnswerButtons();
 }
@@ -337,12 +348,16 @@ function handleImageError(img, imageUrl) {
         '<i class="fas fa-exclamation-triangle me-1"></i> Image not available';
 }
 
+// ==================== ANSWER SELECTION WITH AUTO-ADVANCE ====================
 function selectAnswer(selectedIndex) {
     const question = categoryQuestions[currentQuestionIndex];
     const buttons = document.querySelectorAll('.answer-option');
+    const nextBtn = document.getElementById('nextButton');
     
+    // Disable all answer buttons immediately
     buttons.forEach(btn => btn.disabled = true);
     
+    // Mark correct and incorrect answers
     buttons.forEach((btn, index) => {
         if (index === question.currentCorrect) {
             btn.classList.add('answer-correct');
@@ -352,12 +367,42 @@ function selectAnswer(selectedIndex) {
         }
     });
     
+    // Update score
     userScore.attempted++;
+    
     if (selectedIndex === question.currentCorrect) {
         userScore.correct++;
-        showMessage("Correct! ✓", "success");
+        
+        // Visual feedback for correct answer
+        const correctBtn = buttons[selectedIndex];
+        correctBtn.classList.add('auto-advance');
+        
+        showMessage("Correct! ✓ Auto-advancing to next question...", "success");
+        
+        // AUTO-ADVANCE after 1.5 seconds for CORRECT answer
+        setTimeout(() => {
+            if (currentQuestionIndex < categoryQuestions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+                updateProgress();
+            } else {
+                // Last question completed
+                showMessage("Category completed! Review your statistics.", "success");
+                updateStatistics();
+                // Change Next button to "Finish" if it's the last question
+                nextBtn.innerHTML = 'Finish <i class="fas fa-flag-checkered"></i>';
+            }
+        }, 1500); // 1.5 second delay
+        
     } else {
-        showMessage("Incorrect ✗", "error");
+        // WRONG answer - highlight Next button and wait for click
+        nextBtn.classList.add('next-emphasis');
+        showMessage("Incorrect ✗ Click 'Next' to continue", "error");
+        
+        // Remove emphasis after 5 seconds if user doesn't click
+        setTimeout(() => {
+            nextBtn.classList.remove('next-emphasis');
+        }, 5000);
     }
     
     updateScoreDisplay();
@@ -367,19 +412,34 @@ function selectAnswer(selectedIndex) {
 
 function resetAnswerButtons() {
     const buttons = document.querySelectorAll('.answer-option');
+    const nextBtn = document.getElementById('nextButton');
+    
     buttons.forEach(btn => {
-        btn.classList.remove('answer-correct', 'answer-incorrect');
+        btn.classList.remove('answer-correct', 'answer-incorrect', 'auto-advance');
         btn.disabled = false;
     });
+    
+    // Remove any emphasis from Next button
+    nextBtn.classList.remove('next-emphasis');
 }
 
 function nextQuestion() {
+    // Check if there are more questions
     if (currentQuestionIndex < categoryQuestions.length - 1) {
         currentQuestionIndex++;
         displayQuestion();
         updateProgress();
     } else {
+        // This is the last question
         showMessage("Category completed! Review your statistics.", "success");
+        
+        // Make sure statistics are visible
+        updateStatistics();
+        
+        // Update Next button to show "Finish" state
+        const nextBtn = document.getElementById('nextButton');
+        nextBtn.innerHTML = 'Finish <i class="fas fa-flag-checkered"></i>';
+        nextBtn.disabled = false;
     }
 }
 
