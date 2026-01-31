@@ -1,25 +1,37 @@
-// ========== CONFIGURATION ==========
-// CHANGE THIS PASSWORD to your desired password
-const ACCESS_PASSWORD = "quiz2024";  // <-- CHANGE THIS!
+// ==================== CONFIGURATION ====================
+const ACCESS_PASSWORD = "etihad2024";  // ← CHANGE THIS PASSWORD!
 
-// Your questions data (will be loaded from CSV)
+// Your categories and their icons
+const CATEGORY_ICONS = {
+    "Flight Plan": "fa-route",
+    "IFR Comms": "fa-headset",
+    "Mass And Balance": "fa-weight-hanging",
+    "OPS": "fa-clipboard-check",
+    "Performance": "fa-chart-line",
+    "RNAV": "fa-satellite",
+    "VFR Comms": "fa-tower-broadcast"
+};
+
+// Default icon for new categories (if you add more later)
+const DEFAULT_ICON = "fa-folder";
+
+// Your questions data
 let allQuestions = [];
 let currentQuestions = [];
 let currentCategory = "";
 let currentQuestionIndex = 0;
 let score = { correct: 0, total: 0 };
 
-// ========== PASSWORD PROTECTION ==========
+// ==================== PASSWORD PROTECTION ====================
 function checkPassword() {
     const input = document.getElementById('passwordInput').value;
     const errorDiv = document.getElementById('passwordError');
     
     if (input === ACCESS_PASSWORD) {
-        // Store in session (expires when browser closes)
         sessionStorage.setItem('quizAuthenticated', 'true');
         document.getElementById('passwordScreen').style.display = 'none';
         document.getElementById('quizInterface').style.display = 'block';
-        loadQuestions(); // Load questions after successful login
+        loadQuestions();
     } else {
         errorDiv.style.display = 'block';
         document.getElementById('passwordInput').classList.add('is-invalid');
@@ -44,72 +56,73 @@ window.onload = function() {
     }
 };
 
-// ========== QUESTION LOADING FROM CSV ==========
+// ==================== QUESTION LOADING ====================
 async function loadQuestions() {
     try {
-        console.log("Loading questions from CSV file...");
-        
-        // Load the CSV file
+        console.log("Loading questions from CSV...");
         const response = await fetch('questions.csv');
         if (!response.ok) {
-            throw new Error(`Failed to load CSV: ${response.status}`);
+            throw new Error(`CSV not found: ${response.status}`);
         }
         
         const csvText = await response.text();
-        console.log("CSV loaded successfully, parsing...");
-        
-        // Parse CSV to questions
         allQuestions = parseCSV(csvText);
         
-        console.log(`Successfully loaded ${allQuestions.length} questions from CSV`);
+        console.log(`Loaded ${allQuestions.length} questions from CSV`);
         
         if (allQuestions.length === 0) {
-            console.log("No questions loaded from CSV, using sample data");
+            console.log("CSV is empty, loading sample questions...");
             loadSampleQuestions();
         } else {
-            // Load categories from CSV data
+            // Update total questions count in footer
+            document.getElementById('totalQuestionsCount').textContent = allQuestions.length;
             loadCategories();
         }
     } catch (error) {
         console.error("Error loading CSV:", error);
-        console.log("Using sample questions as fallback");
-        // Fallback to sample questions
+        console.log("Loading sample questions as fallback...");
         loadSampleQuestions();
     }
 }
 
-// Function to parse CSV text
 function parseCSV(csvText) {
     const questions = [];
     const lines = csvText.split('\n');
     
-    console.log(`CSV has ${lines.length} lines`);
-    
     // Skip header line (first line)
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
-        if (line === '' || line.startsWith('#') || line.startsWith('//')) {
-            continue; // Skip empty lines and comments
-        }
+        if (line === '' || line.startsWith('//')) continue;
         
         try {
-            // Parse the CSV line
             const columns = parseCSVLine(line);
             
+            // We need at least 7 columns (category, question, 4 answers, correct)
             if (columns.length >= 7) {
-                // Get correct answer index (1-based in CSV: 1=A, 2=B, 3=C, 4=D)
-                // Convert to 0-based for JavaScript (0=A, 1=B, 2=C, 3=D)
-                let correctIndex = parseInt(columns[5]) - 1;
+                // Parse correct answer (1=A, 2=B, 3=C, 4=D) → convert to 0-based
+                let correctIndex = parseInt(columns[6]) - 1;
                 
-                // If parsing failed or out of range, default to 0
+                // Validate correct index
                 if (isNaN(correctIndex) || correctIndex < 0 || correctIndex > 3) {
-                    console.warn(`Invalid correct answer for line ${i}: ${columns[5]}, defaulting to 0`);
+                    console.warn(`Line ${i}: Invalid correct answer '${columns[6]}', defaulting to 0`);
                     correctIndex = 0;
                 }
                 
-                // Create question object
+                // Get image URL (column 7) - optional
+                let imageUrl = columns[7] ? columns[7].trim() : "";
+                
+                // Fix image URL if it's relative
+                if (imageUrl && !imageUrl.startsWith('http') && imageUrl !== '') {
+                    if (!imageUrl.startsWith('/')) {
+                        imageUrl = '/' + imageUrl;
+                    }
+                }
+                
+                // Get explanation (column 8) - optional
+                const explanation = columns[8] ? columns[8].trim() : "";
+                
                 const question = {
-                    category: columns[0] ? columns[0].trim() : "Uncategorized",
+                    category: columns[0] ? columns[0].trim() : "General",
                     question: columns[1] ? columns[1].trim() : "",
                     answers: [
                         columns[2] ? columns[2].trim() : "",
@@ -118,28 +131,23 @@ function parseCSV(csvText) {
                         columns[5] ? columns[5].trim() : ""
                     ],
                     correct: correctIndex,
-                    explanation: columns[7] ? columns[7].trim() : "No explanation provided"
+                    imageUrl: imageUrl,
+                    explanation: explanation
                 };
                 
-                // Validate the question has all required fields
-                if (question.question && question.answers[0] && question.answers[1]) {
+                // Only add if we have a valid question
+                if (question.question && question.answers[0]) {
                     questions.push(question);
-                } else {
-                    console.warn(`Skipping invalid question at line ${i}:`, question);
                 }
-            } else {
-                console.warn(`Skipping line ${i} - not enough columns:`, columns);
             }
         } catch (error) {
-            console.error(`Error parsing line ${i}: ${line}`, error);
+            console.error(`Error parsing line ${i}:`, error);
         }
     }
     
-    console.log(`Parsed ${questions.length} valid questions from CSV`);
     return questions;
 }
 
-// Helper function to parse CSV line correctly (handles commas in quotes)
 function parseCSVLine(line) {
     const columns = [];
     let current = '';
@@ -158,129 +166,169 @@ function parseCSVLine(line) {
         }
     }
     
-    columns.push(current); // Add last column
+    // Add the last column
+    columns.push(current);
     return columns;
 }
 
-// Keep the sample questions as fallback
+// Sample questions for testing
 function loadSampleQuestions() {
-    console.log("Loading sample questions...");
+    console.log("Loading sample aviation questions...");
+    
     allQuestions = [
         {
-            category: "Math",
-            question: "What is 2+2?",
-            answers: ["3", "4", "5", "6"],
+            category: "Flight Plan",
+            question: "What is the minimum fuel required for an IFR flight?",
+            answers: ["Fuel to destination", "Fuel to destination + 45 minutes", "Fuel to alternate + 45 minutes", "Fuel to destination + alternate + 45 minutes"],
+            correct: 3,
+            imageUrl: "",
+            explanation: "FAR 91.167 requires fuel to fly to destination, then to alternate, plus 45 minutes reserve."
+        },
+        {
+            category: "IFR Comms",
+            question: "When should you read back a clearance?",
+            answers: ["Only when requested", "Always for altitude assignments", "Only for route changes", "Always for all ATC instructions"],
             correct: 1,
-            explanation: "Basic addition gives 4"
+            imageUrl: "/images/ifr-comms/clearance.png",
+            explanation: "Always read back altitude assignments, headings, and runway assignments."
         },
         {
-            category: "Math",
-            question: "What is 3×7?",
-            answers: ["18", "21", "24", "28"],
+            category: "Mass And Balance",
+            question: "What does the term 'arm' refer to in weight and balance?",
+            answers: ["Weight of an item", "Distance from datum", "Moment divided by weight", "Center of gravity limit"],
             correct: 1,
-            explanation: "3 times 7 equals 21"
+            imageUrl: "",
+            explanation: "Arm is the horizontal distance from the reference datum to the CG of an item."
         },
         {
-            category: "Science",
-            question: "What is H₂O?",
-            answers: ["Oxygen", "Hydrogen", "Water", "Carbon Dioxide"],
-            correct: 2,
-            explanation: "H₂O is the chemical formula for water"
+            category: "OPS",
+            question: "Minimum equipment for day VFR flight includes:",
+            answers: ["Fuel gauge, oil pressure, altimeter", "Airspeed, altimeter, magnetic compass", "Tachometer, oil temp, ammeter", "All of the above"],
+            correct: 3,
+            imageUrl: "/images/ops/equipment.png",
+            explanation: "FAR 91.205 specifies required instruments and equipment."
         },
         {
-            category: "Science",
-            question: "Which planet is known as the Red Planet?",
-            answers: ["Venus", "Mars", "Jupiter", "Saturn"],
+            category: "Performance",
+            question: "What affects takeoff distance the most?",
+            answers: ["Wind", "Temperature", "Pressure altitude", "All of the above"],
+            correct: 3,
+            imageUrl: "",
+            explanation: "All these factors significantly impact takeoff performance."
+        },
+        {
+            category: "RNAV",
+            question: "What is RNP 0.3?",
+            answers: ["RNAV approach", "Oceanic navigation", "Terminal procedure", "Enroute navigation"],
+            correct: 0,
+            imageUrl: "/images/rnav/approach.png",
+            explanation: "RNP 0.3 is typically used for RNAV (RNP) approach procedures."
+        },
+        {
+            category: "VFR Comms",
+            question: "How do you report position in the traffic pattern?",
+            answers: ["'Downwind'", "'Cessna 123AB downwind'", "'Traffic pattern downwind'", "'Position downwind'"],
             correct: 1,
-            explanation: "Mars appears red due to iron oxide on its surface"
-        },
-        {
-            category: "History",
-            question: "Who was the first president of the USA?",
-            answers: ["Thomas Jefferson", "John Adams", "George Washington", "Abraham Lincoln"],
-            correct: 2,
-            explanation: "George Washington served from 1789 to 1797"
+            imageUrl: "",
+            explanation: "Always include aircraft identification when reporting position."
         }
     ];
     
+    // Update total count
+    document.getElementById('totalQuestionsCount').textContent = allQuestions.length;
     loadCategories();
 }
 
-// ========== CATEGORY MANAGEMENT ==========
+// ==================== CATEGORY MANAGEMENT ====================
 function loadCategories() {
-    // Get unique categories
+    // Get all unique categories from questions
     const categories = [...new Set(allQuestions.map(q => q.category))];
     const container = document.getElementById('categoryButtons');
-    container.innerHTML = ''; // Clear existing buttons
+    container.innerHTML = '';
     
     console.log(`Found ${categories.length} categories:`, categories);
     
-    // Create button for each category
-    categories.forEach(category => {
-        // Count questions in this category
-        const count = allQuestions.filter(q => q.category === category).length;
-        
-        // Create category button
-        const button = document.createElement('button');
-        button.className = 'category-btn';
-        button.innerHTML = `
-            <i class="fas fa-folder-open"></i> ${category} 
-            <span class="badge bg-light text-dark ms-2">${count}</span>
-        `;
-        button.onclick = () => selectCategory(category);
-        container.appendChild(button);
-    });
-    
-    // If no categories found, show message
     if (categories.length === 0) {
         container.innerHTML = `
             <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle"></i> 
-                No categories found. Check your CSV file format.
+                <i class="fas fa-exclamation-triangle"></i> No categories found in questions.csv
             </div>
         `;
+        return;
     }
+    
+    // Sort categories alphabetically
+    categories.sort();
+    
+    // Create a button for each category
+    categories.forEach(category => {
+        // Count questions in this category
+        const questionCount = allQuestions.filter(q => q.category === category).length;
+        
+        // Get icon for this category (or default)
+        const icon = CATEGORY_ICONS[category] || DEFAULT_ICON;
+        
+        // Create button
+        const button = document.createElement('button');
+        button.className = 'category-btn';
+        button.innerHTML = `
+            <div class="d-flex align-items-center">
+                <div class="category-icon">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div>
+                    <div class="fw-bold">${category}</div>
+                    <small class="text-muted">${questionCount} questions</small>
+                </div>
+            </div>
+        `;
+        
+        button.onclick = () => selectCategory(category);
+        container.appendChild(button);
+    });
 }
 
-// ========== CATEGORY SELECTION ==========
+// ==================== CATEGORY SELECTION ====================
 function selectCategory(category) {
     console.log(`Selected category: ${category}`);
+    
     currentCategory = category;
     
     // Filter questions for this category
     currentQuestions = allQuestions.filter(q => q.category === category);
-    console.log(`Found ${currentQuestions.length} questions in ${category}`);
-    
-    // Reset to first question
     currentQuestionIndex = 0;
     
-    // Hide category selector, show quiz area
-    document.getElementById('categoryButtons').style.display = 'none';
+    // Reset score for new category
+    score = { correct: 0, total: 0 };
+    
+    // Update UI
+    document.getElementById('categorySection').style.display = 'none';
     document.getElementById('quizArea').style.display = 'block';
-    document.getElementById('currentCategory').textContent = `Category: ${category}`;
+    document.getElementById('categoryName').textContent = category;
+    document.getElementById('statistics').style.display = 'none';
+    
+    // Add CSS class for category-specific styling
+    const categoryClass = category.toLowerCase().replace(/\s+/g, '-');
+    document.getElementById('questionsContainer').className = categoryClass;
     
     // Shuffle questions initially
     shuffleArray(currentQuestions);
     
     // Load first question
     loadQuestion();
-    
-    // Update UI
     updateProgress();
     updateStatistics();
     
-    // Show success message
-    showNotification(`Loaded ${currentQuestions.length} questions from ${category}`);
+    // Show notification
+    showNotification(`Loaded ${currentQuestions.length} ${category} questions`, 'info');
 }
 
-// ========== QUESTION DISPLAY ==========
+// ==================== QUESTION DISPLAY ====================
 function loadQuestion() {
-    if (currentQuestions.length === 0) {
-        console.error("No questions to display!");
+    if (!currentQuestions || currentQuestions.length === 0) {
         document.getElementById('questionsContainer').innerHTML = `
             <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle"></i>
-                No questions available for this category.
+                <i class="fas fa-exclamation-circle"></i> No questions available for this category.
             </div>
         `;
         return;
@@ -292,47 +340,84 @@ function loadQuestion() {
     // Clear previous question
     container.innerHTML = '';
     
-    // Create question card
     const card = document.createElement('div');
     card.className = 'question-card active-question';
-    card.innerHTML = `
-        <h4>${question.question}</h4>
+    
+    // Build question HTML
+    let questionHTML = `
+        <h4 class="mb-3">
+            <i class="fas fa-question-circle me-2" style="color: var(--primary-color);"></i>
+            ${question.question}
+        </h4>
+    `;
+    
+    // Add image if exists
+    if (question.imageUrl && question.imageUrl.trim() !== '') {
+        questionHTML += `
+            <div class="question-image" onclick="zoomImage('${question.imageUrl}')">
+                <div class="image-badge">
+                    <i class="fas fa-image me-1"></i> Chart
+                </div>
+                <img src="${question.imageUrl}" 
+                     alt="Aviation chart or diagram" 
+                     class="img-fluid"
+                     onerror="handleImageError(this)">
+                <div class="zoom-hint">
+                    <i class="fas fa-search-plus me-1"></i> Click to enlarge image
+                </div>
+            </div>
+        `;
+    }
+    
+    // Add answers
+    questionHTML += `
         <div class="answers mt-4">
             ${question.answers.map((answer, index) => `
                 <button class="answer-btn" onclick="selectAnswer(${index})">
-                    ${String.fromCharCode(65 + index)}) ${answer}
+                    <span class="fw-bold me-2" style="color: var(--primary-color);">
+                        ${String.fromCharCode(65 + index)})
+                    </span>
+                    <span>${answer}</span>
                 </button>
             `).join('')}
         </div>
-        <div id="explanation" class="explanation">
-            <strong><i class="fas fa-lightbulb"></i> Explanation:</strong>
-            <p class="mb-0 mt-2">${question.explanation}</p>
-        </div>
     `;
     
+    card.innerHTML = questionHTML;
     container.appendChild(card);
     
-    // Update UI counters
+    // Update navigation counters
     document.getElementById('currentQuestionNum').textContent = currentQuestionIndex + 1;
     document.getElementById('totalQuestions').textContent = currentQuestions.length;
     
     // Update navigation buttons
     document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
-    document.getElementById('nextBtn').textContent = 
-        currentQuestionIndex === currentQuestions.length - 1 ? 
-        'Finish <i class="fas fa-flag-checkered"></i>' : 
-        'Next <i class="fas fa-arrow-right"></i>';
     
-    // Reset answer selection
+    const isLastQuestion = currentQuestionIndex === currentQuestions.length - 1;
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.innerHTML = isLastQuestion 
+        ? 'Finish Category <i class="fas fa-flag-checkered"></i>' 
+        : 'Next <i class="fas fa-arrow-right"></i>';
+    
+    // Reset answer buttons
     resetAnswerButtons();
 }
 
+function handleImageError(img) {
+    img.src = 'https://via.placeholder.com/600x300/e0e7ff/0056a6?text=Chart+Not+Available';
+    img.style.border = '2px dashed #0056a6';
+    img.parentElement.querySelector('.zoom-hint').innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Image not available';
+}
+
+// ==================== ANSWER SELECTION ====================
 function selectAnswer(answerIndex) {
     const question = currentQuestions[currentQuestionIndex];
     const buttons = document.querySelectorAll('.answer-btn');
-    const explanation = document.getElementById('explanation');
     
-    // Mark correct/incorrect
+    // Disable all buttons to prevent multiple clicks
+    buttons.forEach(btn => btn.disabled = true);
+    
+    // Mark correct and incorrect answers
     buttons.forEach((btn, index) => {
         if (index === question.correct) {
             btn.classList.add('correct');
@@ -340,7 +425,6 @@ function selectAnswer(answerIndex) {
         if (index === answerIndex && index !== question.correct) {
             btn.classList.add('incorrect');
         }
-        btn.disabled = true;
     });
     
     // Update score
@@ -352,9 +436,6 @@ function selectAnswer(answerIndex) {
         score.total++;
         showNotification('Incorrect ✗', 'error');
     }
-    
-    // Show explanation
-    explanation.style.display = 'block';
     
     // Update UI
     updateScoreDisplay();
@@ -368,21 +449,16 @@ function resetAnswerButtons() {
         btn.classList.remove('correct', 'incorrect');
         btn.disabled = false;
     });
-    const explanation = document.getElementById('explanation');
-    if (explanation) {
-        explanation.style.display = 'none';
-    }
 }
 
-// ========== NAVIGATION ==========
+// ==================== NAVIGATION ====================
 function nextQuestion() {
     if (currentQuestionIndex < currentQuestions.length - 1) {
         currentQuestionIndex++;
         loadQuestion();
         updateProgress();
     } else {
-        // Last question - show completion message
-        showNotification('Quiz completed! Check your statistics below.', 'success');
+        showNotification('Category completed! Review your performance statistics.', 'success');
     }
 }
 
@@ -394,8 +470,10 @@ function previousQuestion() {
     }
 }
 
-// ========== SHUFFLING FUNCTIONS ==========
+// ==================== SHUFFLING FUNCTIONS ====================
 function shuffleQuestions() {
+    if (currentQuestions.length === 0) return;
+    
     shuffleArray(currentQuestions);
     currentQuestionIndex = 0;
     loadQuestion();
@@ -405,18 +483,20 @@ function shuffleQuestions() {
 function shuffleAnswers() {
     const question = currentQuestions[currentQuestionIndex];
     
-    // Store correct answer
+    // Store the correct answer text
     const correctAnswer = question.answers[question.correct];
     
     // Shuffle all answers
     const shuffledAnswers = [...question.answers];
     shuffleArray(shuffledAnswers);
     
-    // Update question with shuffled answers and new correct index
+    // Update question with shuffled answers
     question.answers = shuffledAnswers;
+    
+    // Find new position of correct answer
     question.correct = shuffledAnswers.indexOf(correctAnswer);
     
-    // Reload question
+    // Reload the question
     loadQuestion();
     showNotification('Answers shuffled!', 'info');
 }
@@ -429,14 +509,27 @@ function shuffleArray(array) {
     return array;
 }
 
-// ========== UI UPDATES ==========
+// ==================== IMAGE FUNCTIONS ====================
+function zoomImage(imageUrl) {
+    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    const modalImage = document.getElementById('modalImage');
+    
+    modalImage.src = imageUrl;
+    modalImage.alt = "Aviation chart - enlarged view";
+    
+    modal.show();
+}
+
+// ==================== UI UPDATES ====================
 function updateProgress() {
+    if (currentQuestions.length === 0) return;
+    
     const progress = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
-    document.getElementById('progressBar').style.width = `${progress}%`;
+    document.getElementById('progressFill').style.width = `${progress}%`;
 }
 
 function updateScoreDisplay() {
-    document.getElementById('scoreDisplay').textContent = `Score: ${score.correct}/${score.total}`;
+    document.getElementById('scoreValue').textContent = `${score.correct}/${score.total}`;
 }
 
 function updateStatistics() {
@@ -447,42 +540,20 @@ function updateStatistics() {
     const percentage = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
     document.getElementById('percentage').textContent = `${percentage}%`;
     
-    // Show statistics after first answer
     if (score.total > 0) {
         document.getElementById('statistics').style.display = 'block';
     }
 }
 
-// ========== NOTIFICATION SYSTEM ==========
+// ==================== NOTIFICATION SYSTEM ====================
 function showNotification(message, type = 'info') {
-    // Colors for different types
     const colors = {
         'success': '#28a745',
         'error': '#dc3545',
-        'info': '#17a2b8',
-        'warning': '#ffc107'
+        'info': '#0056a6',
+        'warning': '#ff9900'
     };
     
-    const color = colors[type] || colors['info'];
-    
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${color};
-        color: white;
-        padding: 15px 25px;
-        border-radius: 10px;
-        z-index: 1000;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        animation: slideIn 0.3s;
-        max-width: 400px;
-        font-weight: bold;
-    `;
-    
-    // Icon based on type
     const icons = {
         'success': 'fa-check-circle',
         'error': 'fa-times-circle',
@@ -490,80 +561,56 @@ function showNotification(message, type = 'info') {
         'warning': 'fa-exclamation-circle'
     };
     
+    const color = colors[type] || colors['info'];
     const icon = icons[type] || icons['info'];
-    notification.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+    
+    // Remove existing notifications
+    document.querySelectorAll('.custom-notification').forEach(el => el.remove());
+    
+    // Create notification
+    const notification = document.createElement('div');
+    notification.className = 'custom-notification';
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${color};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        z-index: 10000;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        animation: slideInRight 0.3s ease-out;
+        max-width: 400px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+    `;
+    
+    notification.innerHTML = `
+        <i class="fas ${icon} me-3" style="font-size: 20px;"></i>
+        <span>${message}</span>
+    `;
+    
     document.body.appendChild(notification);
     
-    // Remove after 3 seconds
+    // Auto-remove after 3 seconds
     setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s';
+        notification.style.animation = 'slideOutRight 0.3s ease-in';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
 }
 
-// ========== DEBUG FUNCTIONS ==========
-function debugQuestions() {
-    console.log("=== DEBUG INFORMATION ===");
-    console.log(`Total questions loaded: ${allQuestions.length}`);
-    console.log(`Current category: ${currentCategory}`);
-    console.log(`Questions in current category: ${currentQuestions.length}`);
-    console.log("All categories:", [...new Set(allQuestions.map(q => q.category))]);
-    
-    // Show in alert
-    const categories = [...new Set(allQuestions.map(q => q.category))];
-    const categoryCounts = categories.map(cat => {
-        const count = allQuestions.filter(q => q.category === cat).length;
-        return `${cat} (${count})`;
-    });
-    
-    alert(`Loaded ${allQuestions.length} questions\n\nCategories:\n${categoryCounts.join('\n')}`);
-}
-
-// ========== EXPORT/IMPORT FUNCTIONS ==========
-function exportQuestions() {
-    // Convert questions to CSV format
-    let csv = 'category,question,answer1,answer2,answer3,answer4,correct,explanation\n';
-    
-    allQuestions.forEach(q => {
-        const row = [
-            q.category,
-            q.question,
-            q.answers[0],
-            q.answers[1],
-            q.answers[2],
-            q.answers[3],
-            q.correct + 1, // Convert back to 1-based for CSV
-            q.explanation
-        ].map(field => `"${field.replace(/"/g, '""')}"`).join(',');
-        
-        csv += row + '\n';
-    });
-    
-    // Create download link
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `questions_backup_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-    
-    showNotification('Questions exported to CSV file!', 'success');
-}
-
-// ========== INITIALIZE CSS ANIMATIONS ==========
-// Add CSS for notifications if not already present
+// Add notification animations to page
 if (!document.querySelector('#notification-styles')) {
     const style = document.createElement('style');
     style.id = 'notification-styles';
     style.textContent = `
-        @keyframes slideIn {
+        @keyframes slideInRight {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
-        @keyframes slideOut {
+        @keyframes slideOutRight {
             from { transform: translateX(0); opacity: 1; }
             to { transform: translateX(100%); opacity: 0; }
         }
@@ -571,8 +618,21 @@ if (!document.querySelector('#notification-styles')) {
     document.head.appendChild(style);
 }
 
-// ========== ADMIN FUNCTIONS ==========
-// To add an admin panel later, uncomment this:
-// function showAdminPanel() {
-//     // Add admin functions here
-// }
+// ==================== BACK TO CATEGORIES ====================
+function backToCategories() {
+    document.getElementById('quizArea').style.display = 'none';
+    document.getElementById('categorySection').style.display = 'block';
+    document.getElementById('statistics').style.display = 'none';
+    
+    // Reset current category data
+    currentQuestions = [];
+    currentQuestionIndex = 0;
+    score = { correct: 0, total: 0 };
+    
+    showNotification('Returned to category selection', 'info');
+}
+
+// Add this button to your quiz area if needed
+// <button onclick="backToCategories()" class="btn btn-outline-secondary">
+//     <i class="fas fa-arrow-left"></i> Back to Categories
+// </button>
