@@ -1,5 +1,5 @@
 category,question,optionA,optionB,optionC,optionD,correct,image,explanation
-Flight Plan,Minimum IFR fuel requirement?,Fuel to destination,Fuel to destination + 30 min,Fuel to alternate + 30 min,Fuel to destination + alternate + 45 min,4,/images/Flight Plan/fuel-chart.png,FAR 91.167: Destination → Alternate → 45 min reserve
+Flight Plan,Minimum IFR fuel requirement?,Fuel to destination,Fuel to destination + 30 min,Fuel to alternate + 30 min,Fuel to destination + alternate + 45 min,4,/images/Flight Plan/site-1.jpg,FAR 91.167: Destination → Alternate → 45 min reserve
 Flight Plan,What information must be in an IFR flight plan?,Aircraft type & equipment,Only departure/destination,Pilot certificate number,Estimated time enroute only,1,,Required: Aircraft type, equipment suffix, departure, destination
 IFR Comms,Read back is required for?,All ATC communications,Only route clearances,Altitude assignments,Weather reports,3,/images/IFR Comms/readback-guide.png,Always read back altitude assignments, headings, runway assignments
 IFR Comms,How to acknowledge a clearance?,"Roger, wilco","Cessna 123AB cleared as filed",Affirmative,"Read back entire clearance",2,,Read back clearance with aircraft identification
