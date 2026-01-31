@@ -1,504 +1,412 @@
-// ==================== CONFIGURATION ====================
-const ACCESS_PASSWORD = "etihad2024";  // ← CHANGE THIS PASSWORD!
+// ==================== SYSTEM CONFIGURATION ====================
+const SYSTEM_PASSWORD = "etihad2024";  // CHANGE THIS TO YOUR PASSWORD
 
-// Your categories and their icons
-const CATEGORY_ICONS = {
-    "Flight Plan": "fa-route",
-    "IFR Comms": "fa-headset",
-    "Mass And Balance": "fa-weight-hanging",
-    "OPS": "fa-clipboard-check",
-    "Performance": "fa-chart-line",
-    "RNAV": "fa-satellite",
-    "VFR Comms": "fa-tower-broadcast"
+// Category Configuration - Matches YOUR folder structure
+const CATEGORY_CONFIG = {
+    "Flight Plan": {
+        icon: "fa-route",
+        color: "#0056a6"
+    },
+    "IFR Comms": {
+        icon: "fa-headset",
+        color: "#28a745"
+    },
+    "Mass And Balance": {
+        icon: "fa-weight-scale",
+        color: "#dc3545"
+    },
+    "OPS": {
+        icon: "fa-clipboard-check",
+        color: "#6f42c1"
+    },
+    "Performance": {
+        icon: "fa-chart-line",
+        color: "#fd7e14"
+    },
+    "RNAV": {
+        icon: "fa-satellite-dish",
+        color: "#17a2b8"
+    },
+    "VFR Comms": {
+        icon: "fa-tower-broadcast",
+        color: "#20c997"
+    }
 };
 
-// Default icon for new categories (if you add more later)
-const DEFAULT_ICON = "fa-folder";
-
-// Your questions data
+// Application State
 let allQuestions = [];
-let currentQuestions = [];
 let currentCategory = "";
+let categoryQuestions = [];
 let currentQuestionIndex = 0;
-let score = { correct: 0, total: 0 };
+let userScore = { correct: 0, attempted: 0 };
 
-// ==================== PASSWORD PROTECTION ====================
-function checkPassword() {
-    const input = document.getElementById('passwordInput').value;
-    const errorDiv = document.getElementById('passwordError');
+// ==================== ACCESS CONTROL ====================
+function verifyAccess() {
+    const password = document.getElementById('passwordField').value;
+    const errorDiv = document.getElementById('loginError');
     
-    if (input === ACCESS_PASSWORD) {
-        sessionStorage.setItem('quizAuthenticated', 'true');
-        document.getElementById('passwordScreen').style.display = 'none';
-        document.getElementById('quizInterface').style.display = 'block';
-        loadQuestions();
+    if (password === SYSTEM_PASSWORD) {
+        localStorage.setItem('aviation_access', 'granted');
+        showMainApplication();
     } else {
         errorDiv.style.display = 'block';
-        document.getElementById('passwordInput').classList.add('is-invalid');
+        document.getElementById('passwordField').classList.add('is-invalid');
         setTimeout(() => {
             errorDiv.style.display = 'none';
-            document.getElementById('passwordInput').classList.remove('is-invalid');
-        }, 3000);
+            document.getElementById('passwordField').classList.remove('is-invalid');
+        }, 2000);
     }
 }
 
-function logout() {
-    sessionStorage.removeItem('quizAuthenticated');
+function exitSystem() {
+    localStorage.removeItem('aviation_access');
     location.reload();
 }
 
-// Check if already authenticated
-window.onload = function() {
-    if (sessionStorage.getItem('quizAuthenticated') === 'true') {
-        document.getElementById('passwordScreen').style.display = 'none';
-        document.getElementById('quizInterface').style.display = 'block';
-        loadQuestions();
-    }
-};
+function showMainApplication() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    initializeSystem();
+}
 
-// ==================== QUESTION LOADING ====================
-async function loadQuestions() {
+// Check for existing access
+window.addEventListener('DOMContentLoaded', function() {
+    if (localStorage.getItem('aviation_access') === 'granted') {
+        showMainApplication();
+    }
+});
+
+// ==================== SYSTEM INITIALIZATION ====================
+async function initializeSystem() {
     try {
-        console.log("Loading questions from CSV...");
         const response = await fetch('questions.csv');
-        if (!response.ok) {
-            throw new Error(`CSV not found: ${response.status}`);
-        }
-        
-        const csvText = await response.text();
-        allQuestions = parseCSV(csvText);
-        
-        console.log(`Loaded ${allQuestions.length} questions from CSV`);
-        
-        if (allQuestions.length === 0) {
-            console.log("CSV is empty, loading sample questions...");
-            loadSampleQuestions();
+        if (response.ok) {
+            const csvData = await response.text();
+            allQuestions = processCSV(csvData);
+            updateQuestionCount();
+            displayCategories();
         } else {
-            // Update total questions count in footer
-            document.getElementById('totalQuestionsCount').textContent = allQuestions.length;
-            loadCategories();
+            loadSampleData();
         }
     } catch (error) {
-        console.error("Error loading CSV:", error);
-        console.log("Loading sample questions as fallback...");
-        loadSampleQuestions();
+        console.log("Loading sample data...");
+        loadSampleData();
     }
 }
 
-function parseCSV(csvText) {
+function processCSV(csvText) {
     const questions = [];
-    const lines = csvText.split('\n');
+    const rows = csvText.split('\n');
     
-    // Skip header line (first line)
-    for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (line === '' || line.startsWith('//')) continue;
+    // Skip header row
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i].trim();
+        if (!row) continue;
         
         try {
-            const columns = parseCSVLine(line);
-            
-            // We need at least 7 columns (category, question, 4 answers, correct)
+            const columns = parseCSVRow(row);
             if (columns.length >= 7) {
-                // Parse correct answer (1=A, 2=B, 3=C, 4=D) → convert to 0-based
-                let correctIndex = parseInt(columns[6]) - 1;
-                
-                // Validate correct index
-                if (isNaN(correctIndex) || correctIndex < 0 || correctIndex > 3) {
-                    console.warn(`Line ${i}: Invalid correct answer '${columns[6]}', defaulting to 0`);
-                    correctIndex = 0;
-                }
-                
-                // Get image URL (column 7) - optional
-                let imageUrl = columns[7] ? columns[7].trim() : "";
-                
-                // Fix image URL if it's relative
-                if (imageUrl && !imageUrl.startsWith('http') && imageUrl !== '') {
-                    if (!imageUrl.startsWith('/')) {
-                        imageUrl = '/' + imageUrl;
-                    }
-                }
-                
-                // Get explanation (column 8) - optional
-                const explanation = columns[8] ? columns[8].trim() : "";
-                
                 const question = {
-                    category: columns[0] ? columns[0].trim() : "General",
-                    question: columns[1] ? columns[1].trim() : "",
-                    answers: [
-                        columns[2] ? columns[2].trim() : "",
-                        columns[3] ? columns[3].trim() : "",
-                        columns[4] ? columns[4].trim() : "",
-                        columns[5] ? columns[5].trim() : ""
+                    category: columns[0].trim(),
+                    text: columns[1].trim(),
+                    options: [
+                        columns[2].trim(),
+                        columns[3].trim(),
+                        columns[4].trim(),
+                        columns[5].trim()
                     ],
-                    correct: correctIndex,
-                    imageUrl: imageUrl,
-                    explanation: explanation
+                    correct: parseInt(columns[6]) - 1, // Convert 1-4 to 0-3
+                    image: columns[7] ? columns[7].trim() : "",
+                    explanation: columns[8] ? columns[8].trim() : ""
                 };
                 
-                // Only add if we have a valid question
-                if (question.question && question.answers[0]) {
+                // Validate question
+                if (question.text && question.options[0] && 
+                    !isNaN(question.correct) && question.correct >= 0 && question.correct <= 3) {
                     questions.push(question);
                 }
             }
-        } catch (error) {
-            console.error(`Error parsing line ${i}:`, error);
+        } catch (e) {
+            console.warn("Skipping invalid row:", row);
         }
     }
     
     return questions;
 }
 
-function parseCSVLine(line) {
-    const columns = [];
+function parseCSVRow(row) {
+    const result = [];
     let current = '';
-    let insideQuotes = false;
+    let inQuotes = false;
     
-    for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        
+    for (let char of row) {
         if (char === '"') {
-            insideQuotes = !insideQuotes;
-        } else if (char === ',' && !insideQuotes) {
-            columns.push(current);
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(current);
             current = '';
         } else {
             current += char;
         }
     }
-    
-    // Add the last column
-    columns.push(current);
-    return columns;
+    result.push(current);
+    return result;
 }
 
-// Sample questions for testing
-function loadSampleQuestions() {
-    console.log("Loading sample aviation questions...");
-    
+function loadSampleData() {
     allQuestions = [
         {
             category: "Flight Plan",
-            question: "What is the minimum fuel required for an IFR flight?",
-            answers: ["Fuel to destination", "Fuel to destination + 45 minutes", "Fuel to alternate + 45 minutes", "Fuel to destination + alternate + 45 minutes"],
-            correct: 3,
-            imageUrl: "",
-            explanation: "FAR 91.167 requires fuel to fly to destination, then to alternate, plus 45 minutes reserve."
+            text: "Minimum IFR fuel includes:",
+            options: ["Destination only", "Destination + 30min", "Destination + Alternate + 45min", "At pilot's discretion"],
+            correct: 2,
+            image: "",
+            explanation: "FAR 91.167 requires fuel to destination, then alternate, plus 45 minutes reserve."
         },
         {
             category: "IFR Comms",
-            question: "When should you read back a clearance?",
-            answers: ["Only when requested", "Always for altitude assignments", "Only for route changes", "Always for all ATC instructions"],
-            correct: 1,
-            imageUrl: "/images/ifr-comms/clearance.png",
-            explanation: "Always read back altitude assignments, headings, and runway assignments."
+            text: "Read back is required for:",
+            options: ["All transmissions", "Only clearances", "Altitude assignments", "Weather reports"],
+            correct: 2,
+            image: "/images/ifr-comms/readback.png",
+            explanation: "Always read back altitude assignments and runway assignments."
         },
         {
             category: "Mass And Balance",
-            question: "What does the term 'arm' refer to in weight and balance?",
-            answers: ["Weight of an item", "Distance from datum", "Moment divided by weight", "Center of gravity limit"],
+            text: "Arm is defined as:",
+            options: ["Weight × Distance", "Distance from datum", "Moment ÷ Weight", "CG limit"],
             correct: 1,
-            imageUrl: "",
-            explanation: "Arm is the horizontal distance from the reference datum to the CG of an item."
+            image: "",
+            explanation: "Arm is the horizontal distance from the reference datum."
         },
         {
             category: "OPS",
-            question: "Minimum equipment for day VFR flight includes:",
-            answers: ["Fuel gauge, oil pressure, altimeter", "Airspeed, altimeter, magnetic compass", "Tachometer, oil temp, ammeter", "All of the above"],
+            text: "Night VFR requires:",
+            options: ["Position lights", "Anti-collision lights", "Landing light", "All of the above"],
             correct: 3,
-            imageUrl: "/images/ops/equipment.png",
-            explanation: "FAR 91.205 specifies required instruments and equipment."
+            image: "/images/ops/lights.png",
+            explanation: "FAR 91.205(c) requires all listed lighting equipment."
         },
         {
             category: "Performance",
-            question: "What affects takeoff distance the most?",
-            answers: ["Wind", "Temperature", "Pressure altitude", "All of the above"],
-            correct: 3,
-            imageUrl: "",
-            explanation: "All these factors significantly impact takeoff performance."
+            text: "Takeoff distance increases with:",
+            options: ["Headwind", "Tailwind", "Low temperature", "Low altitude"],
+            correct: 1,
+            image: "",
+            explanation: "Tailwind significantly increases takeoff distance."
         },
         {
             category: "RNAV",
-            question: "What is RNP 0.3?",
-            answers: ["RNAV approach", "Oceanic navigation", "Terminal procedure", "Enroute navigation"],
+            text: "RNP 0.3 is used for:",
+            options: ["RNAV approaches", "Oceanic navigation", "Enroute", "Departures"],
             correct: 0,
-            imageUrl: "/images/rnav/approach.png",
-            explanation: "RNP 0.3 is typically used for RNAV (RNP) approach procedures."
+            image: "/images/rnav/approach-chart.png",
+            explanation: "RNP 0.3 is typically for RNAV (RNP) approach procedures."
         },
         {
             category: "VFR Comms",
-            question: "How do you report position in the traffic pattern?",
-            answers: ["'Downwind'", "'Cessna 123AB downwind'", "'Traffic pattern downwind'", "'Position downwind'"],
+            text: "Correct position report:",
+            options: ["Downwind", "Cessna 123AB downwind", "Traffic pattern", "Position downwind"],
             correct: 1,
-            imageUrl: "",
+            image: "",
             explanation: "Always include aircraft identification when reporting position."
         }
     ];
     
-    // Update total count
-    document.getElementById('totalQuestionsCount').textContent = allQuestions.length;
-    loadCategories();
+    updateQuestionCount();
+    displayCategories();
 }
 
 // ==================== CATEGORY MANAGEMENT ====================
-function loadCategories() {
-    // Get all unique categories from questions
-    const categories = [...new Set(allQuestions.map(q => q.category))];
-    const container = document.getElementById('categoryButtons');
+function displayCategories() {
+    const container = document.getElementById('categoryGrid');
     container.innerHTML = '';
     
-    console.log(`Found ${categories.length} categories:`, categories);
-    
-    if (categories.length === 0) {
-        container.innerHTML = `
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle"></i> No categories found in questions.csv
-            </div>
-        `;
-        return;
-    }
-    
-    // Sort categories alphabetically
-    categories.sort();
-    
-    // Create a button for each category
-    categories.forEach(category => {
-        // Count questions in this category
-        const questionCount = allQuestions.filter(q => q.category === category).length;
-        
-        // Get icon for this category (or default)
-        const icon = CATEGORY_ICONS[category] || DEFAULT_ICON;
-        
-        // Create button
-        const button = document.createElement('button');
-        button.className = 'category-btn';
-        button.innerHTML = `
-            <div class="d-flex align-items-center">
-                <div class="category-icon">
-                    <i class="fas ${icon}"></i>
-                </div>
-                <div>
-                    <div class="fw-bold">${category}</div>
-                    <small class="text-muted">${questionCount} questions</small>
-                </div>
-            </div>
-        `;
-        
-        button.onclick = () => selectCategory(category);
-        container.appendChild(button);
+    // Count questions per category
+    const categoryStats = {};
+    allQuestions.forEach(q => {
+        categoryStats[q.category] = (categoryStats[q.category] || 0) + 1;
     });
+    
+    // Create category cards
+    Object.keys(CATEGORY_CONFIG).forEach(categoryName => {
+        const config = CATEGORY_CONFIG[categoryName];
+        const questionCount = categoryStats[categoryName] || 0;
+        
+        const card = document.createElement('div');
+        card.className = 'category-card';
+        card.innerHTML = `
+            <div class="category-icon" style="background: ${config.color};">
+                <i class="fas ${config.icon}"></i>
+            </div>
+            <h5 class="fw-bold mb-2">${categoryName}</h5>
+            <div class="mb-2">${questionCount} questions</div>
+            <small class="text-muted">Click to start</small>
+        `;
+        
+        card.onclick = () => startCategory(categoryName);
+        container.appendChild(card);
+    });
+    
+    // Update category count
+    document.getElementById('categoryCount').textContent = Object.keys(CATEGORY_CONFIG).length;
 }
 
-// ==================== CATEGORY SELECTION ====================
-function selectCategory(category) {
-    console.log(`Selected category: ${category}`);
-    
-    currentCategory = category;
-    
-    // Filter questions for this category
-    currentQuestions = allQuestions.filter(q => q.category === category);
+// ==================== QUIZ FUNCTIONS ====================
+function startCategory(categoryName) {
+    currentCategory = categoryName;
+    categoryQuestions = allQuestions.filter(q => q.category === categoryName);
     currentQuestionIndex = 0;
-    
-    // Reset score for new category
-    score = { correct: 0, total: 0 };
+    userScore = { correct: 0, attempted: 0 };
     
     // Update UI
     document.getElementById('categorySection').style.display = 'none';
-    document.getElementById('quizArea').style.display = 'block';
-    document.getElementById('categoryName').textContent = category;
-    document.getElementById('statistics').style.display = 'none';
+    document.getElementById('quizSection').style.display = 'block';
+    document.getElementById('statsSection').style.display = 'none';
+    document.getElementById('categoryNameDisplay').textContent = categoryName;
     
-    // Add CSS class for category-specific styling
-    const categoryClass = category.toLowerCase().replace(/\s+/g, '-');
-    document.getElementById('questionsContainer').className = categoryClass;
-    
-    // Shuffle questions initially
-    shuffleArray(currentQuestions);
+    // Randomize questions
+    shuffleArray(categoryQuestions);
     
     // Load first question
-    loadQuestion();
+    displayQuestion();
     updateProgress();
-    updateStatistics();
+    updateScoreDisplay();
     
-    // Show notification
-    showNotification(`Loaded ${currentQuestions.length} ${category} questions`, 'info');
+    showMessage(`Starting ${categoryName} training`, 'info');
 }
 
-// ==================== QUESTION DISPLAY ====================
-function loadQuestion() {
-    if (!currentQuestions || currentQuestions.length === 0) {
-        document.getElementById('questionsContainer').innerHTML = `
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle"></i> No questions available for this category.
-            </div>
-        `;
-        return;
-    }
+function displayQuestion() {
+    if (!categoryQuestions.length) return;
     
-    const question = currentQuestions[currentQuestionIndex];
-    const container = document.getElementById('questionsContainer');
+    const question = categoryQuestions[currentQuestionIndex];
+    const container = document.getElementById('questionDisplay');
     
-    // Clear previous question
-    container.innerHTML = '';
-    
-    const card = document.createElement('div');
-    card.className = 'question-card active-question';
-    
-    // Build question HTML
-    let questionHTML = `
-        <h4 class="mb-3">
-            <i class="fas fa-question-circle me-2" style="color: var(--primary-color);"></i>
-            ${question.question}
-        </h4>
+    let html = `
+        <div class="question-box active-question">
+            <h4 class="mb-3">${question.text}</h4>
     `;
     
-    // Add image if exists
-    if (question.imageUrl && question.imageUrl.trim() !== '') {
-        questionHTML += `
-            <div class="question-image" onclick="zoomImage('${question.imageUrl}')">
-                <div class="image-badge">
-                    <i class="fas fa-image me-1"></i> Chart
-                </div>
-                <img src="${question.imageUrl}" 
-                     alt="Aviation chart or diagram" 
-                     class="img-fluid"
-                     onerror="handleImageError(this)">
-                <div class="zoom-hint">
-                    <i class="fas fa-search-plus me-1"></i> Click to enlarge image
-                </div>
+    // Add image if available
+    if (question.image) {
+        html += `
+            <div class="chart-image" onclick="viewImage('${question.image}')">
+                <img src="${question.image}" alt="Aviation chart" 
+                     onerror="this.src='https://via.placeholder.com/600x300/e0e7ff/0056a6?text=Chart'">
+                <div class="image-label">Click to enlarge</div>
             </div>
         `;
     }
     
-    // Add answers
-    questionHTML += `
-        <div class="answers mt-4">
-            ${question.answers.map((answer, index) => `
-                <button class="answer-btn" onclick="selectAnswer(${index})">
-                    <span class="fw-bold me-2" style="color: var(--primary-color);">
-                        ${String.fromCharCode(65 + index)})
-                    </span>
-                    <span>${answer}</span>
-                </button>
-            `).join('')}
-        </div>
-    `;
+    // Add answer options
+    html += '<div class="mt-4">';
+    question.options.forEach((option, index) => {
+        const letter = String.fromCharCode(65 + index);
+        html += `
+            <button class="answer-option" onclick="selectAnswer(${index})">
+                <strong>${letter}.</strong> ${option}
+            </button>
+        `;
+    });
+    html += '</div></div>';
     
-    card.innerHTML = questionHTML;
-    container.appendChild(card);
+    container.innerHTML = html;
     
-    // Update navigation counters
-    document.getElementById('currentQuestionNum').textContent = currentQuestionIndex + 1;
-    document.getElementById('totalQuestions').textContent = currentQuestions.length;
+    // Update counters
+    document.getElementById('questionCounter').textContent = currentQuestionIndex + 1;
+    document.getElementById('totalCounter').textContent = categoryQuestions.length;
     
     // Update navigation buttons
-    document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
-    
-    const isLastQuestion = currentQuestionIndex === currentQuestions.length - 1;
-    const nextBtn = document.getElementById('nextBtn');
-    nextBtn.innerHTML = isLastQuestion 
-        ? 'Finish Category <i class="fas fa-flag-checkered"></i>' 
-        : 'Next <i class="fas fa-arrow-right"></i>';
-    
-    // Reset answer buttons
-    resetAnswerButtons();
+    document.getElementById('prevButton').disabled = currentQuestionIndex === 0;
+    document.getElementById('nextButton').textContent = 
+        currentQuestionIndex === categoryQuestions.length - 1 ? 'Finish' : 'Next';
 }
 
-function handleImageError(img) {
-    img.src = 'https://via.placeholder.com/600x300/e0e7ff/0056a6?text=Chart+Not+Available';
-    img.style.border = '2px dashed #0056a6';
-    img.parentElement.querySelector('.zoom-hint').innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Image not available';
-}
-
-// ==================== ANSWER SELECTION ====================
-function selectAnswer(answerIndex) {
-    const question = currentQuestions[currentQuestionIndex];
-    const buttons = document.querySelectorAll('.answer-btn');
+function selectAnswer(selectedIndex) {
+    const question = categoryQuestions[currentQuestionIndex];
+    const buttons = document.querySelectorAll('.answer-option');
     
-    // Disable all buttons to prevent multiple clicks
+    // Disable all buttons
     buttons.forEach(btn => btn.disabled = true);
     
     // Mark correct and incorrect answers
     buttons.forEach((btn, index) => {
         if (index === question.correct) {
-            btn.classList.add('correct');
+            btn.classList.add('answer-correct');
         }
-        if (index === answerIndex && index !== question.correct) {
-            btn.classList.add('incorrect');
+        if (index === selectedIndex && index !== question.correct) {
+            btn.classList.add('answer-incorrect');
         }
     });
     
     // Update score
-    if (answerIndex === question.correct) {
-        score.correct++;
-        score.total++;
-        showNotification('Correct! ✓', 'success');
-    } else if (answerIndex !== undefined) {
-        score.total++;
-        showNotification('Incorrect ✗', 'error');
+    userScore.attempted++;
+    if (selectedIndex === question.correct) {
+        userScore.correct++;
+        showMessage("Correct! ✓", "success");
+    } else {
+        showMessage("Incorrect ✗", "error");
     }
     
-    // Update UI
     updateScoreDisplay();
     updateStatistics();
     updateProgress();
 }
 
-function resetAnswerButtons() {
-    const buttons = document.querySelectorAll('.answer-btn');
-    buttons.forEach(btn => {
-        btn.classList.remove('correct', 'incorrect');
-        btn.disabled = false;
-    });
-}
-
-// ==================== NAVIGATION ====================
 function nextQuestion() {
-    if (currentQuestionIndex < currentQuestions.length - 1) {
+    if (currentQuestionIndex < categoryQuestions.length - 1) {
         currentQuestionIndex++;
-        loadQuestion();
+        displayQuestion();
         updateProgress();
     } else {
-        showNotification('Category completed! Review your performance statistics.', 'success');
+        showMessage("Category completed!", "success");
     }
 }
 
-function previousQuestion() {
+function prevQuestion() {
     if (currentQuestionIndex > 0) {
         currentQuestionIndex--;
-        loadQuestion();
+        displayQuestion();
         updateProgress();
     }
+}
+
+function backToCategories() {
+    document.getElementById('quizSection').style.display = 'none';
+    document.getElementById('categorySection').style.display = 'block';
+    document.getElementById('statsSection').style.display = 'none';
+    showMessage("Returned to category selection", "info");
 }
 
 // ==================== SHUFFLING FUNCTIONS ====================
-function shuffleQuestions() {
-    if (currentQuestions.length === 0) return;
+function randomizeQuestions() {
+    if (!categoryQuestions.length) return;
     
-    shuffleArray(currentQuestions);
+    shuffleArray(categoryQuestions);
     currentQuestionIndex = 0;
-    loadQuestion();
-    showNotification('Questions shuffled!', 'info');
+    displayQuestion();
+    showMessage("Questions randomized", "info");
 }
 
-function shuffleAnswers() {
-    const question = currentQuestions[currentQuestionIndex];
+function randomizeAnswers() {
+    if (!categoryQuestions.length) return;
     
-    // Store the correct answer text
-    const correctAnswer = question.answers[question.correct];
+    const question = categoryQuestions[currentQuestionIndex];
     
-    // Shuffle all answers
-    const shuffledAnswers = [...question.answers];
-    shuffleArray(shuffledAnswers);
+    // Save correct answer
+    const correctAnswer = question.options[question.correct];
     
-    // Update question with shuffled answers
-    question.answers = shuffledAnswers;
+    // Shuffle all options
+    const shuffled = [...question.options];
+    shuffleArray(shuffled);
     
-    // Find new position of correct answer
-    question.correct = shuffledAnswers.indexOf(correctAnswer);
+    // Update question
+    question.options = shuffled;
+    question.correct = shuffled.indexOf(correctAnswer);
     
-    // Reload the question
-    loadQuestion();
-    showNotification('Answers shuffled!', 'info');
+    // Redisplay
+    displayQuestion();
+    showMessage("Answers randomized", "info");
 }
 
 function shuffleArray(array) {
@@ -510,129 +418,95 @@ function shuffleArray(array) {
 }
 
 // ==================== IMAGE FUNCTIONS ====================
-function zoomImage(imageUrl) {
-    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
-    const modalImage = document.getElementById('modalImage');
-    
-    modalImage.src = imageUrl;
-    modalImage.alt = "Aviation chart - enlarged view";
-    
+function viewImage(imageUrl) {
+    const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
+    document.getElementById('enlargedImage').src = imageUrl;
     modal.show();
 }
 
 // ==================== UI UPDATES ====================
 function updateProgress() {
-    if (currentQuestions.length === 0) return;
+    if (!categoryQuestions.length) return;
     
-    const progress = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
-    document.getElementById('progressFill').style.width = `${progress}%`;
+    const progress = ((currentQuestionIndex + 1) / categoryQuestions.length) * 100;
+    document.getElementById('progressIndicator').style.width = `${progress}%`;
 }
 
 function updateScoreDisplay() {
-    document.getElementById('scoreValue').textContent = `${score.correct}/${score.total}`;
+    document.getElementById('scoreValue').textContent = 
+        `${userScore.correct}/${userScore.attempted}`;
 }
 
 function updateStatistics() {
-    document.getElementById('correctCount').textContent = score.correct;
-    document.getElementById('incorrectCount').textContent = score.total - score.correct;
-    document.getElementById('answeredCount').textContent = score.total;
+    document.getElementById('correctAnswers').textContent = userScore.correct;
+    document.getElementById('incorrectAnswers').textContent = userScore.attempted - userScore.correct;
+    document.getElementById('totalAnswered').textContent = userScore.attempted;
     
-    const percentage = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
-    document.getElementById('percentage').textContent = `${percentage}%`;
+    const accuracy = userScore.attempted > 0 
+        ? Math.round((userScore.correct / userScore.attempted) * 100) 
+        : 0;
+    document.getElementById('accuracyRate').textContent = `${accuracy}%`;
     
-    if (score.total > 0) {
-        document.getElementById('statistics').style.display = 'block';
+    if (userScore.attempted > 0) {
+        document.getElementById('statsSection').style.display = 'block';
     }
 }
 
-// ==================== NOTIFICATION SYSTEM ====================
-function showNotification(message, type = 'info') {
-    const colors = {
-        'success': '#28a745',
-        'error': '#dc3545',
-        'info': '#0056a6',
-        'warning': '#ff9900'
-    };
+function updateQuestionCount() {
+    document.getElementById('questionCount').textContent = allQuestions.length;
+}
+
+// ==================== MESSAGING ====================
+function showMessage(text, type = 'info') {
+    // Remove existing messages
+    const existing = document.querySelector('.system-message');
+    if (existing) existing.remove();
     
-    const icons = {
-        'success': 'fa-check-circle',
-        'error': 'fa-times-circle',
-        'info': 'fa-info-circle',
-        'warning': 'fa-exclamation-circle'
-    };
-    
-    const color = colors[type] || colors['info'];
-    const icon = icons[type] || icons['info'];
-    
-    // Remove existing notifications
-    document.querySelectorAll('.custom-notification').forEach(el => el.remove());
-    
-    // Create notification
-    const notification = document.createElement('div');
-    notification.className = 'custom-notification';
-    notification.style.cssText = `
+    // Create message
+    const message = document.createElement('div');
+    message.className = 'system-message';
+    message.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        background: ${color};
+        background: ${type === 'success' ? '#28a745' : 
+                     type === 'error' ? '#dc3545' : 
+                     '#0056a6'};
         color: white;
-        padding: 15px 25px;
-        border-radius: 8px;
-        z-index: 10000;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-        animation: slideInRight 0.3s ease-out;
-        max-width: 400px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
+        padding: 12px 20px;
+        border-radius: 6px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 1000;
+        animation: slideIn 0.3s;
+        max-width: 300px;
     `;
     
-    notification.innerHTML = `
-        <i class="fas ${icon} me-3" style="font-size: 20px;"></i>
-        <span>${message}</span>
-    `;
+    const icon = type === 'success' ? 'fa-check' : 
+                 type === 'error' ? 'fa-times' : 'fa-info';
+    message.innerHTML = `<i class="fas ${icon} me-2"></i>${text}`;
     
-    document.body.appendChild(notification);
+    document.body.appendChild(message);
     
-    // Auto-remove after 3 seconds
+    // Auto-remove
     setTimeout(() => {
-        notification.style.animation = 'slideOutRight 0.3s ease-in';
-        setTimeout(() => notification.remove(), 300);
+        message.style.animation = 'slideOut 0.3s';
+        setTimeout(() => message.remove(), 300);
     }, 3000);
 }
 
-// Add notification animations to page
-if (!document.querySelector('#notification-styles')) {
+// Add animation styles
+if (!document.querySelector('#animations')) {
     const style = document.createElement('style');
-    style.id = 'notification-styles';
+    style.id = 'animations';
     style.textContent = `
-        @keyframes slideInRight {
+        @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
-        @keyframes slideOutRight {
+        @keyframes slideOut {
             from { transform: translateX(0); opacity: 1; }
             to { transform: translateX(100%); opacity: 0; }
         }
     `;
     document.head.appendChild(style);
 }
-
-// ==================== BACK TO CATEGORIES ====================
-function backToCategories() {
-    document.getElementById('quizArea').style.display = 'none';
-    document.getElementById('categorySection').style.display = 'block';
-    document.getElementById('statistics').style.display = 'none';
-    
-    // Reset current category data
-    currentQuestions = [];
-    currentQuestionIndex = 0;
-    score = { correct: 0, total: 0 };
-    
-    showNotification('Returned to category selection', 'info');
-}
-
-// Add this button to your quiz area if needed
-// <button onclick="backToCategories()" class="btn btn-outline-secondary">
-//     <i class="fas fa-arrow-left"></i> Back to Categories
-// </button>
