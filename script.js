@@ -1,7 +1,7 @@
 // ==================== SYSTEM CONFIGURATION ====================
 const SYSTEM_PASSWORD = "etihad2026";  // CHANGE THIS TO YOUR PASSWORD
 
-// Category Configuration - Matches YOUR folder structure
+// Category Configuration - Matches YOUR EXACT folder structure
 const CATEGORY_CONFIG = {
     "Flight Plan": {
         icon: "fa-route",
@@ -106,6 +106,13 @@ function processCSV(csvText) {
         try {
             const columns = parseCSVRow(row);
             if (columns.length >= 7) {
+                // Clean up image path - handle spaces
+                let imagePath = columns[7] ? columns[7].trim() : "";
+                if (imagePath) {
+                    // Encode spaces for URL
+                    imagePath = encodeURI(imagePath);
+                }
+                
                 const question = {
                     category: columns[0].trim(),
                     text: columns[1].trim(),
@@ -115,8 +122,8 @@ function processCSV(csvText) {
                         columns[4].trim(),
                         columns[5].trim()
                     ],
-                    correct: parseInt(columns[6]) - 1, // Convert 1-4 to 0-3
-                    image: columns[7] ? columns[7].trim() : "",
+                    correct: parseInt(columns[6]) - 1,
+                    image: imagePath,
                     explanation: columns[8] ? columns[8].trim() : ""
                 };
                 
@@ -160,7 +167,7 @@ function loadSampleData() {
             text: "Minimum IFR fuel includes:",
             options: ["Destination only", "Destination + 30min", "Destination + Alternate + 45min", "At pilot's discretion"],
             correct: 2,
-            image: "",
+            image: encodeURI("/images/Flight Plan/fuel-sample.png"),
             explanation: "FAR 91.167 requires fuel to destination, then alternate, plus 45 minutes reserve."
         },
         {
@@ -168,48 +175,8 @@ function loadSampleData() {
             text: "Read back is required for:",
             options: ["All transmissions", "Only clearances", "Altitude assignments", "Weather reports"],
             correct: 2,
-            image: "/images/ifr-comms/readback.png",
+            image: encodeURI("/images/IFR Comms/comms-sample.png"),
             explanation: "Always read back altitude assignments and runway assignments."
-        },
-        {
-            category: "Mass And Balance",
-            text: "Arm is defined as:",
-            options: ["Weight × Distance", "Distance from datum", "Moment ÷ Weight", "CG limit"],
-            correct: 1,
-            image: "",
-            explanation: "Arm is the horizontal distance from the reference datum."
-        },
-        {
-            category: "OPS",
-            text: "Night VFR requires:",
-            options: ["Position lights", "Anti-collision lights", "Landing light", "All of the above"],
-            correct: 3,
-            image: "/images/ops/lights.png",
-            explanation: "FAR 91.205(c) requires all listed lighting equipment."
-        },
-        {
-            category: "Performance",
-            text: "Takeoff distance increases with:",
-            options: ["Headwind", "Tailwind", "Low temperature", "Low altitude"],
-            correct: 1,
-            image: "",
-            explanation: "Tailwind significantly increases takeoff distance."
-        },
-        {
-            category: "RNAV",
-            text: "RNP 0.3 is used for:",
-            options: ["RNAV approaches", "Oceanic navigation", "Enroute", "Departures"],
-            correct: 0,
-            image: "/images/rnav/approach-chart.png",
-            explanation: "RNP 0.3 is typically for RNAV (RNP) approach procedures."
-        },
-        {
-            category: "VFR Comms",
-            text: "Correct position report:",
-            options: ["Downwind", "Cessna 123AB downwind", "Traffic pattern", "Position downwind"],
-            correct: 1,
-            image: "",
-            explanation: "Always include aircraft identification when reporting position."
         }
     ];
     
@@ -289,10 +256,12 @@ function displayQuestion() {
     
     // Add image if available
     if (question.image) {
+        // Decode for display but keep encoded for onclick
+        const displayImage = decodeURI(question.image);
         html += `
             <div class="chart-image" onclick="viewImage('${question.image}')">
-                <img src="${question.image}" alt="Aviation chart" 
-                     onerror="this.src='https://via.placeholder.com/600x300/e0e7ff/0056a6?text=Chart'">
+                <img src="${displayImage}" alt="Aviation chart" 
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/600x300/e0e7ff/0056a6?text=Chart+Not+Found'">
                 <div class="image-label">Click to enlarge</div>
             </div>
         `;
@@ -420,7 +389,8 @@ function shuffleArray(array) {
 // ==================== IMAGE FUNCTIONS ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
-    document.getElementById('enlargedImage').src = imageUrl;
+    // Decode URL for display
+    document.getElementById('enlargedImage').src = decodeURI(imageUrl);
     modal.show();
 }
 
