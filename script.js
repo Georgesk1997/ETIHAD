@@ -39,6 +39,8 @@ let currentCategory = "";
 let categoryQuestions = [];
 let currentQuestionIndex = 0;
 let userScore = { correct: 0, attempted: 0 };
+// Store shuffled state for each question
+let questionShuffledState = new Map();
 
 // ==================== ACCESS CONTROL ====================
 function verifyAccess() {
@@ -155,22 +157,30 @@ function processCSV(csvText) {
                 }
                 
                 const question = {
+                    id: `q${i}`, // Unique ID for each question
                     category: columns[0].trim(),
                     text: columns[1].trim(),
-                    options: [
+                    originalOptions: [
                         columns[2].trim(),
                         columns[3].trim(),
                         columns[4].trim(),
                         columns[5].trim()
                     ],
-                    correct: correctIndex,
+                    originalCorrect: correctIndex,
                     image: imagePath,
-                    explanation: explanation
+                    explanation: explanation,
+                    // These will be updated when answers are shuffled
+                    currentOptions: null,
+                    currentCorrect: null
                 };
                 
+                // Initialize with original order
+                question.currentOptions = [...question.originalOptions];
+                question.currentCorrect = question.originalCorrect;
+                
                 // Validate required fields
-                if (question.text && question.options[0] && 
-                    !isNaN(question.correct)) {
+                if (question.text && question.originalOptions[0] && 
+                    !isNaN(question.originalCorrect)) {
                     questions.push(question);
                 } else {
                     console.warn(`Skipping invalid question on line ${i}`);
@@ -189,30 +199,45 @@ function loadSampleData() {
     console.log("Loading sample questions...");
     allQuestions = [
         {
+            id: "q1",
             category: "Flight Plan",
             text: "What does this flight planning chart show?",
-            options: ["Standard instrument departure", "Enroute navigation chart", "Standard terminal arrival", "Weather minimums chart"],
-            correct: 0,
+            originalOptions: ["Standard instrument departure", "Enroute navigation chart", "Standard terminal arrival", "Weather minimums chart"],
+            originalCorrect: 0,
             image: "/images/Flight Plan/site-1.jpg",
-            explanation: "This is a Standard Instrument Departure (SID) chart."
+            explanation: "This is a Standard Instrument Departure (SID) chart.",
+            currentOptions: null,
+            currentCorrect: null
         },
         {
+            id: "q2",
             category: "Flight Plan",
             text: "What is the minimum fuel required for an IFR flight?",
-            options: ["Fuel to destination only", "Fuel to destination plus 30 minutes", "Fuel to alternate plus 30 minutes", "Fuel to destination plus alternate plus 45 minutes"],
-            correct: 3,
+            originalOptions: ["Fuel to destination only", "Fuel to destination plus 30 minutes", "Fuel to alternate plus 30 minutes", "Fuel to destination plus alternate plus 45 minutes"],
+            originalCorrect: 3,
             image: "",
-            explanation: "FAR 91.167 requires fuel to destination, then to alternate, plus 45 minutes reserve."
+            explanation: "FAR 91.167 requires fuel to destination, then to alternate, plus 45 minutes reserve.",
+            currentOptions: null,
+            currentCorrect: null
         },
         {
+            id: "q3",
             category: "IFR Comms",
             text: "What phrase should be used to acknowledge an altitude assignment?",
-            options: ["Roger, climbing", "Climbing to assigned altitude", "Cessna 123AB climbing to 5000", "Wilco, climbing"],
-            correct: 2,
+            originalOptions: ["Roger, climbing", "Climbing to assigned altitude", "Cessna 123AB climbing to 5000", "Wilco, climbing"],
+            originalCorrect: 2,
             image: "",
-            explanation: "Always include aircraft identification when acknowledging assignments."
+            explanation: "Always include aircraft identification when acknowledging assignments.",
+            currentOptions: null,
+            currentCorrect: null
         }
     ];
+    
+    // Initialize current options
+    allQuestions.forEach(q => {
+        q.currentOptions = [...q.originalOptions];
+        q.currentCorrect = q.originalCorrect;
+    });
     
     console.log(`Loaded ${allQuestions.length} sample questions`);
     updateQuestionCount();
@@ -266,8 +291,12 @@ function startCategory(categoryName) {
     categoryQuestions = allQuestions.filter(q => q.category === categoryName);
     currentQuestionIndex = 0;
     userScore = { correct: 0, attempted: 0 };
+    questionShuffledState.clear();
     
     console.log(`Found ${categoryQuestions.length} questions for ${categoryName}`);
+    
+    // Shuffle questions AND shuffle answers for each question
+    shuffleQuestionsAndAnswers();
     
     // Update UI
     document.getElementById('categorySection').style.display = 'none';
@@ -275,15 +304,52 @@ function startCategory(categoryName) {
     document.getElementById('statsSection').style.display = 'none';
     document.getElementById('categoryNameDisplay').textContent = categoryName;
     
-    // Randomize questions
-    shuffleArray(categoryQuestions);
-    
     // Load first question
     displayQuestion();
     updateProgress();
     updateScoreDisplay();
     
     showMessage(`Starting ${categoryName} - ${categoryQuestions.length} questions`, 'info');
+}
+
+function shuffleQuestionsAndAnswers() {
+    if (!categoryQuestions.length) return;
+    
+    // 1. Shuffle the order of questions
+    shuffleArray(categoryQuestions);
+    
+    // 2. Shuffle answers for EACH question independently
+    categoryQuestions.forEach((question, index) => {
+        shuffleQuestionAnswers(question);
+    });
+    
+    console.log("Shuffled questions and answers");
+}
+
+function shuffleQuestionAnswers(question) {
+    if (!question) return;
+    
+    // Save the correct answer text
+    const correctAnswerText = question.originalOptions[question.originalCorrect];
+    
+    // Shuffle the original options
+    const shuffledOptions = [...question.originalOptions];
+    shuffleArray(shuffledOptions);
+    
+    // Find the new position of the correct answer
+    const newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+    
+    // Update question with shuffled state
+    question.currentOptions = shuffledOptions;
+    question.currentCorrect = newCorrectIndex;
+    
+    // Store in shuffled state map
+    questionShuffledState.set(question.id, {
+        options: [...shuffledOptions],
+        correct: newCorrectIndex
+    });
+    
+    return question;
 }
 
 function displayQuestion() {
@@ -301,6 +367,8 @@ function displayQuestion() {
     const container = document.getElementById('questionDisplay');
     
     console.log(`Displaying question ${currentQuestionIndex + 1}:`, question.text.substring(0, 50) + "...");
+    console.log("Current options:", question.currentOptions);
+    console.log("Correct answer index:", question.currentCorrect, "Answer:", question.currentOptions[question.currentCorrect]);
     
     let html = `
         <div class="question-box active-question">
@@ -320,9 +388,9 @@ function displayQuestion() {
         `;
     }
     
-    // Add answer options
+    // Add answer options (using CURRENT shuffled options)
     html += '<div class="mt-4">';
-    question.options.forEach((option, index) => {
+    question.currentOptions.forEach((option, index) => {
         const letter = String.fromCharCode(65 + index);
         html += `
             <button class="answer-option" onclick="selectAnswer(${index})">
@@ -363,24 +431,26 @@ function selectAnswer(selectedIndex) {
     const question = categoryQuestions[currentQuestionIndex];
     const buttons = document.querySelectorAll('.answer-option');
     
-    console.log(`Selected answer ${selectedIndex}, correct is ${question.correct}`);
+    console.log(`Selected answer ${selectedIndex}, correct is ${question.currentCorrect}`);
+    console.log("Selected text:", question.currentOptions[selectedIndex]);
+    console.log("Correct text:", question.currentOptions[question.currentCorrect]);
     
     // Disable all buttons
     buttons.forEach(btn => btn.disabled = true);
     
     // Mark correct and incorrect answers
     buttons.forEach((btn, index) => {
-        if (index === question.correct) {
+        if (index === question.currentCorrect) {
             btn.classList.add('answer-correct');
         }
-        if (index === selectedIndex && index !== question.correct) {
+        if (index === selectedIndex && index !== question.currentCorrect) {
             btn.classList.add('answer-incorrect');
         }
     });
     
     // Update score
     userScore.attempted++;
-    if (selectedIndex === question.correct) {
+    if (selectedIndex === question.currentCorrect) {
         userScore.correct++;
         showMessage("Correct! ✓", "success");
     } else {
@@ -429,10 +499,11 @@ function backToCategories() {
 function randomizeQuestions() {
     if (!categoryQuestions.length) return;
     
-    shuffleArray(categoryQuestions);
+    // Shuffle questions AND reshuffle all answers
+    shuffleQuestionsAndAnswers();
     currentQuestionIndex = 0;
     displayQuestion();
-    showMessage("Questions shuffled", "info");
+    showMessage("Questions and answers shuffled!", "info");
 }
 
 function randomizeAnswers() {
@@ -440,20 +511,12 @@ function randomizeAnswers() {
     
     const question = categoryQuestions[currentQuestionIndex];
     
-    // Save correct answer
-    const correctAnswer = question.options[question.correct];
-    
-    // Shuffle all options
-    const shuffled = [...question.options];
-    shuffleArray(shuffled);
-    
-    // Update question
-    question.options = shuffled;
-    question.correct = shuffled.indexOf(correctAnswer);
+    // Reshuffle answers for this specific question
+    shuffleQuestionAnswers(question);
     
     // Redisplay
     displayQuestion();
-    showMessage("Answers shuffled", "info");
+    showMessage("Answers shuffled for this question", "info");
 }
 
 function shuffleArray(array) {
@@ -575,17 +638,23 @@ window.debugInfo = function() {
     console.log('Total questions:', allQuestions.length);
     console.log('Current category:', currentCategory);
     console.log('Category questions:', categoryQuestions.length);
-    console.log('All questions:', allQuestions);
-    console.log('Category stats:');
-    const stats = {};
-    allQuestions.forEach(q => {
-        stats[q.category] = (stats[q.category] || 0) + 1;
-    });
-    console.log(stats);
+    console.log('Current question index:', currentQuestionIndex);
+    
+    if (categoryQuestions.length > 0 && currentQuestionIndex < categoryQuestions.length) {
+        const currentQ = categoryQuestions[currentQuestionIndex];
+        console.log('Current question:', currentQ.text);
+        console.log('Original options:', currentQ.originalOptions);
+        console.log('Original correct index:', currentQ.originalCorrect, 'Answer:', currentQ.originalOptions[currentQ.originalCorrect]);
+        console.log('Current options:', currentQ.currentOptions);
+        console.log('Current correct index:', currentQ.currentCorrect, 'Answer:', currentQ.currentOptions[currentQ.currentCorrect]);
+    }
     
     // Show in alert
-    const categories = Object.keys(stats);
+    const categories = {};
+    allQuestions.forEach(q => {
+        categories[q.category] = (categories[q.category] || 0) + 1;
+    });
     const message = `Loaded ${allQuestions.length} questions\n\n` +
-                   categories.map(cat => `${cat}: ${stats[cat]} questions`).join('\n');
+                   Object.keys(categories).map(cat => `${cat}: ${categories[cat]} questions`).join('\n');
     alert(message);
 };
