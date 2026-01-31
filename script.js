@@ -145,10 +145,20 @@ function parseCSVRow(row) {
     const result = [];
     let current = '';
     let inQuotes = false;
+    let quoteChar = '';
     
-    for (let char of row) {
-        if (char === '"') {
-            inQuotes = !inQuotes;
+    for (let i = 0; i < row.length; i++) {
+        const char = row[i];
+        
+        if ((char === '"' || char === "'") && (row[i-1] !== '\\')) {
+            if (!inQuotes) {
+                inQuotes = true;
+                quoteChar = char;
+            } else if (char === quoteChar) {
+                inQuotes = false;
+            } else {
+                current += char;
+            }
         } else if (char === ',' && !inQuotes) {
             result.push(current);
             current = '';
@@ -156,10 +166,23 @@ function parseCSVRow(row) {
             current += char;
         }
     }
+    
+    // Add the last column
     result.push(current);
-    return result;
+    
+    // Clean up quotes
+    return result.map(col => {
+        col = col.trim();
+        // Remove surrounding quotes
+        if ((col.startsWith('"') && col.endsWith('"')) || 
+            (col.startsWith("'") && col.endsWith("'"))) {
+            col = col.substring(1, col.length - 1);
+        }
+        // Unescape double quotes
+        col = col.replace(/""/g, '"');
+        return col;
+    });
 }
-
 function loadSampleData() {
     allQuestions = [
         {
