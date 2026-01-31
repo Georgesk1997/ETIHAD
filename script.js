@@ -1,7 +1,4 @@
-// ==================== SYSTEM CONFIGURATION ====================
-const SYSTEM_PASSWORD = "etihad2026";  // CHANGE THIS TO YOUR PASSWORD
-
-// Category Configuration - Matches YOUR EXACT folder structure
+// ==================== CATEGORY CONFIGURATION ====================
 const CATEGORY_CONFIG = {
     "Flight Plan": {
         icon: "fa-route",
@@ -39,70 +36,37 @@ let currentCategory = "";
 let categoryQuestions = [];
 let currentQuestionIndex = 0;
 let userScore = { correct: 0, attempted: 0 };
-// Store shuffled state for each question
 let questionShuffledState = new Map();
 
-// ==================== ACCESS CONTROL ====================
-function verifyAccess() {
-    const password = document.getElementById('passwordField').value;
-    const errorDiv = document.getElementById('loginError');
-    
-    if (password === SYSTEM_PASSWORD) {
-        localStorage.setItem('aviation_access', 'granted');
-        showMainApplication();
-    } else {
-        errorDiv.style.display = 'block';
-        document.getElementById('passwordField').classList.add('is-invalid');
-        setTimeout(() => {
-            errorDiv.style.display = 'none';
-            document.getElementById('passwordField').classList.remove('is-invalid');
-        }, 2000);
-    }
-}
-
-function exitSystem() {
-    localStorage.removeItem('aviation_access');
-    location.reload();
-}
-
-function showMainApplication() {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-    initializeSystem();
-}
-
-// Check for existing access
+// ==================== INITIALIZATION ====================
 window.addEventListener('DOMContentLoaded', function() {
-    if (localStorage.getItem('aviation_access') === 'granted') {
-        showMainApplication();
-    }
+    console.log("ETIHAD CP Aviation System Initializing...");
+    initializeSystem();
 });
 
 // ==================== SYSTEM INITIALIZATION ====================
 async function initializeSystem() {
-    console.log("Initializing system...");
+    console.log("Loading questions database...");
     try {
         const response = await fetch('questions.csv');
         if (response.ok) {
             const csvData = await response.text();
-            console.log("CSV loaded successfully");
             allQuestions = processCSV(csvData);
-            console.log(`Processed ${allQuestions.length} questions`);
+            console.log(`✓ Loaded ${allQuestions.length} questions`);
             updateQuestionCount();
             displayCategories();
+            showMessage("System ready. Select a category to begin.", "success");
         } else {
-            console.log("CSV not found, loading sample data");
+            console.log("CSV file not found, loading sample data");
             loadSampleData();
         }
     } catch (error) {
-        console.error("Error loading CSV:", error);
-        console.log("Loading sample data as fallback");
+        console.error("Error loading questions:", error);
         loadSampleData();
     }
 }
 
 function processCSV(csvText) {
-    console.log("Processing CSV data...");
     const questions = [];
     const rows = csvText.split('\n');
     
@@ -112,7 +76,6 @@ function processCSV(csvText) {
         if (!row || row === '') continue;
         
         try {
-            // Simple CSV parsing - split by comma but handle quotes
             const columns = [];
             let current = '';
             let inQuotes = false;
@@ -129,35 +92,27 @@ function processCSV(csvText) {
             }
             columns.push(current);
             
-            // We need at least 7 columns (category, question, 4 answers, correct)
             if (columns.length >= 7) {
-                // Parse correct answer (1-4 to 0-3)
                 let correctIndex = parseInt(columns[6].trim()) - 1;
                 if (isNaN(correctIndex) || correctIndex < 0 || correctIndex > 3) {
-                    console.warn(`Invalid correct answer on line ${i}: ${columns[6]}`);
                     correctIndex = 0;
                 }
                 
-                // Clean up image path
                 let imagePath = '';
                 if (columns.length > 7 && columns[7]) {
                     imagePath = columns[7].trim();
-                    if (imagePath) {
-                        // Ensure proper path format
-                        if (!imagePath.startsWith('/')) {
-                            imagePath = '/' + imagePath;
-                        }
+                    if (imagePath && !imagePath.startsWith('/')) {
+                        imagePath = '/' + imagePath;
                     }
                 }
                 
-                // Get explanation if exists
                 let explanation = '';
                 if (columns.length > 8 && columns[8]) {
                     explanation = columns[8].trim();
                 }
                 
                 const question = {
-                    id: `q${i}`, // Unique ID for each question
+                    id: `q${i}`,
                     category: columns[0].trim(),
                     text: columns[1].trim(),
                     originalOptions: [
@@ -169,21 +124,15 @@ function processCSV(csvText) {
                     originalCorrect: correctIndex,
                     image: imagePath,
                     explanation: explanation,
-                    // These will be updated when answers are shuffled
                     currentOptions: null,
                     currentCorrect: null
                 };
                 
-                // Initialize with original order
                 question.currentOptions = [...question.originalOptions];
                 question.currentCorrect = question.originalCorrect;
                 
-                // Validate required fields
-                if (question.text && question.originalOptions[0] && 
-                    !isNaN(question.originalCorrect)) {
+                if (question.text && question.originalOptions[0]) {
                     questions.push(question);
-                } else {
-                    console.warn(`Skipping invalid question on line ${i}`);
                 }
             }
         } catch (e) {
@@ -191,12 +140,12 @@ function processCSV(csvText) {
         }
     }
     
-    console.log(`Successfully parsed ${questions.length} questions`);
     return questions;
 }
 
 function loadSampleData() {
-    console.log("Loading sample questions...");
+    console.log("Loading sample aviation questions...");
+    
     allQuestions = [
         {
             id: "q1",
@@ -233,15 +182,14 @@ function loadSampleData() {
         }
     ];
     
-    // Initialize current options
     allQuestions.forEach(q => {
         q.currentOptions = [...q.originalOptions];
         q.currentCorrect = q.originalCorrect;
     });
     
-    console.log(`Loaded ${allQuestions.length} sample questions`);
     updateQuestionCount();
     displayCategories();
+    showMessage("Loaded sample questions. Upload questions.csv for your full database.", "info");
 }
 
 // ==================== CATEGORY MANAGEMENT ====================
@@ -249,15 +197,11 @@ function displayCategories() {
     const container = document.getElementById('categoryGrid');
     container.innerHTML = '';
     
-    // Count questions per category
     const categoryStats = {};
     allQuestions.forEach(q => {
         categoryStats[q.category] = (categoryStats[q.category] || 0) + 1;
     });
     
-    console.log("Category stats:", categoryStats);
-    
-    // Create category cards
     Object.keys(CATEGORY_CONFIG).forEach(categoryName => {
         const config = CATEGORY_CONFIG[categoryName];
         const questionCount = categoryStats[categoryName] || 0;
@@ -270,80 +214,59 @@ function displayCategories() {
             </div>
             <h5 class="fw-bold mb-2">${categoryName}</h5>
             <div class="mb-2">${questionCount} questions</div>
-            <small class="text-muted">Click to start</small>
+            <small class="text-muted">Click to start training</small>
         `;
         
         card.onclick = () => startCategory(categoryName);
         container.appendChild(card);
     });
     
-    // Update category count
-    const categoryCount = Object.keys(CATEGORY_CONFIG).length;
-    document.getElementById('categoryCount').textContent = categoryCount;
-    console.log(`Displayed ${categoryCount} categories`);
+    document.getElementById('categoryCount').textContent = Object.keys(CATEGORY_CONFIG).length;
 }
 
 // ==================== QUIZ FUNCTIONS ====================
 function startCategory(categoryName) {
-    console.log(`Starting category: ${categoryName}`);
-    
     currentCategory = categoryName;
     categoryQuestions = allQuestions.filter(q => q.category === categoryName);
     currentQuestionIndex = 0;
     userScore = { correct: 0, attempted: 0 };
     questionShuffledState.clear();
     
-    console.log(`Found ${categoryQuestions.length} questions for ${categoryName}`);
-    
-    // Shuffle questions AND shuffle answers for each question
-    shuffleQuestionsAndAnswers();
-    
-    // Update UI
     document.getElementById('categorySection').style.display = 'none';
     document.getElementById('quizSection').style.display = 'block';
     document.getElementById('statsSection').style.display = 'none';
     document.getElementById('categoryNameDisplay').textContent = categoryName;
     
-    // Load first question
+    shuffleQuestionsAndAnswers();
     displayQuestion();
     updateProgress();
     updateScoreDisplay();
     
-    showMessage(`Starting ${categoryName} - ${categoryQuestions.length} questions`, 'info');
+    showMessage(`Starting ${categoryName} training`, 'info');
 }
 
 function shuffleQuestionsAndAnswers() {
     if (!categoryQuestions.length) return;
     
-    // 1. Shuffle the order of questions
     shuffleArray(categoryQuestions);
     
-    // 2. Shuffle answers for EACH question independently
-    categoryQuestions.forEach((question, index) => {
+    categoryQuestions.forEach((question) => {
         shuffleQuestionAnswers(question);
     });
-    
-    console.log("Shuffled questions and answers");
 }
 
 function shuffleQuestionAnswers(question) {
     if (!question) return;
     
-    // Save the correct answer text
     const correctAnswerText = question.originalOptions[question.originalCorrect];
-    
-    // Shuffle the original options
     const shuffledOptions = [...question.originalOptions];
     shuffleArray(shuffledOptions);
     
-    // Find the new position of the correct answer
     const newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
     
-    // Update question with shuffled state
     question.currentOptions = shuffledOptions;
     question.currentCorrect = newCorrectIndex;
     
-    // Store in shuffled state map
     questionShuffledState.set(question.id, {
         options: [...shuffledOptions],
         correct: newCorrectIndex
@@ -354,7 +277,6 @@ function shuffleQuestionAnswers(question) {
 
 function displayQuestion() {
     if (!categoryQuestions || categoryQuestions.length === 0) {
-        console.error("No questions available!");
         document.getElementById('questionDisplay').innerHTML = `
             <div class="alert alert-danger">
                 <i class="fas fa-exclamation-circle"></i> No questions available for this category.
@@ -366,18 +288,12 @@ function displayQuestion() {
     const question = categoryQuestions[currentQuestionIndex];
     const container = document.getElementById('questionDisplay');
     
-    console.log(`Displaying question ${currentQuestionIndex + 1}:`, question.text.substring(0, 50) + "...");
-    console.log("Current options:", question.currentOptions);
-    console.log("Correct answer index:", question.currentCorrect, "Answer:", question.currentOptions[question.currentCorrect]);
-    
     let html = `
         <div class="question-box active-question">
             <h4 class="mb-3">${question.text}</h4>
     `;
     
-    // Add image if available
     if (question.image && question.image.trim() !== '') {
-        console.log(`Adding image: ${question.image}`);
         const encodedImage = encodeURI(question.image);
         html += `
             <div class="chart-image" onclick="viewImage('${encodedImage}')">
@@ -388,7 +304,6 @@ function displayQuestion() {
         `;
     }
     
-    // Add answer options (using CURRENT shuffled options)
     html += '<div class="mt-4">';
     question.currentOptions.forEach((option, index) => {
         const letter = String.fromCharCode(65 + index);
@@ -402,24 +317,19 @@ function displayQuestion() {
     
     container.innerHTML = html;
     
-    // Update counters
     document.getElementById('questionCounter').textContent = currentQuestionIndex + 1;
     document.getElementById('totalCounter').textContent = categoryQuestions.length;
-    
-    // Update navigation buttons
     document.getElementById('prevButton').disabled = currentQuestionIndex === 0;
+    
     const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
-    const nextBtn = document.getElementById('nextButton');
-    nextBtn.innerHTML = isLastQuestion 
+    document.getElementById('nextButton').innerHTML = isLastQuestion 
         ? 'Finish <i class="fas fa-flag-checkered"></i>' 
         : 'Next <i class="fas fa-arrow-right"></i>';
     
-    // Reset answer buttons
     resetAnswerButtons();
 }
 
 function handleImageError(img, imageUrl) {
-    console.error(`Failed to load image: ${decodeURI(imageUrl)}`);
     img.src = 'https://via.placeholder.com/600x300/e0e7ff/0056a6?text=Chart+Not+Found';
     img.style.border = '2px dashed #0056a6';
     img.alt = 'Image not available';
@@ -431,14 +341,8 @@ function selectAnswer(selectedIndex) {
     const question = categoryQuestions[currentQuestionIndex];
     const buttons = document.querySelectorAll('.answer-option');
     
-    console.log(`Selected answer ${selectedIndex}, correct is ${question.currentCorrect}`);
-    console.log("Selected text:", question.currentOptions[selectedIndex]);
-    console.log("Correct text:", question.currentOptions[question.currentCorrect]);
-    
-    // Disable all buttons
     buttons.forEach(btn => btn.disabled = true);
     
-    // Mark correct and incorrect answers
     buttons.forEach((btn, index) => {
         if (index === question.currentCorrect) {
             btn.classList.add('answer-correct');
@@ -448,7 +352,6 @@ function selectAnswer(selectedIndex) {
         }
     });
     
-    // Update score
     userScore.attempted++;
     if (selectedIndex === question.currentCorrect) {
         userScore.correct++;
@@ -499,7 +402,6 @@ function backToCategories() {
 function randomizeQuestions() {
     if (!categoryQuestions.length) return;
     
-    // Shuffle questions AND reshuffle all answers
     shuffleQuestionsAndAnswers();
     currentQuestionIndex = 0;
     displayQuestion();
@@ -510,11 +412,7 @@ function randomizeAnswers() {
     if (!categoryQuestions.length) return;
     
     const question = categoryQuestions[currentQuestionIndex];
-    
-    // Reshuffle answers for this specific question
     shuffleQuestionAnswers(question);
-    
-    // Redisplay
     displayQuestion();
     showMessage("Answers shuffled for this question", "info");
 }
@@ -530,11 +428,9 @@ function shuffleArray(array) {
 // ==================== IMAGE FUNCTIONS ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
-    // Decode URL for display
     document.getElementById('enlargedImage').src = decodeURI(imageUrl);
     document.getElementById('enlargedImage').onerror = function() {
         this.src = 'https://via.placeholder.com/800x600/e0e7ff/0056a6?text=Image+Not+Available';
-        this.alt = 'Image failed to load';
     };
     modal.show();
 }
@@ -568,18 +464,20 @@ function updateStatistics() {
 }
 
 function updateQuestionCount() {
-    const totalQuestions = allQuestions.length;
-    document.getElementById('questionCount').textContent = totalQuestions;
-    console.log(`Total questions: ${totalQuestions}`);
+    document.getElementById('questionCount').textContent = allQuestions.length;
 }
 
-// ==================== MESSAGING ====================
+// ==================== UTILITY FUNCTIONS ====================
+function refreshApp() {
+    if (confirm("Refresh the application? This will reset your current progress.")) {
+        location.reload();
+    }
+}
+
 function showMessage(text, type = 'info') {
-    // Remove existing messages
     const existing = document.querySelector('.system-message');
     if (existing) existing.remove();
     
-    // Create message
     const message = document.createElement('div');
     message.className = 'system-message';
     message.style.cssText = `
@@ -604,7 +502,6 @@ function showMessage(text, type = 'info') {
     
     document.body.appendChild(message);
     
-    // Auto-remove
     setTimeout(() => {
         message.style.animation = 'slideOut 0.3s';
         setTimeout(() => {
@@ -631,30 +528,3 @@ if (!document.querySelector('#animations')) {
     `;
     document.head.appendChild(style);
 }
-
-// Debug function - can be called from browser console
-window.debugInfo = function() {
-    console.log('=== DEBUG INFORMATION ===');
-    console.log('Total questions:', allQuestions.length);
-    console.log('Current category:', currentCategory);
-    console.log('Category questions:', categoryQuestions.length);
-    console.log('Current question index:', currentQuestionIndex);
-    
-    if (categoryQuestions.length > 0 && currentQuestionIndex < categoryQuestions.length) {
-        const currentQ = categoryQuestions[currentQuestionIndex];
-        console.log('Current question:', currentQ.text);
-        console.log('Original options:', currentQ.originalOptions);
-        console.log('Original correct index:', currentQ.originalCorrect, 'Answer:', currentQ.originalOptions[currentQ.originalCorrect]);
-        console.log('Current options:', currentQ.currentOptions);
-        console.log('Current correct index:', currentQ.currentCorrect, 'Answer:', currentQ.currentOptions[currentQ.currentCorrect]);
-    }
-    
-    // Show in alert
-    const categories = {};
-    allQuestions.forEach(q => {
-        categories[q.category] = (categories[q.category] || 0) + 1;
-    });
-    const message = `Loaded ${allQuestions.length} questions\n\n` +
-                   Object.keys(categories).map(cat => `${cat}: ${categories[cat]} questions`).join('\n');
-    alert(message);
-};
