@@ -8,233 +8,208 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #0056a6;    /* Aviation blue */
-            --secondary-color: #ff9900;  /* Orange accent */
-            --accent-color: #dc3545;     /* Red for important */
+            --primary-blue: #0056a6;
+            --secondary-orange: #ff9900;
+            --accent-red: #dc3545;
+            --dark-bg: #0a1f3a;
+            --light-bg: #f8fafc;
         }
         
         body {
-            font-family: 'Segoe UI', 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1e3c72 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
         }
         
-        .quiz-container {
+        .aviation-container {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
-            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            padding: 30px;
             margin-top: 20px;
             max-width: 1200px;
             margin-left: auto;
             margin-right: auto;
         }
         
-        .header-brand {
-            background: linear-gradient(90deg, var(--primary-color), #0077cc);
+        .header-section {
+            background: linear-gradient(90deg, var(--primary-blue), #0077cc);
             color: white;
-            padding: 15px 25px;
+            padding: 20px;
             border-radius: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
         
-        .category-btn {
+        .category-card {
             background: white;
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
-            padding: 15px 25px;
-            margin: 10px;
+            border: 2px solid #e0e7ff;
             border-radius: 10px;
+            padding: 20px;
+            margin: 10px;
+            width: 250px;
             transition: all 0.3s;
-            font-weight: 600;
-            width: 220px;
-            text-align: left;
-            position: relative;
+            cursor: pointer;
+            text-align: center;
         }
         
-        .category-btn:hover {
-            background: var(--primary-color);
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,86,166,0.3);
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,86,166,0.15);
+            border-color: var(--primary-blue);
         }
         
         .category-icon {
-            background: var(--secondary-color);
+            background: linear-gradient(135deg, var(--primary-blue), #0077cc);
             color: white;
-            width: 40px;
-            height: 40px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 15px;
+            margin: 0 auto 15px;
+            font-size: 24px;
         }
         
-        .question-card {
-            background: #f8fafc;
-            border-left: 5px solid var(--primary-color);
+        .question-box {
+            background: var(--light-bg);
+            border-left: 4px solid var(--primary-blue);
             padding: 25px;
             margin-bottom: 25px;
-            border-radius: 10px;
+            border-radius: 8px;
             display: none;
         }
         
         .active-question {
             display: block;
-            animation: fadeIn 0.5s;
+            animation: slideIn 0.4s;
         }
         
-        .answer-btn {
+        .answer-option {
             width: 100%;
             text-align: left;
             margin: 8px 0;
-            padding: 15px 20px;
+            padding: 15px;
             border: 2px solid #e0e7ff;
             border-radius: 8px;
             background: white;
             transition: all 0.2s;
-            font-weight: 500;
+            font-size: 16px;
         }
         
-        .answer-btn:hover {
-            background: #e0e7ff;
-            border-color: var(--primary-color);
-            transform: translateX(5px);
+        .answer-option:hover:not(:disabled) {
+            background: #e8f0ff;
+            border-color: var(--primary-blue);
         }
         
-        .correct {
-            background: #d1f7c4 !important;
+        .answer-correct {
+            background: #e8f7ed !important;
             border-color: #28a745 !important;
         }
         
-        .incorrect {
-            background: #ffe6e6 !important;
-            border-color: #dc3545 !important;
+        .answer-incorrect {
+            background: #ffeaea !important;
+            border-color: var(--accent-red) !important;
         }
         
-        .progress-bar {
+        .progress-container {
+            background: #e0e7ff;
             height: 8px;
             border-radius: 4px;
-            background: #e0e7ff;
-            margin: 20px 0;
+            margin: 25px 0;
+            overflow: hidden;
         }
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(90deg, var(--primary-blue), var(--secondary-orange));
             border-radius: 4px;
             width: 0%;
             transition: width 0.5s;
         }
         
-        .password-screen {
+        .login-screen {
             background: white;
-            padding: 50px;
-            border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+            max-width: 450px;
+            margin: 50px auto;
             text-align: center;
-            max-width: 500px;
-            margin: 80px auto;
         }
         
-        .password-screen h2 {
-            color: var(--primary-color);
-            margin-bottom: 20px;
-        }
-        
-        @keyframes fadeIn {
+        @keyframes slideIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        .shuffle-btn {
-            background: linear-gradient(90deg, var(--secondary-color), #ffbb33);
+        .action-btn {
+            background: linear-gradient(90deg, var(--secondary-orange), #ffbb33);
             color: white;
             border: none;
-            padding: 12px 25px;
+            padding: 12px 24px;
             border-radius: 8px;
             font-weight: 600;
             margin: 5px;
             transition: all 0.3s;
         }
         
-        .shuffle-btn:hover {
+        .action-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255,153,0,0.3);
         }
         
         /* Image Styles */
-        .question-image {
+        .chart-image {
             text-align: center;
-            margin: 25px 0;
-            position: relative;
+            margin: 20px 0;
         }
         
-        .question-image img {
+        .chart-image img {
             max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-height: 280px;
+            border-radius: 6px;
             border: 2px solid #e0e7ff;
-            cursor: pointer;
+            cursor: zoom-in;
             transition: all 0.3s;
         }
         
-        .question-image img:hover {
-            transform: scale(1.01);
-            border-color: var(--secondary-color);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        .chart-image img:hover {
+            border-color: var(--secondary-orange);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
         
-        .zoom-hint {
+        .image-label {
             color: #666;
             font-size: 13px;
             margin-top: 8px;
             font-style: italic;
         }
         
-        .image-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,86,166,0.9);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .stat-card {
+        .stat-box {
             background: white;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             text-align: center;
-            transition: transform 0.3s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
+            border: 1px solid #e0e7ff;
         }
         
         .stat-number {
             font-size: 32px;
             font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 5px;
+            color: var(--primary-blue);
         }
         
-        .stat-label {
+        .stat-text {
             font-size: 14px;
             color: #666;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
         
-        .footer-info {
+        .footer-note {
             text-align: center;
             margin-top: 30px;
             padding-top: 20px;
@@ -245,204 +220,210 @@
         
         .logout-btn {
             background: transparent;
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
+            border: 2px solid var(--primary-blue);
+            color: var(--primary-blue);
             padding: 8px 20px;
             border-radius: 8px;
             font-weight: 600;
-            transition: all 0.3s;
         }
         
         .logout-btn:hover {
-            background: var(--primary-color);
+            background: var(--primary-blue);
             color: white;
         }
         
-        /* Category Colors */
-        .flight-plan { border-left-color: #0056a6; }
-        .ifr-comms { border-left-color: #28a745; }
-        .mass-balance { border-left-color: #dc3545; }
-        .ops { border-left-color: #6f42c1; }
-        .performance { border-left-color: #fd7e14; }
-        .rnav { border-left-color: #17a2b8; }
-        .vfr-comms { border-left-color: #20c997; }
-        
+        /* Responsive */
         @media (max-width: 768px) {
-            .quiz-container {
+            .aviation-container {
                 padding: 20px;
                 margin: 10px;
             }
             
-            .category-btn {
+            .category-card {
                 width: 100%;
-                margin: 5px 0;
+                margin: 8px 0;
+            }
+            
+            .header-section {
+                padding: 15px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Password Screen -->
-    <div id="passwordScreen" class="password-screen">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
         <div class="mb-4">
-            <i class="fas fa-plane fa-3x" style="color: var(--primary-color);"></i>
+            <i class="fas fa-plane fa-4x" style="color: var(--primary-blue);"></i>
         </div>
-        <h2><i class="fas fa-lock"></i> ETIHAD CP Aviation</h2>
-        <p class="text-muted mb-4">Professional Pilot Certification System</p>
+        <h2 style="color: var(--primary-blue);">ETIHAD CP Aviation</h2>
+        <p class="text-muted mb-4">Pilot Certification Preparation System</p>
         
-        <div class="mb-3">
-            <input type="password" id="passwordInput" class="form-control form-control-lg" 
-                   placeholder="Enter access password" style="border-color: var(--primary-color);">
-            <div id="passwordError" class="text-danger mt-2" style="display: none;">
-                <i class="fas fa-times-circle"></i> Incorrect password
+        <div class="mb-4">
+            <input type="password" id="passwordField" class="form-control" 
+                   placeholder="Enter access code" style="border-color: var(--primary-blue); height: 50px;">
+            <div id="loginError" class="text-danger mt-2" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i> Invalid access code
             </div>
         </div>
         
-        <button onclick="checkPassword()" class="btn btn-lg" style="background: var(--primary-color); color: white; width: 100%;">
-            <i class="fas fa-unlock"></i> Access System
+        <button onclick="verifyAccess()" class="btn w-100" 
+                style="background: var(--primary-blue); color: white; height: 50px;">
+            <i class="fas fa-unlock-alt"></i> Enter System
         </button>
         
         <div class="mt-4">
             <small class="text-muted">
-                <i class="fas fa-info-circle"></i> For authorized personnel only
+                <i class="fas fa-shield-alt"></i> Secure aviation training portal
             </small>
         </div>
     </div>
 
-    <!-- Main Quiz Interface -->
-    <div id="quizInterface" style="display: none;">
-        <div class="container-fluid">
-            <div class="quiz-container">
-                <!-- Header -->
-                <div class="header-brand">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h1 class="mb-1"><i class="fas fa-plane-departure"></i> ETIHAD CP</h1>
-                            <p class="mb-0">Aviation Certification Preparation System</p>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <button onclick="logout()" class="logout-btn">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </button>
-                        </div>
+    <!-- Main Application -->
+    <div id="mainApp" style="display: none;">
+        <div class="aviation-container">
+            <!-- Header -->
+            <div class="header-section">
+                <div class="row align-items-center">
+                    <div class="col-md-9">
+                        <h1 class="mb-2"><i class="fas fa-plane-departure"></i> ETIHAD CP</h1>
+                        <p class="mb-0">Aviation Certification & Training System</p>
                     </div>
-                </div>
-
-                <!-- Category Selector -->
-                <div class="mb-5" id="categorySection">
-                    <h3 class="mb-4"><i class="fas fa-layer-group"></i> Select Certification Category</h3>
-                    <div id="categoryButtons" class="d-flex flex-wrap justify-content-center">
-                        <!-- Categories will be loaded here -->
-                    </div>
-                </div>
-
-                <!-- Quiz Area -->
-                <div id="quizArea" style="display: none;">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3 id="currentCategory" class="mb-0">
-                            <i class="fas fa-folder-open"></i> Category: <span id="categoryName">Loading...</span>
-                        </h3>
-                        <div class="d-flex">
-                            <button onclick="shuffleQuestions()" class="shuffle-btn me-2">
-                                <i class="fas fa-random"></i> Shuffle Questions
-                            </button>
-                            <button onclick="shuffleAnswers()" class="btn btn-outline-primary">
-                                <i class="fas fa-retweet"></i> Shuffle Answers
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Progress -->
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>
-                                <i class="fas fa-question-circle"></i> 
-                                Question <span id="currentQuestionNum" class="fw-bold">1</span> of 
-                                <span id="totalQuestions" class="fw-bold">10</span>
-                            </span>
-                            <span id="scoreDisplay" class="fw-bold" style="color: var(--primary-color);">
-                                <i class="fas fa-chart-line"></i> Score: <span id="scoreValue">0/0</span>
-                            </span>
-                        </div>
-                        <div class="progress-bar">
-                            <div id="progressFill" class="progress-fill"></div>
-                        </div>
-                    </div>
-
-                    <!-- Questions Container -->
-                    <div id="questionsContainer" class="mb-4">
-                        <!-- Questions loaded here -->
-                    </div>
-
-                    <!-- Navigation -->
-                    <div class="d-flex justify-content-between mt-4">
-                        <button onclick="previousQuestion()" id="prevBtn" class="btn btn-outline-primary" disabled>
-                            <i class="fas fa-arrow-left"></i> Previous
+                    <div class="col-md-3 text-end">
+                        <button onclick="exitSystem()" class="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i> Exit
                         </button>
-                        <button onclick="nextQuestion()" id="nextBtn" class="btn" style="background: var(--primary-color); color: white;">
-                            Next <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Selection -->
+            <div id="categorySection">
+                <h3 class="mb-4" style="color: var(--primary-blue);">
+                    <i class="fas fa-list-check"></i> Training Categories
+                </h3>
+                <div id="categoryGrid" class="d-flex flex-wrap justify-content-center">
+                    <!-- Categories loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Quiz Interface -->
+            <div id="quizSection" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 id="currentCategoryTitle" style="color: var(--primary-blue);">
+                        <i class="fas fa-book-open"></i> 
+                        <span id="categoryNameDisplay">Loading...</span>
+                    </h3>
+                    <div>
+                        <button onclick="randomizeQuestions()" class="action-btn me-2">
+                            <i class="fas fa-random"></i> Shuffle
+                        </button>
+                        <button onclick="randomizeAnswers()" class="btn btn-outline-primary">
+                            <i class="fas fa-shuffle"></i> Mix Answers
                         </button>
                     </div>
                 </div>
 
-                <!-- Statistics -->
-                <div id="statistics" class="mt-5" style="display: none;">
-                    <h4 class="mb-4"><i class="fas fa-chart-bar"></i> Performance Summary</h4>
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <div class="stat-card">
-                                <div class="stat-number" id="correctCount">0</div>
-                                <div class="stat-label">Correct Answers</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="stat-card">
-                                <div class="stat-number" id="incorrectCount">0</div>
-                                <div class="stat-label">Incorrect Answers</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="stat-card">
-                                <div class="stat-number" id="percentage">0%</div>
-                                <div class="stat-label">Accuracy Rate</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="stat-card">
-                                <div class="stat-number" id="answeredCount">0</div>
-                                <div class="stat-label">Total Answered</div>
-                            </div>
-                        </div>
+                <!-- Progress -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>
+                            <i class="fas fa-question-circle"></i>
+                            Question <span id="questionCounter" class="fw-bold">1</span> of 
+                            <span id="totalCounter" class="fw-bold">10</span>
+                        </span>
+                        <span id="scoreDisplay" class="fw-bold" style="color: var(--primary-blue);">
+                            <i class="fas fa-star"></i> Score: <span id="scoreValue">0/0</span>
+                        </span>
+                    </div>
+                    <div class="progress-container">
+                        <div id="progressIndicator" class="progress-fill"></div>
                     </div>
                 </div>
 
-                <!-- Footer -->
-                <div class="footer-info">
-                    <p class="mb-2">
-                        <i class="fas fa-plane"></i> ETIHAD CP Aviation Certification System 
-                        | <span id="totalQuestionsCount">0</span> Questions Available
-                    </p>
-                    <small>© 2026 Professional Pilot Training System. K-TECH.</small>
+                <!-- Question Display -->
+                <div id="questionDisplay">
+                    <!-- Questions loaded here -->
                 </div>
+
+                <!-- Navigation -->
+                <div class="d-flex justify-content-between mt-4">
+                    <button onclick="prevQuestion()" id="prevButton" class="btn btn-outline-primary" disabled>
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button onclick="backToCategories()" class="btn btn-outline-secondary">
+                        <i class="fas fa-list"></i> Categories
+                    </button>
+                    <button onclick="nextQuestion()" id="nextButton" class="btn" 
+                            style="background: var(--primary-blue); color: white;">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div id="statsSection" class="mt-5" style="display: none;">
+                <h4 class="mb-4" style="color: var(--primary-blue);">
+                    <i class="fas fa-chart-line"></i> Performance Metrics
+                </h4>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-box">
+                            <div class="stat-number" id="correctAnswers">0</div>
+                            <div class="stat-text">Correct</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-box">
+                            <div class="stat-number" id="incorrectAnswers">0</div>
+                            <div class="stat-text">Incorrect</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-box">
+                            <div class="stat-number" id="accuracyRate">0%</div>
+                            <div class="stat-text">Accuracy</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-box">
+                            <div class="stat-number" id="totalAnswered">0</div>
+                            <div class="stat-text">Attempted</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer-note">
+                <p class="mb-2">
+                    <i class="fas fa-plane"></i> ETIHAD CP Aviation Training System 
+                    | <span id="questionCount">0</span> Questions | 
+                    <span id="categoryCount">7</span> Categories
+                </p>
+                <small>Professional pilot certification preparation © 2024</small>
             </div>
         </div>
     </div>
 
-    <!-- Image Modal -->
-    <div class="modal fade" id="imageModal" tabindex="-1">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
+    <!-- Image Viewer Modal -->
+    <div class="modal fade" id="imageViewer" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-search-plus"></i> Image Preview</h5>
+                    <h5 class="modal-title">
+                        <i class="fas fa-chart-area"></i> Chart / Diagram
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body text-center p-0">
-                    <img id="modalImage" src="" class="img-fluid" style="max-height: 80vh; width: auto;">
+                <div class="modal-body text-center p-3">
+                    <img id="enlargedImage" src="" class="img-fluid" style="max-height: 70vh;">
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
