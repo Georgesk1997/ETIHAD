@@ -8,18 +8,22 @@ Performance,What factor most increases takeoff distance?,Headwind,Tailwind,Low t
 RNAV,What does RNAV stand for?,Area Navigation,Radio Navigation,Required Navigation,Regional Navigation,1,,RNAV stands for Area Navigation.
 VFR Comms,How should you report position in the traffic pattern?,Downwind,Cessna 123AB downwind,Traffic pattern downwind,Position downwind,2,,Always include aircraft identification when reporting position.
 IFR Comms,What does the term "EXPECTED APPROACH TIME" mean?,The holding time over the radio facility from which the instruments approach procedure for a landing will be initiated.,"The time at which ATC expects that an arriving aircraft, following a delay, will leave the holding point to complete its approach for a landing.","The time at which an arriving aircraft, upon reaching the radio aid serving the destination aerodrome, will commence the instrument approach procedure for a landing.",The time at which an arriving aircraft expects to arrive over the appropriate designated navigation aid serving the destination aerodrome.,2,,
-IFR Comms,What does the term "BROADCAST" mean?,A transmission of information relating to air navigation that is not addressed to a specific station or stations.,A radiotelephony transmission from ground station to aircraft in flight.,"A transmission containing meteorological and operational information to aircraft engaged in flights over remote and oceanic areas out of range of VHF ground stations.",A transmission where no reply is required from the receiving station.,1,,
-IFR Comms,What does the term "CLEARANCE LIMIT" mean?,The time of expiry of air traffic control clearance.,The time after which air traffic control clearance will be automatically cancelled if the flight has not been commenced.,The time at which aircraft is given an air traffic control clearance.,"The point to which aircraft is granted an air traffic control clearance.",4,,
-IFR Comms,What does the term "BLIND TRANSMISSION" mean?,A transmission of information relating to air navigation that is not addressed to a specific station or stations.,A transmission from one station to another station in circumstances where two-way communication cannot be established but it is believed that the called station is able to receive the transmission.,A transmission where no reply is required from the receiving station.,A transmission of messages relating to enroute weather information which may affect the safety of aircraft operations that is not addressed to a specific station or stations.,2,,
+IFR Comms,What does the term "BROADCAST"" mean?,A transmission of information relating to air navigation that is not addressed to a specific station or stations.,A radiotelephony transmission from ground station to aircraft in flight.,"A transmission containing meteorological and operational information to aircraft engaged in flights over remote and oceanic areas out of range of VHF ground stations.",A transmission where no reply is required from the receiving station.,1,,
+IFR Comms,What does the term "CLEARANCE LIMIT"" mean?",The time of expiry of air traffic control clearance.,The time after which air traffic control clearance will be automatically cancelled if the flight has not been commenced.,The time at which aircraft is given an air traffic control clearance.,"The point to which aircraft is granted an air traffic control clearance.",4,,
+IFR Comms,"What does the term ""BLIND TRANSMISSION"" mean?",A transmission of information relating to air navigation that is not addressed to a specific station or stations.,A transmission from one station to another station in circumstances where two-way communication cannot be established but it is believed that the called station is able to receive the transmission.,A transmission where no reply is required from the receiving station.,A transmission of messages relating to enroute weather information which may affect the safety of aircraft operations that is not addressed to a specific station or stations.,2,,
 IFR Comms,What does the abbreviation 'APV' mean?,approach protection vectors,approach procedures with vertical guidance,aerodrome precision visibility (monitoring system by observation),aerodrome precision visibility (automatic monitoring system),2,,
 IFR Comms,ICAO defines the term instrument approach as follows:,"From the beginning of a defined arrival route to a point from which a landing can be completed and thereafter, if a landing is not completed, to a position at which holding or en-route obstacle clearance criteria apply.","From the initial approach fix to a point from which a landing can be completed, e.g. MDA or DA.",From the beginning of a defined arrival route to a point from which a landing can be completed.,"From the beginning of a defined approach to a point from which a landing can be completed and thereafter, if a landing is not completed, to an altitude of 1 500 ft above the aerodrome reference point.",1,,
-IFR Comms,When flying in accordance with IFR, which of the following best describes the term ""VISUAL APPROACH""?",An approach executed by an IFR flight unable to maintain VMC.,A visual manoeuvre executed by an IFR flight when the weather conditions at the aerodrome of destination are equal to or better than required VMC minima.,An approach by an IFR flight when either part or all of an instrument approach procedure is not completed and the approach is executed in visual reference to terrain.,An extension of an instrument approach procedure to bring an aircraft into position for landing on a runway which is not suitably located for straight-in-approach.,3,,
+IFR Comms,"When flying in accordance with IFR, which of the following best describes the term ""VISUAL APPROACH""?",An approach executed by an IFR flight unable to maintain VMC.,A visual manoeuvre executed by an IFR flight when the weather conditions at the aerodrome of destination are equal to or better than required VMC minima.,An approach by an IFR flight when either part or all of an instrument approach procedure is not completed and the approach is executed in visual reference to terrain.,An extension of an instrument approach procedure to bring an aircraft into position for landing on a runway which is not suitably located for straight-in-approach.,3,,
 IFR Comms,What rate of speech does ICAO recommend for radio communications? An even rate of speech not exceeding:,90 words per minute.,200 words per minute.,100 words per minute.,150 words per minute.,3,,
-IFR Comms,Which of the following calls is a ""GENERAL CALL""?,"YX-ABC, YX-BCD, YX-CDE Stephenville CONTROL.","YX-EFG, YX-FGH over.",ALL STATIONS Stephenville CONTROL.,YX-DEF Stephenville CONTROL.,3,,
-IFR Comms,What does the term "AIR-GROUND COMMUNICATION" mean?,Two-way communication between aircraft and stations or locations on the surface of the Earth.,Any communication from aircraft to ground station requiring handling by the Aeronautical Fixed Telecommunication Network (AFTN).,One-way communication from stations or locations on the surface of the Earth.,One-way communication from aircraft to stations or locations on the surface of the Earth.,1,,
-IFR Comms,What does the term "WAYPOINT" mean?,A specified geographical position used to define an area navigation route or the flight path of an aircraft employing area navigation.,A general term meaning the taxiway and the runway system of an international airport.,A signal indicating the direction of the runway-in-use.,A defined position on an aerodrome used for the calibration of the inertial navigation system.,1,,
-IFR Comms,What does the abbreviation "MLS" mean?,Mean Sea Level.,Minimum Sector Level.,Minimum Safe Level.,Microwave Landing System.,4,,
-IFR Comms,What does ""SELCAL"" mean?,A system provided for direct exchange of information between air traffic services (ATS) units.,A system provided for direct exchange of information between air traffic services (ATS) units.,A system provided for direct exchange of information between air traffic services (ATS) units.,A system in which radiotelephony communication can be established between aircraft only.,3,,"
+IFR Comms,"Which of the following calls is a ""GENERAL CALL""?","YX-ABC, YX-BCD, YX-CDE Stephenville CONTROL.","YX-EFG, YX-FGH over.",ALL STATIONS Stephenville CONTROL.,YX-DEF Stephenville CONTROL.,3,,
+IFR Comms,"What does the term ""AIR-GROUND COMMUNICATION"" mean?",Two-way communication between aircraft and stations or locations on the surface of the Earth.,Any communication from aircraft to ground station requiring handling by the Aeronautical Fixed Telecommunication Network (AFTN).,One-way communication from stations or locations on the surface of the Earth.,One-way communication from aircraft to stations or locations on the surface of the Earth.,1,,
+IFR Comms,"What does the term ""WAYPOINT"" mean?",A specified geographical position used to define an area navigation route or the flight path of an aircraft employing area navigation.,A general term meaning the taxiway and the runway system of an international airport.,A signal indicating the direction of the runway-in-use.,A defined position on an aerodrome used for the calibration of the inertial navigation system.,1,,
+IFR Comms,"What does the abbreviation ""MLS"" mean?",Mean Sea Level.,Minimum Sector Level.,Minimum Safe Level.,Microwave Landing System.,4,,
+"IFR Comms,What does ""SELCAL"" mean?,A system provided for direct exchange of information between
+air traffic services (ATS) units.,A system provided for direct exchange of information between
+air traffic services (ATS) units.,A system provided for direct exchange of information between
+air traffic services (ATS) units.,A system in which radiotelephony communication can be
+established between aircraft only.,3,,"
 IFR Comms,What does the abbreviation "INS" mean?,International Navigation Service.,Inertial Navigation System.,International NOTAM System.,Instrument Navigation System.,2,,
 IFR Comms,What does the abbreviation "RVR" mean?,Runway Visual Range.,Runway Visibility Report.,Radar Vectors Required.,Re-cleared Via Route...,1,,
 IFR Comms,What does the abbreviation "AIS" mean?,Aeronautical Information Service.,Aerodrome Information Service.,Aerodrome Identification Signal area.,Airport Information System.,1,,
@@ -40,3 +44,273 @@ IFR Comms,hat is the Q-code for magnetic heading to the station (no wind)?,QNE,Q
 IFR Comms,The priority of the instruction "TAXI TO RUNWAY 05" is:,less than "CAUTION, CONSTRUCTION WORK LEFT OF TAXIWAY".,less than "CLEARED TO LAND".,greater than "TRANSMIT FOR QDM".,same as "LINE-UP RUNWAY 07 AND WAIT".,4,,
 IFR Comms,A message concerning aircraft parts and material urgently required is:,a flight security message.,an urgency message.,a flight regularity message.,a flight safety message.,3,,
 IFR Comms,The priority of the pilot's message "REQUEST QDM" is:,greater than "TURN LEFT HEADING...",same as "LATEST QNH 1 018".,less than "DESCEND TO FLIGHT LEVEL ...",less than "REQUEST CLIMB TO FLIGHT LEVEL...",1,,
+IFR Comms,Which of the following statements is correct?,There is no difference regarding priority between distress communications and urgency communications.,ATC clearances have the same priority as urgency communications.,The urgency communications have priority over all the other communications, except distress.,The urgency communications have priority over all the other communications.,3,,
+IFR Comms,The clearance "CLEARED FOR IMMEDIATE TAKEOFF RUNWAY 03" is:,an unauthorized message.,a flight safety message.,an urgency message.,a flight regularity message.,2,,
+IFR Comms,Air traffic control messages (clearances, instructions, etc.) belong to the category of:,class B messages.,flight regularity messages.,service messages.,flight safety messages.,4,,
+IFR Comms,The message addressed to an Area Control Centre "REQUEST RADAR VECTORS TO CIRCUMNAVIGATE ADVERSE WEATHER" is:,a meteorological message.,a message relating to direction finding.,an urgency message.,a flight safety message.,4,,
+IFR Comms,Which of the messages listed below shall not be handled by the aeronautical mobile service?,Meteorological messages.,Urgency messages.,Radio teletype messages.,Flight safety messages.,3,,
+IFR Comms,A message concerning an aircraft being threatened by graveand imminent danger, requiring immediate assistance is called,urgency message.,flight safety message.,distress message.,class B message.,3,,
+IFR Comms,The order of priority of the following messages in the aeronautical mobile service is:,"direction finding message, distress message and urgency message.","distress message, urgency message and direction finding message".,"meteorological message, direction finding message and flight regularity message.","distress message, flight safety message and urgency message.",2,,
+IFR Comms,The message to an aeronautical ground station ""PLEASE CALL A TAXI-CAB FOR US. WE WILL ARRIVE AT 1045 AS SCHEDULED"" is:,an urgency message.,a flight regularity message.,a flight safety messages.,an unauthorized message.,4,,
+IFR Comms,The order of priority of the following messages in the aeronautical mobile service is:,flight safety message, meteorological message, flight regularity message.,flight safety message, direction finding message, urgency message.,meteorological message, direction finding message, flight safety message.,flight regularity message, distress message, meteorological message.,1,,
+IFR Comms,Flight safety messages are:,air traffic control messages.,operation messages concerning non-routine landings.,messages relating to direction finding.,messages concerning the safety of an aircraft, a vessel, any other vehicle or a person.,1,,
+IFR Comms,What is the correct way of spelling out HB-JYC in a radio message?,Hotel Bravo India Yankee Charlie,Hotel Bravo Juliett India Kilo,Hotel Bravo Juliett Yankee Charlie,Hotel Bravo India Victor Charlie,3,,
+IFR Comms,What shall the pilot's readback be for ""CLIMB FL280""?,Climbing flight level two eight zero.,Climbing flight level two eighty.,Climbing two eighty.,Climbing two eight zero.,1,,
+IFR Comms,An aircraft is flying north-east at 2500 feet. TOWER requests the pilot to report heading and level. What is the correct response?,Heading 45 at 2 500 feet.,045 and 2500.,Heading 045 at 2500 feet.,Heading north-east at level 025.,3,,
+IFR Comms,What is the correct way of transmitting the number 118.1 to indicate a frequency?,One eighteen one.,One one eight point one.,One one eight one.,One one eight decimal one.,4,,
+IFR Comms,During the transmission of numbers containing a decimal point:,the term DECIMAL must always be transmitted.,the term DECIMAL can be omitted with friendly ATS units only.,the term DECIMAL can be omitted if no chance of misunderstanding exists.,the term DECIMAL must be spoken only if followed by three digits.,1,,
+IFR Comms,"During radar vectoring, the controller asks the pilot of an aircraft XY-ABC to turn on to heading 360°. The correct readback of this instruction is:","Heading three six zero, X-BC.",There is no need to respond as you have been identified as XYABC.,"Heading three hundred and sixty, X-BC.","Heading north, X-BC.",1,,
+IFR Comms,What shall the pilot read back for ATC instruction "CLIMB ALTITUDE 2500 FEET"?,Climbing to two point five.,Climbing to two thousand five hundred.,Climbing altitude two thousand five hundred feet.,Up to two thousand five hundred.,3,,
+IFR Comms,What is the correct way of transmitting 1001 as a QNH?,QNH one double O one.,QNH one zero zero one.,QNH one thousand and one.,QNH one double zero one.,2,,
+IFR Comms,Regardless of your position, time figures are transmitted with reference to:,Daylight savings time.,UTC,LMT,GMT,2,,
+IFR Comms,The time is 9:20 AM. What is the correct way of transmitting this time if there is no possibility of confusion about the hour?,Twenty.,Nine twenty AM.,Two zero this hour.,Two zero.,4,,
+IFR Comms,The time is 4:15 PM. What is the correct way of transmitting this time if there is any possibility of confusion about the hour?,Four fifteen in the afternoon.,One six one five.,Four fifteen PM.,Sixteen fifteen.,2,,
+IFR Comms,"When transmitting time, which time system shall be used?",Local time (LT) AM and PM.,Co-ordinated universal time (UTC).,"No specific system, as only the minutes are normally required.","Local time (LT), 24-hour clock.",2,,
+IFR Comms,What is meant by good microphone technique?,"Use a normal conversation tone, speak clearly and distinctly.",Speak very loudly into the microphone.,Make large use of hesitation sounds as ER.,Keep the microphone far away since it improves the readability.,1,,
+IFR Comms,My message will be more effective and understandable if I:,maintain the speaking volume at a constant level.,use the words twice method.,stress every beginning of message.,stress the end of message.,1,,
+IFR Comms,Before transmitting the pilot should:,always write the message and read it during the transmission.,make sure that the aircraft is levelled off.,listen out on the frequency to ensure no interference with another station already transmitting will occur.,make sure that the emergency frequency is tuned in at the same time.,3,,
+IFR Comms,"In the event that a pilot is required to make a "BLIND" transmission, this should be made:",during VFR flights only.,twice on the designated frequency.,only once on the designated frequency.,on the emergency frequency only.,2,,
+IFR Comms,What is the consequence of a microphone button stuck on transmit (switched on)?,None.,Readability will improve for all stations.,The frequency can not be used by others.,Other stations will have to use the WORD TWICE technique.,3,,
+IFR Comms,A "BLIND" transmission shall be made:,on regional guard frequencies only.,to all available aeronautical stations.,on the designated frequency (frequency in use).,during IFR flights only.,3,,
+IFR Comms,"When an aeronautical station broadcasts information to more than one station, the call starts with:",MESSAGE TO ALL AIRCRAFT ON THIS FREQUENCY.,GENERAL BROADCAST.,PLEASE LISTEN.,ALL STATIONS.,1,,
+IFR Comms,What does the word "NEGATIVE" mean?,I say again.,That is not correct.,Annul the previously transmitted clearance.,Consider that transmission as not sent.,2,,
+IFR Comms,What does the phrase "BREAK BREAK" mean?,The exchange of transmissions has ended and no response is expected.,My transmission has ended and I expect a response from you.,It indicates the separation between messages transmitted to different aircraft in a very busy environment.,It indicates the separation between portions of a message transmitted to an aircraft station.,3,,
+IFR Comms,What does the word "APPROVED" mean?,I repeat for clarity or emphasis.,That is correct.,Permission for proposed action granted.,Authorized to proceed under the conditions specified.,3,,
+IFR Comms,Which word or phrase shall be used in order to repeat for clarity or emphasis?,I SAY AGAIN.,VERIFY.,READ BAСК.,CONFIRM.,1,,
+IFR Comms,ATC clears FASTAIR 345 to descend from FL100 to FL80. What is the correct read back by the pilot?,"Leaving flight level 100 descending to flight level 80, FASTAIR 345.","Down to flight level 80, FASTAIR 345.","Leaving 100 to 80, FASTAIR 345.","Descending to 80, FASTAIR 345.",1,,
+IFR Comms,What does the word "DISREGARD" mean?,An error has been made in this transmission.,Consider that transmission as not sent.,Wait and I will call you.,Annul the previously transmitted clearance.,2,,
+IFR Comms,The Air Traffic Control unit has reported "radar contact". What does that mean to the pilot?,Position reports may be omitted.,The aircraft is subject to positive control.,The radar identity of the aircraft has been established.,The pilot does not have to follow up the position of the aircraft,3,,
+IFR Comms,Which word or phrase shall be used if you want to say "REDUCE YOUR RATE OF SPEECH"?,SPEAK SLOWER.,SAY AGAIN.,REPEAT.,WORDS TWICE.,1,,
+IFR Comms,You are making an approach to land, at what range would you make the call "SHORT FINAL"?,6 NM,4 NM,5 NM,2 NM,4,,
+IFR Comms,What does the word "RECLEARED" mean?,Permission for proposed action granted.,A change has been made to your last clearance.,Consider that transmission as not sent.,An error has been made in my last transmission.,2,,
+IFR Comms,How shall a pilot inform the control tower that he has to abandon the take-off manoeuvre?,CANCELLING TAKEOFF.,STOPPING.,ABORTING TAKEOFF.,ABANDONING TAKEOFF.,2,,
+IFR Comms,What does the word "CANCEL" mean?,Annul the previously transmitted clearance.,Wait and I will call you.,Consider that transmission as not sent.,A change has been made to your last clearance.,1,,
+IFR Comms,Which phrase shall be used if you want to say "YES"?,AFFIRM,AFFIRMATIVE,ROGER,YES,1,,
+IFR Comms,What does the word "CONTACT" mean?,Establish radio contact with...,Radar contact established.,Listen out on (frequency).,That is correct.,1,,
+IFR Comms,What does the word "CORRECT" mean?,Permission for proposed action not granted.,Negative, the correct version is...,That is correct.,An error has been made in this transmission. The correct version is...,3,,
+IFR Comms,What does the word "ACKNOWLEDGE" mean?,Let me know that you have received and understood this message.,Repeat all of your last transmission.,Pass me the following information.,Repeat all of this message back to me exactly as received.,1,,
+IFR Comms,If you are flying an aircraft with a maximum rate of climb of 1 500 ft per minute and ATC asks you to climb at 2000 ft/min or greater, your answer will be:,...wilco...,...affirm...,...unable...,...no...,3,,
+IFR Comms,Which word or phrase shall be used to indicate that a change has been made to your last clearance and this new clearance supersedes your previous clearance or part thereof?,CLEARED.,RECLEARED.,APPROVED.,BREAK BREAK.,2,,
+IFR Comms,What does the instruction "FASTAIR 345 STANDBY 118.9 FOR TOWER" mean?,Fastair 345 should contact TOWER on 118.9.,Fastair 345 should listen on frequency 118.9 on which TOWER will initiate further communications.,Fastair 345 should standby on the current frequency.,Fastair 345 should change frequency to 118.9, on which aerodrome data are being broadcast.,2,,
+IFR Comms,Which phrase should a pilot use to inform ATC that he is initiating a missed approach procedure?,OVERSHOOTING.,MISSED APPROACH.,GOING AROUND,PULLING UP.,3,,
+IFR Comms,Which of these phrases is used if you want to communicate that a message "CONSIDER THAT TRANSMISSION AS NOT SENT"?,CANCELLING MY LAST TRANSMISSION.,FORGET IT.,DISREGARD.,CANCEL MY LAST MESSAGE.,3,,
+IFR Comms,Which elements of a position report cannot be omitted?,"Aircraft identification, position, next position.","Aircraft identification, position, level.","Aircraft identification, position, time.","Aircraft identification, position, time, level.",3,,
+IFR Comms,What does the word "MONITOR" mean?,Listen out on (frequency).,Examine a system or procedure.,Wait and I will call you.,Establish radio contact with...,1,,
+IFR Comms,When shall the phrase "TAKEOFF" be used by a pilot?,To inform TOWER when ready for departure.,Only when the aircraft has already moved onto the active runway,To acknowledge take-off clearance only.,"Never, it is used only by the control tower.",3,,
+IFR Comms,"Which word shall be used to ask a station whether you have correctly received a message, clearance, instruction, etc?",CONFIRM.,CORRECТ.,ACKNOWLEDGE.,VERIFY.,1,,
+IFR Comms,ATC reports traffic. Which phrase should be used if a pilot wants to inform ATC that he/she does not see the corresponding traffic?,NEGATIVE CONTАСТ,CANNOT SEE TRAFFIC,LOOKING OUT,TRAFFIC IN SIGHТ,1,,
+IFR Comms,To indicate that he is no longer occupying the active runway a pilot shall report to the ATC controller.,RUNWAY VACATED.,RUNWAY FREE.,RUNWAY CLEARED.,CLEAR OF RUNWAY.,1,,
+IFR Comms,Visibility is poor and an aircraft is flying on an ILS approach. Its position is less than 4 NM from the threshold of runway 24 of Naples airport. Which of the following ATC messages should the pilot expect to hear next?,"FASTBIRD 166, CLEARED TO LAND RUNWAY 24, WIND 270 DEGREES 15 KNOTS.","FASTBIRD 166, ILS APPROACH TO RUNWAY 24, CLEARED TO LAND.","FASTBIRD 166, REPORT RUNWAY 24 IN SIGHT, WIND 270 DEGREES 15 KNOTS.","FASTBIRD 166, REPORT FINAL RUNWAY 24, WIND 360 DEGREES 18 KNOTS.",1,,
+IFR Comms,ATC reports traffic. Which phrase should be used if a pilot wants to inform ATC that he/she can see the corresponding traffic?,POSITIVE TRAFFIC,TRAFFIC IN SIGHT,CAN SEE TRAFFIC,LOOKING OUT,2,,
+IFR Comms,Which phrase shall be used if you want to say "COMMUNICATION IS DIFFICULT. PLEASE SEND EVERY WORD OR GROUP OF WORD TWICE"?,"SAY AGAIN, SAY AGAIN.",REPEAT TWICE.,WORDS TWICE.,MESSAGE SECOND TIME.,3,,
+IFR Comms,"If you are requested to "REPORT FLIGHT CONDITIONS", what does that mean?","Indicate weather conditions as wind, visibility, temperature.","Indicate whether you are flying in IMC or in VMC.","Indicate if visibility is sufficient for landing",Indicate whether you are flying IFR or VFR.,2,,
+IFR Comms,Which word or phrase shall be used when giving authorization to proceed under specified conditions?,APPROVED.,CLEARED.,I SAY AGAIN: PROCEED.,GO AHEAD.,2,,
+IFR Comms,What is the radiotelephony call sign suffix for the aeronautical station indicating clearance delivery?,RADIO,CLEARANCE DELIVERY,DELIVERY,CLEARANCE,3,,
+IFR Comms,What does the word "WILCO" mean?,I have received all of your last transmission.,I read you five.,I will call you later - communication is difficult.,I understand your message and will comply with it.,4,,
+IFR Comms,Which word shall be used to indicate that an error has been made in a transmission or message?,CORRECТ.,NEGATIVE.,CORRECTION.,DISREGARD.,3,,
+IFR Comms,If ATC asks aircraft D-ENRW to standby, what is the pilot expected to reply, if any?,No reply necessary, ATC will call back,Standing by D-ENRW,Standing by,Standby D-ENRW,1,,
+IFR Comms,What does the word "CHECK" mean?,Examine a system or procedure.,Read back my last instruction.,Confirm your last transmission.,I understand your message.,1,,
+IFR Comms,What is the radiotelephony call sign for the aeronautical station indicating approach control radar departures?,APPROACH,RADAR,CONTROL,DEPARTURE,4,,
+IFR Comms,What is the radiotelephony call sign for the aeronautical station providing surface movement control of aircraft on the manoeuvring area?,RADAR,DELIVERY,GROUND,APPROACH,3,,
+IFR Comms,What is the radiotelephony call sign for the aeronautical station providing approach control (no radar service)?,CONTROL,APPROACH,RADAR,ARRIVAL,2,,
+IFR Comms,What is the radiotelephony call sign suffix for the aeronautical station indicating aerodrome control service?,TOWER.,AERODROME.,APRON.,CONTROL.,1,,
+IFR Comms,What is the radiotelephony call sign for the aeronautical station indicating Area Control Centre (no radar)?,RADAR,CONTROL,CENTRE,APPROACH,2,,
+IFR Comms,What is the radiotelephony call sign suffix for the aeronautical station providing radar service (in general)?,RADAR CONTROL,RADAR SERVICE,CONTROL,RADAR,4,,
+IFR Comms,What is the radiotelephony call sign for the aeronautical station indicating approach control radar arrivals?,APPROACH,DIRECTOR,ARRIVAL,RADAR,3,,
+IFR Comms,An Airbus 321 registered as G-HBTD has call sign "Sun Air HBTD". What is its abbreviated call sign?,Sun Air HВ,Airbus HВ,Airbus TD,Sun Air TD,4,,
+IFR Comms,When shall an aircraft in the heavy wake turbulence category include the word HEAVY immediately after its call sign e.g. FASTAIR 345 HEAVY?,in all calls to the aerodrome tower and the approach control unit.,in all calls.,in the initial call to the aerodrome control tower and the approach control unit.,never.,3,,
+IFR Comms,When is an aircraft station allowed to use its abbreviated call sign?,In dense traffic.,After it has been addressed in this manner by the aeronautical ground station.,Only after satisfactory communication has been established.,Provided no confusion is likely to result.,2,,
+IFR Comms,Which of the following abbreviated call signs of aircraft XYABC is correct?,BC,X-BC,ABC,XY-BC,2,,
+IFR Comms,"What, if any, is the abbreviated call sign of "FASTAIR 2345"?",FASTAIR 45.,FASTAIR 345.,2345.,No abbreviated form.,4,,
+IFR Comms,"What is the correct call sign of "FASTAIR 345" in the initial call to the aerodrome control tower and the approach control unit, if the aircraft has a maximum take-off weight of 136 tonnes?",FASTAIR 345.,FASTAIR 345 WIDEBODY.,HEAVY FASTAIR 345.,FASTAIR 345 HEAVY.,4,,
+IFR Comms,How will an ATS unit instruct Fastair 345 to contact Stephenville RADAR on frequency 132.0083 (8.33 KHz frequency spacing)?,Fastair 345 contact Stephenville RADAR on 132.010.,Fastair 345 contact Stephenville RADAR frequency 132.010.,Fastair 345 contact Stephenville RADAR channel 132.010.,Fastair 345 contact Stephenville RADAR channel 132.0083.,1,,
+IFR Comms,Fastair 345 has been instructed to contact Stephenville ARRIVAL on frequency 118.0. What is the correct way to indicate it will follow this instruction?,118.0 FASTAIR 345.,CHANGING TO ARRIVAL FASTAIR 345.,CHANGING OVER FASTAIR 345.,STEPHENVILLE ARRIVAL FASTAIR 345.,1,,
+IFR Comms,On the readability scale what does "READABILITY 5" mean?,Problem to understand.,Perfectly readable.,Readable but with difficulty.,Unreadable.,2,,
+IFR Comms,On the readability scale what does "READABILITY 1" mean?,Readable.,Readable but with difficulty.,Unreadable.,Perfectly readable.,3,,
+IFR Comms,On the readability scale what does "READABILITY 4" mean?,Readable but with difficulty.,Readable.,Readable now and then.,Perfectly readable.,2,,
+IFR Comms,On the readability scale what does "READABILITY 3" mean?,Readable.,Perfectly readable.,Readable now and then.,Readable but with difficulty.,4,,
+IFR Comms,Select the correct and complete phrase to initiate a readability check:,"ground station identification, aircraft identification, the words "readability check"","aircraft identification, the words "radio check"","aircraft identification, the words "how do you read?"","ground station identification, aircraft identification, the words "radio check", frequency in use",4,,
+IFR Comms,On the readability scale what does "READABILITY 2" mean?,Readable now and then.,Readable but with difficulty.,Readable.,Unreadable.,1,,
+"IFR Comms,Which of the following has to be read-back?
+1) Taxi clearances.
+2) Surface winds XXX at XX kts.
+3) Climb to XXXX ft.
+4) Turn right heading XXX.
+5) Runway XX in use.
+6) Braking action poor.,""1, 3, 4, 5, 6"",""1, 2, 3, 4, 6"",All of the above.,""1,3,4,5"",4,,"
+"IFR Comms,Which of the following messages sent by ATC to an aircraft in
+flight must be read back?
+1) Descend to (altitude) 3000 feet.
+2) Wind 240°, 15 knots, gusts 30 knots.
+3) Turn right heading 210.
+4) Reduce speed to 160 knots.
+5) Squawk 1723.
+6) Braking action poor.,""1,2,3,5"",""1, 3, 4, 5, 6"",""1,3, 4, 5"",""1, 2, 3, 4, 5,6"",3,,"
+IFR Comms,What is the correct way for the pilot to acknowledge that ATIS Information Golf has been received?,We have the ATIS Golf.,Weather Golf received.,We have the Information.,Information Golf.,4,,
+IFR Comms,Must a general call be acknowledged?,No.,"Yes, from all stations in a random sequence.","Yes, from all stations in the sequence they have been addressed.","Yes, but only from the station first called.",1,,
+IFR Comms,Which elements of instructions or information shall always be read back?,"QNH, SSR code, approach aid serviceability.","SSR code, QNH, take-off clearance, speed instructions.","ATC clearance, speed instructions, runway state information.","QNH, weather information, runway-in-use.",2,,
+IFR Comms,RADAR instructs aircraft X-BC: "X-BC SQUAWK STANDBY". What does this mean?,X-BC is requested to standby for radar vectors.,X-BC is requested to standby as the radar controller is busy.,X-BC is requested to switch to standby position.,X-BC is requested to standby on the frequency.,3,,
+IFR Comms,RADAR instructs aircraft X-BC: "X-BC RESET SQUAWK 1015". What does this mean?,X-BC is requested to set new code 1015.,X-BC has been identified at 10:15 (UTC).,X-BC is requested to reselect SSR code 1 015.,X-BC has been identified by SSR code1 015. ,3,,
+IFR Comms,RADAR informs aircraft X-BC: "X-BC IDENTIFIED". What does this mean?,Radar identification has been achieved.,X-BC should perform an identification turn.,X-BC is not visible on the radar screen.,X-BC should operate the IDENT-button.,1,,
+IFR Comms,What does the phrase "SQUAWK 1234" mean?,Make a test transmission on 123.4 MHz.,Standby on frequency 123.4 MHz.,Select code 1 234 on the SSR transponder.,Give a short count for DF (direction finder).,3,,
+IFR Comms,What does the instruction "FASTAIR 345, RESET SQUAWK 1240" mean?,RADAR informs Fastair 345 that radar service is terminated at time 1 240.,RADAR instructs Fastair 345 to stop squawk 1 240 immediately.,Fastair 345 is requested to reselect assigned mode and code 1240.,Fastair 345 is requested to set new code 1 240.,3,,
+IFR Comms,RADAR instructs aircraft X-BC: "X-BC SQUAWK IDENT". What does this mean?,Radar identification has been achieved by correlating an observed radar blip with aircraft XY-ABС.,X-BC shall reselect his assigned mode and code.,X-BC shall operate the IDENT button.,X-BC should perform an identification turn of at least 020 degrees,3,,
+IFR Comms,Which Q-code is used to report altitude?,QNH,QNJ,QFE,QFF,1,,
+IFR Comms,If you are requested to report your height. To which Q-code setting would you refer?,QFE,QDM,QBI,QNH,1,,
+IFR Comms,A message preceded by the phrase "TRANSMITTING BLIND DUE RECEIVER FAILURE" shall be transmitted:,on the regional guard frequency.,on all available aeronautical stations.,on the international emergency frequency.,on the frequency presently in use.,4,,
+IFR Comms,After suffering a radio receiver failure the pilots should make blind transmissions preceded by the phrase "TRANSMITTING BLIND DUE TO RECEIVER FAILURE" and subsequently:,hold for 5 minutes.,enter the next enroute holding pattern encountered.,advise the time of the next intended transmission.,proceed to the pre-planned alternate.,3,,
+IFR Comms,In case of a SSR transponder failure occurring after departure of an IFR flight, the pilot shall:,continue the flight in VMC.,squawk 7 600.,land at the nearest suitable aerodrome for repair.,inform the competent ATC unit immediately.,4,,
+IFR Comms,An aircraft encountering radio communication failure on an IFR flight in VMC is assumed to:,squawk IDENT and proceed to the alternate aerodrome.,continue the flight to destination aerodrome in any case.,"continue to fly in VMC, land at the nearest suitable aerodrome,report its arrival.",leave controlled airspace and continue the flight within uncontrolled airspace.,3,,
+IFR Comms,"An aircraft encountering radio communication failure on an IFR flight in IMC has to land, if possible, within:","30 minutes after ETA or the last EAT, whichever is later.",15 minutes after vacating the transition layer.,30 minutes after noticing the radio failure.,30 minutes after waiting for the EAT.,1,,
+IFR Comms,An aircraft on an IFR flight in VMC experiences radio communication failure. The aircraft is assumed to:,land at the alternate aerodrome.,land at the nearest suitable aerodrome.,land at the destination aerodrome.,return to the aerodrome of departure.,2,,
+IFR Comms,A departing aircraft experiencing radio communication failure on an IFR flight under radar vectors has to:,squawk 7600 and maintain the heading last assigned by ATC for a period of 3 minutes and then return to the flight path in accordance with the current flight plan.,squawk 7600 and thereafter return to the route indicated in the current flight plan in the most direct manner.,"squawk 7 600, maintain present heading for 1 minute and thereafter return to the route indicated in the current flight plan on the shortest way.","squawk 7600 and thereafter, regardless of any limitation instructed by ATC, return to the route indicated in the current flight plan on the shortest way.",2,,
+IFR Comms,Under which of the following circumstances shall an aircraft station squawk 7600?,When approaching a prohibited area.,When flying over desert areas.,When entering bad weather areas.,In case of radio communication failure.,4,,
+IFR Comms,"If all attempts to establish radio contact with a ground station fail, the pilot of an aeroplane shall transmit messages preceded by the phrase:","PAN PAN, PAN PAN, PAN PAN.","READ YOU ONE, READ YOU ONE.",HOW DO YOU READ?,TRANSMITTING BLIND.,4,,
+IFR Comms,An aircraft is squawking 7600. This indicates:,It is diverting to the alternate aerodrome.,It is about to make a forced landing.,It is unable to establish communication due to radio equipment failure.,It is requesting immediate level change.,3,,
+IFR Comms,"In case the transponder fails before the departure for an IFR flight, the pilot shall:",obtain prior permission by ATC to conduct the flight.,cancel flight.,insert under item 18 of the flight plan TRANSPONDER UNSERVICABLE and inform ATC after departure.,inform FIS for relay to AIS.,1,,
+IFR Comms,The expression "TRANSMITTING BLIND DUE TO RECEIVER FAILURE" implies that no answer is expected. It shall be used by:,an aircraft station being aware of receiver failure.,a ground station broadcasting information to all listening stations.,an aircraft station doing blind transmissions at a ""nontowered"" airfield.,a radar controller performing a PAR or SRE final approach.,1,,
+IFR Comms,What action is required by the pilot of an aircraft station if he/she is unable to establish radio contact with an aeronautical station?,Squawk mode A code 7500.,Divert to the alternate airport.,Land at the nearest aerodrome appropriate to the route of flight.,Try to establish communication with other aircraft or aeronautical stations.,4,,
+IFR Comms,An aircraft experiencing radio communication failure on an IFR flight in IMC is assumed to:,execute a VMC approach at the nearest suitable aerodrome.,proceed to an area from where the flight can be continued according to the visual flight rules.,proceed in accordance with the current flight plan to the designated navigation aid serving the destination aerodrome.,divert to the most suitable aerodrome according to the route of flight.,3,,
+IFR Comms,"When transmitting a message preceded by the phrase "TRANSMITTING BLIND DUE TO RECEIVER FAILURE" during an enroute flight, the aircraft station shall also:",land at the nearest airfield/airport.,return to the airport of departure.,join base leg when approaching the airfield for landing.,advise the time of its next intended transmission.,4,,
+IFR Comms,An aircraft station fails to establish radio contact with an aeronautical station on the designated frequency. What action is required by the pilot?,Continue the flight to the destination airport without any communication.,Land at the nearest airport without an ATC unit.,Attempt to establish contact with the station on an alternative frequency.,Return to the airport of departure.,3,,
+IFR Comms,"If an aircraft experiences a radio failure, the transponder should be set to:",7500,2000,7700,7600,4,,
+IFR Comms,Within the European Region, an aircraft experiencing radio communication failure on an IFR departure has to squawk 7600 and:,land at the departure aerodrome in any case.,maintain the altitude last assigned by ATC for a period of 5 minutes and then continue in accordance with the flight plan.,maintain the level last assigned by the ATC for a period of 7 minutes and then climb in accordance with the flight plan.,climb immediately to the cruising level indicated in the flight plan.,3,,
+IFR Comms,When shall the pilot of an aircraft experiencing communications failure keep a watch for instructions passed by visual signals?,When flying VFR above clouds.,When the aircraft is entering the traffic pattern of an uncontrolled airport.,When the aircraft is forming part of the aerodrome traffic at a controlled aerodrome.,When entering a FIR during an IFR flight.,3,,
+IFR Comms,An aircraft encountering radio communication failure on an IFR flight in IMC has to hold over the designated navigation aid serving the destination aerodrome:,"3 minutes, if an expected approach time is not acknowledged.",5 minutes in any case.,until the expected approach time last received and acknowledged.,under no circumstances.,3,,
+IFR Comms,What do the spoken words "PAN PAN MEDICAL" mean?,The aircraft has an urgent need of medical care upon landing at destination airport.,The phrase/signal is inadmissible in radiotelephony.,The message which follows concerns a protected medical transport operated by aircraft assigned exclusively to medical transportation.,The aircraft has a sick passenger on board and requests priority to land.3,,,
+IFR Comms,A message concerninga protected medical transport operated by aircraft assigned exclusively to medical transportation shall be preceded by the signal:,PAN PAN TRANSPORT,PROTECTED TRANSPORT,PAN PAN MEDICAL,MEDICAL TRANSPORT,3,,
+"IFR Comms,""List the content of a PAN MEDICAL message in correct
+sequence:
+""""PAN PAN - PAN PAN - PAN PAN...[items in correct sequence]...""""
+1) number and type of medical transport (e.g. A319, type 01)
+2) next reporting point and EТА
+3) registration mark / call sign
+4) radiotelephony signal ""MEDICAL""
+5) position
+6) heading / intended route
+7) other information (e.g. altitude...)"",""4), 3), 7), 1), 5), 2), 6)"",""3), 4), 5), 6), 7), 1), 2)"",""3), 4), 1), 5), 6), 7), 2)"",""4), 3), 5), 1), 6), 2), 7)"",4,,"
+IFR Comms,"DISTRESS" is defined as:,a condition concerning the safety of a person on board or within sight and requiring immediate assistance.,a condition concerning the attitude of an aircraft when intercepting the localizer during an ILS approach.,"a condition concerning the safety of an aircraft or of a person on board, but which does not require immediate assistance.","a condition of being threatened by serious and / or imminent danger and requiring immediate assistance.",4,,
+IFR Comms,A signal sent by radiotelephony consisting of the spoken words ""MAYDAY MAYDAY MAYDAY"" means:,the aircraft has a very urgent message to transmit concerning the safety of a ship, aircraft or vehicle.,the aircraft is forced to perform a fuel dumping procedure.,the aircraft has a message to transmit concerning adverse weather conditions along its route of flight.,imminent danger threatens the aircraft and immediate assistance is required.,4,,
+IFR Comms,Which of the following messages shall a station in control of distress use to impose silence?,"ALL STATIONS IN THIS FREQUENCY, MAYDAY TRAFFIC.","STOP TRANSMITTING, MAYDAY.","STOP TRANSMITTING, EMERGENCY.","STOP TRANSMITTING, DISTRESS.",2,,
+IFR Comms,When an aircraft is no longer in distress, it shall transmit a message cancelling the distress condition. Which words shall this message include?,"MAYDAY, RESUMING NORMAL OPERATIONS.",MAYDAY CANCELLED.,DISTRESS CONDITION TERMINATED.,CANCEL DISTRESS.,4,,
+IFR Comms,The frequency 121.500 MHz is designated as:,a regional UHF frequency.,a frequency for air-to-air communication.,an airline operation frequency.,an international emergency frequency.,4,,
+IFR Comms,"When an aircraft station receives the call "ALL STATIONS STEPHENVILLE RADAR, STOP TRANSMITTING MAYDAY" it is requested:",to continue normal communication on the frequency in use.,to leave the frequency in use.,to leave the frequency in use.,to assist Stephenville RADAR in handling the distress traffic.,3,,
+IFR Comms,The distress communication and silence conditions shall be terminated by transmitting a message. Which words shall this message include?,DISTRESS TRAFFIC ENDED.,"DISREGARD DISTRESS COMMUNICATION, OUT.",EMERGENCY COMMUNICATION FINISHED.,MAYDAY TRAFFIC ENDED.,1,,
+IFR Comms,The distress signal and the distress message to be sent by an aircraft in distress should be on:,the air-ground frequency in use at the time.,the regional guard frequency.,the emergency frequency in any case.,the FIS frequency designated for the airspace concerned.,1,,
+IFR Comms,An aircraft squawking 7700 indicates to the ground station that:,there is a sick passenger on board.,the aircraft is in distress.,the aircraft's transceiver is unserviceable.,the aircraft is being hijacked.,2,,
+IFR Comms,Which of the following frequencies is an international emergency frequency?,121.005 MHz,121.050 MHz,121.500 MHz,122.500 MHz,3,,
+IFR Comms,An aircraft in state of emergency shall squawk:,7500,7600,7700,7777,3,,
+IFR Comms,The distress message shall contain as many as possible of the following elements/details:,"aircraft call sign, nature of distress, pilots intention, present position, level and heading.","aircraft call sign, aerodrome of departure, position and level.","aircraft call sign, present position, assistance required.","aircraft call sign, route of flight, destination airport.",1,,
+IFR Comms,"When an aircraft station receives the call "ALL STATIONS STEPHENVILLE RADAR, DISTRESS TRAFFIC ENDED" it is requested:",to acknowledge receipt of this message.,to resume normal communication with Stephenville RADAR.,to impose silence to other stations in its vicinity.,to discontinue communication with Stephenville RADAR.,2,,
+IFR Comms,Radio silence can be imposed by an aeronautical station in case of:,distress traffic.,overload of the frequency.,technical difficulties.,urgency communication.,1,,
+IFR Comms,An aircraft in distress shall send the following signal by radiotelephony:,"URGENCY, URGENCY, URGENCY","DETRESFA, DETRESFA, DETRESFA","MAYDAY, MAYDAY, MAYDAY","PAN PAN, PAN PAN, PAN PAN",3,,
+IFR Comms,An urgency message shall be preceded by the radiotelephony urgency signal:,"ALERFA, spoken three times.","URGENCY, spoken three times.","MAYDAY, spoken three times.","PAN PAN, spoken three times.",4,,
+IFR Comms,The urgency message to be sent by an aircraft reporting an urgency condition shall contain at least the following elements/details:,"name of the station addressed, present position, assistance required.","aircraft call sign, destination airport, ETA at destination, route of flight.","aircraft call sign, nature of the urgency condition, pilots intention, present position, level and heading.","aircraft identification, aerodrome of departure, level and heading.",3,,
+"IFR Comms,""A signal sent by radiotelephony consisting of the spoken words ""PAN PAN, PAN PAN, PAN PAN"" means:"",the aircraft is diverting from the route cleared because of a
+thunderstorm and asks for immediate reclearance.,imminent danger threatens the aircraft and immediate
+assistance is required.,an aircraft on final approach is starting the missed approach
+procedure.,""the aircraft has a very urgent message to transmit concerning
+the safety of a ship, aircraft or other vehicle, but immediate
+assistance is not required."",4,,"
+"IFR Comms,On hearing an urgency message a pilot shall:,monitor the frequency to ensure assistance if required.,impose radio silence on the frequency in use.,acknowledge the message immediately.,""change the frequency, because radio silence will be imposed
+on the frequency in use."",1,,"
+"IFR Comms,Which frequency shall be used for the first transmission of an
+urgency call?,The air-ground frequency in use at the time.,The international emergency frequency.,The regional guard frequency.,Any frequency at pilot's discretion.,1,,"
+"IFR Comms,During approach you ask ATC about current RVR. You expect
+the answer to be:,RVR 3000 ft,RVR 0.5 NM,RVR 500 m,RVR 500 yd,3,,"
+"IFR Comms,What does ""FRICTION COEFFICIENT 45"" in a runway report
+mean?,Braking action poor.,Braking action medium.,Braking action good.,Braking action not measurable.,3,,"
+"IFR Comms,What does ""FRICTION COEFFICIENT 20"" in a runway report
+mean?,Braking action medium.,Braking action poor.,Braking action unreliable.,Braking action good.,2,,"
+"IFR Comms,Under what runway conditions is the braking action reported
+to be ""UNRELIABLE""?,Runway conditions normal.,Runway covered with ice.,Runway covered with dry snow.,Runway covered with wet snow and slush.,4,,"
+"IFR Comms,""When the term ""OVERCAST"" is used in an aviation routine
+weather report (METAR), the amount of clouds covering the
+sky is:"",50% or more.,No clouds but poor ground visibility.,100%.,Less than 50%.,3,,"
+"IFR Comms,How is the visibility in an aviation routine weather report
+(METAR) expressed in plain language?,in feet and nautical miles.,in nautical miles only.,""up to 1 500 m in metres, above in kilometres."",""up to 5000 m in metres, above in kilometres."",4,,"
+"IFR Comms,When transmitting runway visual range (RVR) for runway 16
+ATC will use the following phrase:,""RVR runway 16 touchdown ... metres, mid-point ... metres,
+stop end... metres."",""RVR runway 16 ... metres diagonal ... metres diagonal…metres"",""The values of the transmissometer are: ... metres and...
+metres."",""RVR at the beginning of runway 16 is ... metres."",1,,"
+IFR Comms,Which information can aircraft in flight obtain by VOLMET?,SIGMET,SPECI and TAF,Aviation routine weather reports (METAR) of specific airports.,Runway reports.,3,,
+IFR Comms,What is normally used for ATIS broadcasts?,DME voice channel.,NDB frequencies.,Discrete VHF frequency or/and VOR.,Voice channel of an ILS.,3,,
+"IFR Comms,During a flight you encounter an isolated thunderstorm which
+is embedded in other clouds. You:,should report it together with your next scheduled routine
+metrological report.,""report it as soon as possible, by reporting it as a special airreport."",do not need to report it.,report this information after landing at your destination.,2,,"
+"IFR Comms,""The route forecast included the chance of isolated
+thunderstorms. While flying in nimbostratus clouds, the pilot
+sees a flash of lightning. What communication, if any, should
+the pilot make to ATS?"",A special observation report should be made because the pilot
+has encountered an embedded thunderstorm.,The observation report can be omitted because
+thunderstorms were forecast.,A PAN call on the frequency in use should be made because
+the pilots' message is urgent.,""The pilot should include the information in the next position
+report, which is due in 15 min."",1,,"
+"IFR Comms,How can aviation routine weather reports (METAR) of specific
+airports be obtained by aircraft in flight?,VOLMET,ATIS,AFIS,SIGMET,1,,"
+"IFR Comms,An Automatic Terminal Information Service provides:,current meteorological and operational information essential
+for the safety of the air navigation within a FIR.,routine information to arriving and departing aircraft by means
+of continuous and repetitive broadcast.,information concerning enroute weather phenomena which
+may effect the safety of aircraft operation.,weather reports relating a specific number of aerodromes
+located within a flight information region (FIR).,2,,"
+"IFR Comms,What should a pilot report during an IFR flight (weather
+conditions / phenomena)?,Light to moderate turbulence.,A light strike when it was forecasted.,Light icing.,A heavy sandstorm which is not in the vicinity of the track.,4,,"
+"IFR Comms,Which is the frequency separation between consecutive
+frequencies in the VHF band?,250 kHz,25 kHz,75 kHz,50 kHz,2,,"
+"IFR Comms,To which sector of frequency bands does the mobile
+communication frequency in aviation belong?,To the two bands before the SHF band and including 301
+MHz.,To the VLF band and including 30 MHz.,To the two bands before the UHF band and including 30 MHz.,To the sector immediately after the MF band.,3,,"
+"IFR Comms,Propagation of the radio waves is influenced by different
+factors in the atmosphere. Attenuation of radio waves is
+increased by:,higher temperature and lower air density.,lower temperature and lower air density.,lower temperature and higher air density.,higher temperature and higher air density.,3,,"
+"IFR Comms,What happens if the radio wave is travelling by two alternative
+routes (surface wave and sky wave or two or more sky waves)
+and arrives at the receiving aerial at different times?,fading,super refraction,scatter refraction,nothing,1,,"
+"IFR Comms,What are the propagation characteristics of VHF?,The waves are reflected at the ionosphere at the height of
+about 100 km and reach the Earth surface in the form of skywaves.,The waves travel along the surface of the Earth and penetrate
+into valleys in a way that topographical obstacles have no
+influence.,Practically straight line similar to light waves.,Similar to short waves with practically no atmospheric
+disturbance.,3,,"
+"IFR Comms,Under which of the following circumstances may you expect a
+solid reception of the TOWER frequency 118.2 MHz?,""Aircraft at low level, in the vicinity of the ground station, in the
+radio shadow zone of a hill."",""Aircraft at high level in the vicinity of the ground station."",""Aircraft at low level, far away from the ground station, in the
+radio shadow zone of a hill."",""Aircraft at low level but far away from the ground station."",2,,"
+"IFR Comms,Which is the maximum distance at which you might expect
+solid VHF contact over flat terrain at FL100?,About 300 NM.,About 12 NM.,About 120 NM.,About 30 NM.,3,,"
+"IFR Comms,How would the strength of a received signal change if an
+aircraft will be at a distance of 10 NM from a station instead
+of 40 NM from the same station?,Decreases by a factor of 4.,Increases by a factor of 16.,The strength does not change.,Increases by a factor of 2.,2,,"
+IFR Comms,What is the frequency spacing (VHF) above FL195?,12.5 kHz,25 kHz,75 kHz,8.33 kHz,4,,
+"IFR Comms,Which type of signal is used for aeronautical radio
+communication?,Impulse modulated sky waves.,Frequency modulated ground waves.,Amplitude modulated direct waves.,Frequency modulated direct waves.,3,,"
+"IFR Comms,Which is the frequency band containing frequencies of the
+Aeronautical Mobile Service?,1810-2850 kHz,108.000 - 117.975 MHz,118.000-136.975 MHZ,11 650-13 200 kHz,3,,"
+"IFR Comms,""You are descending overhead a flat surface, 150 NM away
+from the ground station. The elevation of the station is 400 ft.
+At what approximate altitude do you expect to loose radio
+contact with the ground station?"",10 500 ft,17 000 ft,21 500 ft,15 500 ft,1,,"
+"IFR Comms,How would the maximum range of an aeronautical station
+change if the power of the station is doubled?,Increase by a factor of 4.,Increase by a factor of 1.4.,The range will not change.,Increase by a factor of 2.,2,,"
+"IFR Comms,Which factor(s) will normally influence the reception of VHF
+transmission?,Level of aircraft and terrain elevations.,The ionosphere.,Electrical discharges as they happen frequently in
+thunderstorms.,Day and night effect.,1,,"
+"IFR Comms,To which frequency bands do the frequencies 118.000 -
+136.975 MHz of the Aeronautical Mobile Service belong?,Low Frequency.,Very High Frequency.,Very Low Frequencу.,Medium Frequency.,2,,"
+IFR Comms,What does the abbreviation "ACARS" stand for?,Aircraft Communications Addressing & Reporting System,Aircraft Communication Alerting System,Alert Communications Addressing & Reporting System,Aircraft Alert Report System,1,,
+"IFR Comms,""Following a TCAS Resolution Advisory (RA) the ATC controller
+shall not attempt to modify the aircraft's flight path, unless the
+pilot announces:"",""Clear of conflict, returning to (assigned clearance)""."",""""Clear of conflict""."",""""Clear of RA, returning to (assigned clearance)""."",""""Roger RA""."",2,,"
+"IFR Comms,The SELCAL system:,allows the aircraft to be contacted on VHF and HF frequencies
+that are not being monitored by the flight crew.,allows two way data transmission between operator and
+aircraft.,allows satellite communication.,allows two way VHF data transmission between ATC and
+aircraft.,1,,"
+"IFR Comms,""When a TCAS Resolution Advisory (RA) requires a deviation
+from an ATC clearance, pilots should report to the ATС
+controller, as soon as practicable after he starts to deviate,
+with his callsign plus the phraseology:"",""""TCAS Conflict""."",""""TCAS Alert""."",""""TCAS RA""."",""""TCAS TА""."",3,,"
+"IFR Comms,""In the event that an ATC controller issued a clearance or an
+instruction contradictory to the TCAS Resolution Advisory
+(RA), the flight crew will follow the RA and inform the
+controller using the following phrase:"",""""Unable Now""."",""""Negative, Unable to Comply""."",""""Wilco after TCAS RA""."",""""Unable, TCAS RA""."",4,,"
+
+
