@@ -327,7 +327,7 @@ Flight Plan,"Given: Distance X to Y: Mach number. Temperature: 2700 NM 0.75 -45 
 Flight Plan,"Given: Distance from departure to destination: 150 NM True track: 142° W/V: 200/15 TAS: 132 kts What is the distance of the PET from the departure point?",71 NM,75 NM,79 NM,134 NM,,
 Flight Plan,"Given: Distance Q to R: 1760 NM Ground speed OUT: 435 kts Ground speed BACK: 385 kts The time from Q to the point of equal time (PET) between Q and R is:",110 min.,114 min.,102 min.,106 min.,,,
 Flight Plan,Given: Distance from departure to destination: 180 NM Safe Endurance: TAS: Ground speed out: 2 hrs 120 kts 135 kts 105 kts 07:16 Ground speed home: What is the distance and time of the PSR from the departure point?,Distance: 59 NM; Time: 30 min.,Distance: 118 NM; Time: 53 min.,Distance: 79 NM; Time: 45 min.,Distance: 62 NM; Time: 28 min.,2,,
-Flight Plan,From the departure point, the distance to the point of equaltime is:,proportional to the sum of ground speed out and ground speed back.,inversely proportional to ground speed back.,inversely proportional to the total distance to go.,inversely proportional to the sum of ground speed out and ground speed back.,4,,
+Flight Plan,"From the departure point, the distance to the point of equaltime is:",proportional to the sum of ground speed out and ground speed back.,inversely proportional to ground speed back.,inversely proportional to the total distance to go.,inversely proportional to the sum of ground speed out and ground speed back.,4,,
 Flight Plan,"Given: Distance from departure to destination: 2.500 NM GS Out: GS Home: 540 kts 470 kts What is the time of the PET from the departure point?",171 min,129 min,149 min,28 min,2,,
 Flight Plan,"Given: Distance from A to ?: 2050 NM Mean groundspeed on: 440 kts Mean groundspeed back: 540 kts The distance to the point of equal time (PET) between A and Bis:",1153 NM,1130 N?,920 NM,3,,
 Flight Plan,"An aircraft was over A at 14:35 hours flying direct to B. Given: Distance A to B: 2.900 NM True airspeed: 470 kts Mean wind component OUT: +55 kts Mean wind component BACK: -75 kts The ETA for reaching the point of equal time (PET) between A and B is:",17:44,18:46,17:21,16:57,4,,
@@ -415,6 +415,7 @@ Flight Plan,"For a planned flight the calculated fuel is as follows: Flight time
 Flight Plan,"An aircraft flight planning chart states that the time to reach FL190 at a given gross mass is 22 minutes with a still air distance of 66 NM. What will be the distance travelled with a? average headwind component of 35 kts?",79 NM,85 NM,53 NM,61 NM,3,,
 Flight Plan,"For a planned flight the calculated fuel is as follows: sufficient for a planned flight time of 5 hrs 10 min Reserve fuel: 30% of the planned trip fuel Start up and taxi 25 kg fuel: Block Fuel: 645 kq The remaining flight time to destination is 1 h 50 min. The minimum fuel aboard to cover the rest of the flight is:",169 kg,337 kg,220 kg,312 kg,4,,
 Flight Plan,A sector distance is 450 NM long. The TAS is 460 kts. The wind component is 50 kts tailwind. What is the still air distance?,414 Nautical Air Miles (NAM).,511 Nautical Air Miles (NAM).,406 Nautical Air Miles (NAM).,499 Nautical Air Miles (NAM).,3,,
+
 
 
 
