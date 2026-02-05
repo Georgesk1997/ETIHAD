@@ -222,6 +222,43 @@
             color: white;
         }
         
+        /* Search styles */
+        mark {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .question-preview {
+            font-size: 13px;
+            text-align: left;
+            max-height: 120px;
+            overflow-y: auto;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .question-preview::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .question-preview::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .question-preview::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .question-preview::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
         /* Auto-advance animations */
         @keyframes autoAdvancePulse {
             0% { transform: scale(1); }
@@ -280,6 +317,31 @@
                         <button onclick="refreshApp()" class="refresh-btn">
                             <i class="fas fa-sync-alt"></i> Refresh
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="row align-items-center mb-4">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text" style="background: white; border-right: 0;">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control" 
+                               placeholder="Search questions or answers..." 
+                               style="border-left: 0; padding-left: 0;">
+                        <button onclick="clearSearch()" class="btn btn-outline-secondary" type="button">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check form-switch float-end">
+                        <input class="form-check-input" type="checkbox" id="searchAnswersToggle">
+                        <label class="form-check-label" for="searchAnswersToggle">
+                            Include answers in search
+                        </label>
                     </div>
                 </div>
             </div>
@@ -388,7 +450,7 @@
                     | <span id="questionCount">0</span> Questions | 
                     <span id="categoryCount">7</span> Categories
                 </p>
-                <small>Professional pilot certification preparation © 2024</small>
+                <small>Professional pilot preparation © K-TECH</small>
             </div>
         </div>
     </div>
