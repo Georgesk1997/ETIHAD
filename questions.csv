@@ -3,6 +3,14 @@ Flight Plan,What does this flight planning chart show?,Standard instrument depar
 Flight Plan,When must a flight plan be filed for an IFR flight?,At least 30 minutes before departure,At least 1 hour before departure,At least 2 hours before departure,No specific time requirement,1,,IFR flight plans should be filed at least 30 minutes before departure.
 IFR Comms,What phrase should be used to acknowledge an altitude assignment?,"Roger, climbing",Climbing to assigned altitude,Cessna 123AB climbing to 5000,"Wilco, climbing",3,,Always include aircraft identification when acknowledging assignments.
 Mass And Balance,What does the term arm refer to in weight and balance?,Weight of an item,Distance from datum,Moment divided by weight,Center of gravity limit,2,,Arm is the horizontal distance from the reference datum.
+OPS,"Refer to figure 070-01
+On the diagram where:
+TN = True North
+MN = Magnetic North
+GN = Grid North
+If the magnetic variation is equal to 65°W and if the grid
+variation is equal to 4° E, the correct arrangement of the
+different north is:",2,1,4,3,4,/images/OPS/ops_page-0001.jpg,
 OPS,What is the minimum equipment for day VFR flight?,Fuel gauge and oil pressure,Airspeed indicator and altimeter,Tachometer and oil temperature,All of the above,4,,FAR 91.205 specifies required instruments and equipment.
 Performance,What factor most increases takeoff distance?,Headwind,Tailwind,Low temperature,Low humidity,2,,Tailwind significantly increases takeoff distance.
 RNAV,What does RNAV stand for?,Area Navigation,Radio Navigation,Required Navigation,Regional Navigation,1,,RNAV stands for Area Navigation.
@@ -415,6 +423,7 @@ Flight Plan,"For a planned flight the calculated fuel is as follows: Flight time
 Flight Plan,"An aircraft flight planning chart states that the time to reach FL190 at a given gross mass is 22 minutes with a still air distance of 66 NM. What will be the distance travelled with a? average headwind component of 35 kts?",79 NM,85 NM,53 NM,61 NM,3,,
 Flight Plan,"For a planned flight the calculated fuel is as follows: sufficient for a planned flight time of 5 hrs 10 min Reserve fuel: 30% of the planned trip fuel Start up and taxi 25 kg fuel: Block Fuel: 645 kq The remaining flight time to destination is 1 h 50 min. The minimum fuel aboard to cover the rest of the flight is:",169 kg,337 kg,220 kg,312 kg,4,,
 Flight Plan,A sector distance is 450 NM long. The TAS is 460 kts. The wind component is 50 kts tailwind. What is the still air distance?,414 Nautical Air Miles (NAM).,511 Nautical Air Miles (NAM).,406 Nautical Air Miles (NAM).,499 Nautical Air Miles (NAM).,3,,
+
 
 
 
