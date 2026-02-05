@@ -37,11 +37,31 @@ let categoryQuestions = [];
 let currentQuestionIndex = 0;
 let userScore = { correct: 0, attempted: 0 };
 let questionShuffledState = new Map();
+let searchResults = [];
+let isSearchActive = false;
 
 // ==================== INITIALIZATION ====================
 window.addEventListener('DOMContentLoaded', function() {
     console.log("ETIHAD CP Aviation System Initializing...");
     initializeSystem();
+    
+    // Add search input listener
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            performSearch(e.target.value);
+        });
+    }
+    
+    // Add search toggle listener
+    const searchToggle = document.getElementById('searchAnswersToggle');
+    if (searchToggle) {
+        searchToggle.addEventListener('change', function() {
+            if (searchInput.value.trim() !== '') {
+                performSearch(searchInput.value);
+            }
+        });
+    }
 });
 
 // ==================== SYSTEM INITIALIZATION ====================
@@ -101,8 +121,8 @@ function processCSV(csvText) {
                 let imagePath = '';
                 if (columns.length > 7 && columns[7]) {
                     imagePath = columns[7].trim();
-                    if (imagePath && !imagePath.startsWith('/')) {
-                        imagePath = '/' + imagePath;
+                    if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('/') && !imagePath.startsWith('./')) {
+                        imagePath = './' + imagePath;
                     }
                 }
                 
@@ -153,7 +173,7 @@ function loadSampleData() {
             text: "What does this flight planning chart show?",
             originalOptions: ["Standard instrument departure", "Enroute navigation chart", "Standard terminal arrival", "Weather minimums chart"],
             originalCorrect: 0,
-            image: "/images/Flight Plan/site-1.jpg",
+            image: "./images/Flight Plan/site-1.jpg",
             explanation: "This is a Standard Instrument Departure (SID) chart.",
             currentOptions: null,
             currentCorrect: null
@@ -222,6 +242,158 @@ function displayCategories() {
     });
     
     document.getElementById('categoryCount').textContent = Object.keys(CATEGORY_CONFIG).length;
+}
+
+// ==================== SEARCH FUNCTIONALITY ====================
+function performSearch(searchTerm) {
+    if (!searchTerm || searchTerm.trim() === '') {
+        clearSearch();
+        return;
+    }
+    
+    const includeAnswers = document.getElementById('searchAnswersToggle')?.checked || false;
+    const term = searchTerm.toLowerCase().trim();
+    
+    searchResults = allQuestions.filter(question => {
+        // Search in question text
+        if (question.text.toLowerCase().includes(term)) {
+            return true;
+        }
+        
+        // Search in answers if enabled
+        if (includeAnswers) {
+            for (let option of question.originalOptions) {
+                if (option.toLowerCase().includes(term)) {
+                    return true;
+                }
+            }
+            
+            // Also search in explanation
+            if (question.explanation && question.explanation.toLowerCase().includes(term)) {
+                return true;
+            }
+        }
+        
+        // Search in category
+        if (question.category.toLowerCase().includes(term)) {
+            return true;
+        }
+        
+        return false;
+    });
+    
+    if (searchResults.length > 0) {
+        displaySearchResults(searchResults, term);
+        showMessage(`Found ${searchResults.length} matching questions`, "success");
+    } else {
+        showMessage("No matching questions found", "info");
+        clearSearch();
+    }
+}
+
+function displaySearchResults(results, searchTerm) {
+    isSearchActive = true;
+    
+    const container = document.getElementById('categoryGrid');
+    container.innerHTML = '';
+    
+    // Group results by category
+    const resultsByCategory = {};
+    results.forEach(question => {
+        if (!resultsByCategory[question.category]) {
+            resultsByCategory[question.category] = [];
+        }
+        resultsByCategory[question.category].push(question);
+    });
+    
+    // Display each category with matching questions
+    Object.keys(resultsByCategory).forEach(categoryName => {
+        const questionsInCategory = resultsByCategory[categoryName];
+        const config = CATEGORY_CONFIG[categoryName] || {
+            icon: "fa-question",
+            color: "#6c757d"
+        };
+        
+        const card = document.createElement('div');
+        card.className = 'category-card';
+        card.innerHTML = `
+            <div class="category-icon" style="background: ${config.color};">
+                <i class="fas ${config.icon}"></i>
+            </div>
+            <h5 class="fw-bold mb-2">${categoryName}</h5>
+            <div class="mb-2">
+                <span class="badge bg-primary">${questionsInCategory.length} matches</span>
+            </div>
+            <div class="question-preview">
+                ${questionsInCategory.slice(0, 3).map(q => 
+                    `<div class="mb-2">
+                        <strong>•</strong> ${highlightText(q.text, searchTerm)}
+                    </div>`
+                ).join('')}
+                ${questionsInCategory.length > 3 ? 
+                    `<div class="text-muted">...and ${questionsInCategory.length - 3} more</div>` : ''}
+            </div>
+            <button onclick="startCategoryFromSearch('${categoryName}', ${JSON.stringify(questionsInCategory.map(q => q.id)).replace(/"/g, '&quot;')})" 
+                    class="btn btn-sm btn-primary mt-2">
+                <i class="fas fa-play"></i> Start with these
+            </button>
+        `;
+        
+        container.appendChild(card);
+    });
+    
+    // Add a clear search button
+    const clearCard = document.createElement('div');
+    clearCard.className = 'category-card';
+    clearCard.style.border = '2px dashed #6c757d';
+    clearCard.innerHTML = `
+        <div class="category-icon" style="background: #6c757d;">
+            <i class="fas fa-times"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Clear Search</h5>
+        <div class="mb-2 text-muted">Return to all categories</div>
+        <button onclick="clearSearch()" class="btn btn-sm btn-outline-secondary mt-2">
+            <i class="fas fa-arrow-left"></i> Back to all
+        </button>
+    `;
+    container.appendChild(clearCard);
+}
+
+function highlightText(text, searchTerm) {
+    if (!searchTerm) return text;
+    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
+}
+
+function startCategoryFromSearch(categoryName, questionIds) {
+    // Filter questions to only include the searched ones
+    categoryQuestions = allQuestions.filter(q => questionIds.includes(q.id));
+    currentCategory = categoryName;
+    currentQuestionIndex = 0;
+    userScore = { correct: 0, attempted: 0 };
+    questionShuffledState.clear();
+    
+    document.getElementById('categorySection').style.display = 'none';
+    document.getElementById('quizSection').style.display = 'block';
+    document.getElementById('statsSection').style.display = 'none';
+    document.getElementById('categoryNameDisplay').textContent = `${categoryName} (Search Results)`;
+    
+    shuffleQuestionsAndAnswers();
+    displayQuestion();
+    updateProgress();
+    updateScoreDisplay();
+    
+    showMessage(`Starting with ${categoryQuestions.length} filtered questions`, 'info');
+}
+
+function clearSearch() {
+    isSearchActive = false;
+    searchResults = [];
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    displayCategories();
 }
 
 // ==================== QUIZ FUNCTIONS ====================
@@ -294,11 +466,14 @@ function displayQuestion() {
     `;
     
     if (question.image && question.image.trim() !== '') {
-        const encodedImage = encodeURI(question.image);
+        // Clean up the image path
+        let imagePath = question.image.trim();
+        
         html += `
-            <div class="chart-image" onclick="viewImage('${encodedImage}')">
-                <img src="${encodedImage}" alt="Aviation chart" 
-                     onerror="handleImageError(this, '${encodedImage}')">
+            <div class="chart-image" onclick="viewImage('${encodeURIComponent(imagePath)}')">
+                <img src="${imagePath}" alt="Aviation chart" 
+                     onerror="handleImageError(this, '${encodeURIComponent(imagePath)}')"
+                     style="max-width: 100%; max-height: 300px; object-fit: contain;">
                 <div class="image-label">Click to enlarge</div>
             </div>
         `;
@@ -341,11 +516,14 @@ function displayQuestion() {
 }
 
 function handleImageError(img, imageUrl) {
+    console.log('Image failed to load:', imageUrl);
     img.src = 'https://via.placeholder.com/600x300/e0e7ff/0056a6?text=Chart+Not+Found';
     img.style.border = '2px dashed #0056a6';
     img.alt = 'Image not available';
-    img.parentElement.querySelector('.image-label').innerHTML = 
-        '<i class="fas fa-exclamation-triangle me-1"></i> Image not available';
+    const label = img.parentElement.querySelector('.image-label');
+    if (label) {
+        label.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Image not available';
+    }
 }
 
 // ==================== ANSWER SELECTION WITH AUTO-ADVANCE ====================
@@ -488,10 +666,17 @@ function shuffleArray(array) {
 // ==================== IMAGE FUNCTIONS ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
-    document.getElementById('enlargedImage').src = decodeURI(imageUrl);
-    document.getElementById('enlargedImage').onerror = function() {
+    const decodedUrl = decodeURIComponent(imageUrl);
+    
+    // Try to load the image
+    const img = document.getElementById('enlargedImage');
+    img.src = decodedUrl;
+    
+    // Set up error handling for modal image too
+    img.onerror = function() {
         this.src = 'https://via.placeholder.com/800x600/e0e7ff/0056a6?text=Image+Not+Available';
     };
+    
     modal.show();
 }
 
