@@ -177,6 +177,17 @@
             font-style: italic;
         }
         
+        .image-name {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
         .stat-box {
             background: white;
             border-radius: 10px;
@@ -450,7 +461,7 @@
                     | <span id="questionCount">0</span> Questions | 
                     <span id="categoryCount">7</span> Categories
                 </p>
-                <small>Professional pilot preparation © K-TECH</small>
+                <small>Professional pilot certification preparation © 2024</small>
             </div>
         </div>
     </div>
@@ -461,12 +472,18 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="fas fa-chart-area"></i> Chart / Diagram
+                        <i class="fas fa-chart-area"></i> Aviation Chart
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-center p-3">
-                    <img id="enlargedImage" src="" class="img-fluid" style="max-height: 70vh;">
+                    <img id="enlargedImage" src="" class="img-fluid" style="max-height: 70vh; border-radius: 8px;">
+                </div>
+                <div class="modal-footer">
+                    <small id="imageFileName" class="text-muted me-auto">
+                        <i class="fas fa-file-image me-1"></i> <span id="imageNameText">No image name</span>
+                    </small>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
