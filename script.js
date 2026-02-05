@@ -215,6 +215,8 @@ function loadSampleData() {
 // ==================== CATEGORY MANAGEMENT ====================
 function displayCategories() {
     const container = document.getElementById('categoryGrid');
+    if (!container) return; // Container might not exist if we're in quiz mode
+    
     container.innerHTML = '';
     
     const categoryStats = {};
@@ -241,7 +243,10 @@ function displayCategories() {
         container.appendChild(card);
     });
     
-    document.getElementById('categoryCount').textContent = Object.keys(CATEGORY_CONFIG).length;
+    const categoryCountElem = document.getElementById('categoryCount');
+    if (categoryCountElem) {
+        categoryCountElem.textContent = Object.keys(CATEGORY_CONFIG).length;
+    }
 }
 
 // ==================== SEARCH FUNCTIONALITY ====================
@@ -283,11 +288,21 @@ function performSearch(searchTerm) {
     });
     
     if (searchResults.length > 0) {
-        displaySearchResults(searchResults, term);
-        showMessage(`Found ${searchResults.length} matching questions`, "success");
+        // If we're in quiz mode, go back to categories to show search results
+        if (document.getElementById('quizSection').style.display === 'block') {
+            backToCategories();
+            // Wait a bit for the DOM to update
+            setTimeout(() => {
+                displaySearchResults(searchResults, term);
+                showMessage(`Found ${searchResults.length} matching questions`, "success");
+            }, 100);
+        } else {
+            displaySearchResults(searchResults, term);
+            showMessage(`Found ${searchResults.length} matching questions`, "success");
+        }
     } else {
         showMessage("No matching questions found", "info");
-        clearSearch();
+        // DON'T clear the search input - keep what user typed
     }
 }
 
@@ -295,6 +310,8 @@ function displaySearchResults(results, searchTerm) {
     isSearchActive = true;
     
     const container = document.getElementById('categoryGrid');
+    if (!container) return;
+    
     container.innerHTML = '';
     
     // Group results by category
@@ -361,7 +378,8 @@ function displaySearchResults(results, searchTerm) {
 
 function highlightText(text, searchTerm) {
     if (!searchTerm) return text;
-    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escapedTerm})`, 'gi');
     return text.replace(regex, '<mark>$1</mark>');
 }
 
@@ -393,7 +411,12 @@ function clearSearch() {
     if (searchInput) {
         searchInput.value = '';
     }
-    displayCategories();
+    
+    // Only display categories if we're in category view
+    const categorySection = document.getElementById('categorySection');
+    if (categorySection && categorySection.style.display !== 'none') {
+        displayCategories();
+    }
 }
 
 // ==================== QUIZ FUNCTIONS ====================
@@ -633,6 +656,15 @@ function backToCategories() {
     document.getElementById('quizSection').style.display = 'none';
     document.getElementById('categorySection').style.display = 'block';
     document.getElementById('statsSection').style.display = 'none';
+    
+    // If there's a search term, show search results instead of all categories
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput && searchInput.value.trim() !== '') {
+        performSearch(searchInput.value);
+    } else {
+        displayCategories();
+    }
+    
     showMessage("Returned to category selection", "info");
 }
 
