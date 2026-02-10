@@ -38,16 +38,16 @@ const CATEGORY_CONFIG = {
 };
 
 // Application State
-let allQuestions = []; // For search across all categories
 let currentCategory = "";
 let categoryQuestions = [];
 let currentQuestionIndex = 0;
 let userScore = { correct: 0, attempted: 0 };
 let questionShuffledState = new Map();
 let categoryQuestionCounts = {};
-let searchResults = [];
-let isSearchActive = false;
 let totalQuestionsCount = 0;
+
+// For search - we'll load on demand
+let searchQuestions = null;
 
 // ==================== INITIALIZATION ====================
 window.addEventListener('DOMContentLoaded', function() {
@@ -77,35 +77,26 @@ window.addEventListener('DOMContentLoaded', function() {
 async function initializeSystem() {
     console.log("Loading system configuration...");
     
-    // Load all questions for search functionality
-    await loadAllQuestionsForSearch();
+    // Load question counts for each category
+    await loadCategoryCounts();
     
     displayCategories();
     showMessage("System ready. Select a category to begin.", "success");
 }
 
-// Load all questions from all categories for search
-async function loadAllQuestionsForSearch() {
-    console.log("Loading all questions for search functionality...");
-    allQuestions = [];
+// Load question counts for each category
+async function loadCategoryCounts() {
+    console.log("Loading category question counts...");
     categoryQuestionCounts = {};
     totalQuestionsCount = 0;
     
-    // Load each category file
+    // Load each category file to count questions
     for (const [categoryName, config] of Object.entries(CATEGORY_CONFIG)) {
         try {
             const response = await fetch(config.filename);
             if (response.ok) {
                 const csvData = await response.text();
-                const questions = processCSV(csvData);
-                
-                // Add category property to each question
-                questions.forEach(q => q.category = categoryName);
-                
-                // Add to allQuestions for search
-                allQuestions.push(...questions);
-                
-                // Store count for display
+                const questions = processCSV(csvData, categoryName);
                 categoryQuestionCounts[categoryName] = questions.length;
                 totalQuestionsCount += questions.length;
             } else {
@@ -123,17 +114,125 @@ async function loadAllQuestionsForSearch() {
     document.getElementById('categoryCount').textContent = Object.keys(CATEGORY_CONFIG).length;
 }
 
+// ==================== CSV PROCESSING ====================
+function processCSV(csvText, categoryName) {
+    const questions = [];
+    const rows = csvText.split('\n');
+    
+    // Skip header row
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i].trim();
+        if (!row || row === '') continue;
+        
+        // Handle CSV with potential commas in content
+        const columns = parseCSVRow(row);
+        
+        if (columns.length >= 7) {
+            let correctIndex = parseInt(columns[6].trim()) - 1;
+            if (isNaN(correctIndex) || correctIndex < 0 || correctIndex > 3) {
+                correctIndex = 0;
+            }
+            
+            let imagePath = '';
+            if (columns.length > 7 && columns[7]) {
+                imagePath = columns[7].trim();
+                if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('/') && !imagePath.startsWith('./')) {
+                    imagePath = './' + imagePath;
+                }
+            }
+            
+            let explanation = '';
+            if (columns.length > 8 && columns[8]) {
+                explanation = columns[8].trim();
+            }
+            
+            // Generate a stable ID based on content
+            const questionId = `q_${categoryName.replace(/\s+/g, '_')}_${i}_${hashCode(columns[1])}`;
+            
+            const question = {
+                id: questionId,
+                category: categoryName, // Use provided category name
+                text: columns[1].trim(),
+                originalOptions: [
+                    columns[2].trim(),
+                    columns[3].trim(),
+                    columns[4].trim(),
+                    columns[5].trim()
+                ],
+                originalCorrect: correctIndex,
+                image: imagePath,
+                explanation: explanation,
+                currentOptions: null,
+                currentCorrect: null
+            };
+            
+            question.currentOptions = [...question.originalOptions];
+            question.currentCorrect = question.originalCorrect;
+            
+            if (question.text && question.originalOptions[0]) {
+                questions.push(question);
+            }
+        }
+    }
+    
+    return questions;
+}
+
+// Helper function to parse CSV rows with quoted content
+function parseCSVRow(row) {
+    const columns = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < row.length; i++) {
+        const char = row[i];
+        
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            columns.push(current);
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    // Add the last column
+    columns.push(current);
+    
+    return columns;
+}
+
+// Helper function to create hash from string
+function hashCode(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36).substring(0, 8);
+}
+
 // ==================== SEARCH FUNCTIONALITY ====================
-function performSearch(searchTerm) {
+async function performSearch(searchTerm) {
     if (!searchTerm || searchTerm.trim() === '') {
         clearSearch();
         return;
     }
     
+    // Show loading for search
+    showMessage("Searching...", "info");
+    
+    // Load all questions for search if not already loaded
+    if (!searchQuestions) {
+        searchQuestions = await loadAllQuestionsForSearch();
+    }
+    
     const includeAnswers = document.getElementById('searchAnswersToggle')?.checked || false;
     const term = searchTerm.toLowerCase().trim();
     
-    searchResults = allQuestions.filter(question => {
+    const searchResults = searchQuestions.filter(question => {
         // Search in question text
         if (question.text.toLowerCase().includes(term)) {
             return true;
@@ -163,26 +262,36 @@ function performSearch(searchTerm) {
     });
     
     if (searchResults.length > 0) {
-        // If we're in quiz mode, go back to categories to show search results
-        if (document.getElementById('quizSection').style.display === 'block') {
-            backToCategories();
-            // Wait a bit for the DOM to update
-            setTimeout(() => {
-                displaySearchResults(searchResults, term);
-                showMessage(`Found ${searchResults.length} matching questions`, "success");
-            }, 100);
-        } else {
-            displaySearchResults(searchResults, term);
-            showMessage(`Found ${searchResults.length} matching questions`, "success");
-        }
+        displaySearchResults(searchResults, term);
+        showMessage(`Found ${searchResults.length} matching questions`, "success");
     } else {
         showMessage("No matching questions found", "info");
+        // Return to normal categories view
+        displayCategories();
     }
 }
 
-function displaySearchResults(results, searchTerm) {
-    isSearchActive = true;
+async function loadAllQuestionsForSearch() {
+    console.log("Loading all questions for search...");
+    const allQuestions = [];
     
+    for (const [categoryName, config] of Object.entries(CATEGORY_CONFIG)) {
+        try {
+            const response = await fetch(config.filename);
+            if (response.ok) {
+                const csvData = await response.text();
+                const questions = processCSV(csvData, categoryName);
+                allQuestions.push(...questions);
+            }
+        } catch (error) {
+            console.warn(`Error loading ${categoryName} for search:`, error);
+        }
+    }
+    
+    return allQuestions;
+}
+
+function displaySearchResults(results, searchTerm) {
     const container = document.getElementById('categoryGrid');
     if (!container) return;
     
@@ -257,101 +366,67 @@ function highlightText(text, searchTerm) {
     return text.replace(regex, '<mark>$1</mark>');
 }
 
-function startCategoryFromSearch(categoryName, questionIds) {
-    // Filter questions to only include the searched ones
-    categoryQuestions = allQuestions.filter(q => questionIds.includes(q.id));
-    currentCategory = categoryName;
-    currentQuestionIndex = 0;
-    userScore = { correct: 0, attempted: 0 };
-    questionShuffledState.clear();
+async function startCategoryFromSearch(categoryName, questionIds) {
+    // Show loading
+    showLoading(true);
     
-    document.getElementById('categorySection').style.display = 'none';
-    document.getElementById('quizSection').style.display = 'block';
-    document.getElementById('statsSection').style.display = 'none';
-    document.getElementById('categoryNameDisplay').textContent = `${categoryName} (Search Results)`;
-    
-    shuffleQuestionsAndAnswers();
-    displayQuestion();
-    updateProgress();
-    updateScoreDisplay();
-    
-    showMessage(`Starting with ${categoryQuestions.length} filtered questions`, 'info');
+    try {
+        // Load the category CSV
+        const config = CATEGORY_CONFIG[categoryName];
+        const response = await fetch(config.filename);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to load ${categoryName} questions`);
+        }
+        
+        const csvData = await response.text();
+        const allCategoryQuestions = processCSV(csvData, categoryName);
+        
+        // Filter to only the searched questions
+        categoryQuestions = allCategoryQuestions.filter(q => questionIds.includes(q.id));
+        
+        if (categoryQuestions.length === 0) {
+            // Fallback: start normal category if IDs don't match
+            categoryQuestions = allCategoryQuestions;
+            showMessage("Starting full category (search IDs didn't match)", "info");
+        }
+        
+        // Initialize quiz state
+        currentCategory = categoryName;
+        currentQuestionIndex = 0;
+        userScore = { correct: 0, attempted: 0 };
+        questionShuffledState.clear();
+        
+        // Update UI
+        document.getElementById('categorySection').style.display = 'none';
+        document.getElementById('quizSection').style.display = 'block';
+        document.getElementById('statsSection').style.display = 'none';
+        document.getElementById('categoryNameDisplay').textContent = `${categoryName} (Search Results)`;
+        
+        // Shuffle questions and display first one
+        shuffleQuestionsAndAnswers();
+        displayQuestion();
+        updateProgress();
+        updateScoreDisplay();
+        
+        showMessage(`Starting with ${categoryQuestions.length} filtered questions`, 'info');
+        
+    } catch (error) {
+        console.error("Error loading category from search:", error);
+        showMessage(`Error: ${error.message}`, "error");
+    } finally {
+        showLoading(false);
+    }
 }
 
 function clearSearch() {
-    isSearchActive = false;
-    searchResults = [];
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.value = '';
     }
     
-    // Only display categories if we're in category view
-    const categorySection = document.getElementById('categorySection');
-    if (categorySection && categorySection.style.display !== 'none') {
-        displayCategories();
-    }
-}
-
-// ==================== CSV PROCESSING ====================
-function processCSV(csvText) {
-    const questions = [];
-    const rows = csvText.split('\n');
-    
-    // Skip header row
-    for (let i = 1; i < rows.length; i++) {
-        const row = rows[i].trim();
-        if (!row || row === '') continue;
-        
-        // Simple CSV parsing - assumes no commas in content
-        const columns = row.split(',');
-        
-        if (columns.length >= 7) {
-            let correctIndex = parseInt(columns[6].trim()) - 1;
-            if (isNaN(correctIndex) || correctIndex < 0 || correctIndex > 3) {
-                correctIndex = 0;
-            }
-            
-            let imagePath = '';
-            if (columns.length > 7 && columns[7]) {
-                imagePath = columns[7].trim();
-                if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('/') && !imagePath.startsWith('./')) {
-                    imagePath = './' + imagePath;
-                }
-            }
-            
-            let explanation = '';
-            if (columns.length > 8 && columns[8]) {
-                explanation = columns[8].trim();
-            }
-            
-            const question = {
-                id: `q${i}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                category: columns[0].trim(),
-                text: columns[1].trim(),
-                originalOptions: [
-                    columns[2].trim(),
-                    columns[3].trim(),
-                    columns[4].trim(),
-                    columns[5].trim()
-                ],
-                originalCorrect: correctIndex,
-                image: imagePath,
-                explanation: explanation,
-                currentOptions: null,
-                currentCorrect: null
-            };
-            
-            question.currentOptions = [...question.originalOptions];
-            question.currentCorrect = question.originalCorrect;
-            
-            if (question.text && question.originalOptions[0]) {
-                questions.push(question);
-            }
-        }
-    }
-    
-    return questions;
+    displayCategories();
+    showMessage("Search cleared", "info");
 }
 
 // ==================== CATEGORY MANAGEMENT ====================
@@ -402,7 +477,7 @@ async function startCategory(categoryName) {
         }
         
         const csvData = await response.text();
-        categoryQuestions = processCSV(csvData);
+        categoryQuestions = processCSV(csvData, categoryName);
         
         if (categoryQuestions.length === 0) {
             showMessage("No questions found in this category", "error");
