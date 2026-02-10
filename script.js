@@ -3,37 +3,37 @@ const CATEGORY_CONFIG = {
     "Flight Plan": {
         icon: "fa-route",
         color: "#0056a6",
-        filename: "flight_plan.csv"
+        filename: "categories/flight_plan.csv"
     },
     "IFR Comms": {
         icon: "fa-headset",
         color: "#28a745",
-        filename: "ifr_comms.csv"
+        filename: "categories/ifr_comms.csv"
     },
     "Mass And Balance": {
         icon: "fa-weight-scale",
         color: "#dc3545",
-        filename: "mass_and_balance.csv"
+        filename: "categories/mass_and_balance.csv"
     },
     "OPS": {
         icon: "fa-clipboard-check",
         color: "#6f42c1",
-        filename: "ops.csv"
+        filename: "categories/ops.csv"
     },
     "Performance": {
         icon: "fa-chart-line",
         color: "#fd7e14",
-        filename: "performance.csv"
+        filename: "categories/performance.csv"
     },
     "RNAV": {
         icon: "fa-satellite-dish",
         color: "#17a2b8",
-        filename: "rnav.csv"
+        filename: "categories/rnav.csv"
     },
     "VFR Comms": {
         icon: "fa-tower-broadcast",
         color: "#20c997",
-        filename: "vfr_comms.csv"
+        filename: "categories/vfr_comms.csv"
     }
 };
 
@@ -99,19 +99,21 @@ async function loadCategoryCounts() {
                 const questions = processCSV(csvData, categoryName);
                 categoryQuestionCounts[categoryName] = questions.length;
                 totalQuestionsCount += questions.length;
+                console.log(`✓ ${categoryName}: ${questions.length} questions`);
             } else {
                 categoryQuestionCounts[categoryName] = 0;
-                console.warn(`Could not load ${categoryName} file`);
+                console.warn(`✗ Could not load ${config.filename}`);
             }
         } catch (error) {
             categoryQuestionCounts[categoryName] = 0;
-            console.warn(`Error loading ${categoryName}:`, error);
+            console.warn(`✗ Error loading ${config.filename}:`, error);
         }
     }
     
     // Update total count display
     document.getElementById('totalQuestionsCount').textContent = totalQuestionsCount;
     document.getElementById('categoryCount').textContent = Object.keys(CATEGORY_CONFIG).length;
+    console.log(`Total questions: ${totalQuestionsCount}`);
 }
 
 // ==================== CSV PROCESSING ====================
@@ -282,12 +284,14 @@ async function loadAllQuestionsForSearch() {
                 const csvData = await response.text();
                 const questions = processCSV(csvData, categoryName);
                 allQuestions.push(...questions);
+                console.log(`✓ Loaded ${questions.length} ${categoryName} questions for search`);
             }
         } catch (error) {
-            console.warn(`Error loading ${categoryName} for search:`, error);
+            console.warn(`✗ Error loading ${categoryName} for search:`, error);
         }
     }
     
+    console.log(`Total questions loaded for search: ${allQuestions.length}`);
     return allQuestions;
 }
 
@@ -388,7 +392,7 @@ async function startCategoryFromSearch(categoryName, questionIds) {
         if (categoryQuestions.length === 0) {
             // Fallback: start normal category if IDs don't match
             categoryQuestions = allCategoryQuestions;
-            showMessage("Starting full category (search IDs didn't match)", "info");
+            showMessage("Starting full category", "info");
         }
         
         // Initialize quiz state
