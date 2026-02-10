@@ -38,46 +38,76 @@ const CATEGORY_CONFIG = {
 };
 
 // Application State
-let allQuestions = []; // Only used for search now
+let allQuestions = []; // For search across all categories
 let currentCategory = "";
 let categoryQuestions = [];
 let currentQuestionIndex = 0;
 let userScore = { correct: 0, attempted: 0 };
 let questionShuffledState = new Map();
 let categoryQuestionCounts = {};
+let searchResults = [];
+let isSearchActive = false;
+let totalQuestionsCount = 0;
 
 // ==================== INITIALIZATION ====================
 window.addEventListener('DOMContentLoaded', function() {
     console.log("ETIHAD CP Aviation System Initializing...");
     initializeSystem();
+    
+    // Add search input listener
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            performSearch(e.target.value);
+        });
+    }
+    
+    // Add search toggle listener
+    const searchToggle = document.getElementById('searchAnswersToggle');
+    if (searchToggle) {
+        searchToggle.addEventListener('change', function() {
+            if (searchInput.value.trim() !== '') {
+                performSearch(searchInput.value);
+            }
+        });
+    }
 });
 
 // ==================== SYSTEM INITIALIZATION ====================
 async function initializeSystem() {
     console.log("Loading system configuration...");
     
-    // Load question counts for each category
-    await loadCategoryCounts();
+    // Load all questions for search functionality
+    await loadAllQuestionsForSearch();
     
     displayCategories();
     showMessage("System ready. Select a category to begin.", "success");
 }
 
-// Load question counts for each category
-async function loadCategoryCounts() {
-    console.log("Loading category question counts...");
+// Load all questions from all categories for search
+async function loadAllQuestionsForSearch() {
+    console.log("Loading all questions for search functionality...");
+    allQuestions = [];
     categoryQuestionCounts = {};
-    let totalQuestions = 0;
+    totalQuestionsCount = 0;
     
-    // Load each category file to count questions
+    // Load each category file
     for (const [categoryName, config] of Object.entries(CATEGORY_CONFIG)) {
         try {
-            const response = await fetch(`./categories/${config.filename}`);
+            const response = await fetch(config.filename);
             if (response.ok) {
                 const csvData = await response.text();
                 const questions = processCSV(csvData);
+                
+                // Add category property to each question
+                questions.forEach(q => q.category = categoryName);
+                
+                // Add to allQuestions for search
+                allQuestions.push(...questions);
+                
+                // Store count for display
                 categoryQuestionCounts[categoryName] = questions.length;
-                totalQuestions += questions.length;
+                totalQuestionsCount += questions.length;
             } else {
                 categoryQuestionCounts[categoryName] = 0;
                 console.warn(`Could not load ${categoryName} file`);
@@ -89,8 +119,178 @@ async function loadCategoryCounts() {
     }
     
     // Update total count display
-    document.getElementById('totalQuestionsCount').textContent = totalQuestions;
+    document.getElementById('totalQuestionsCount').textContent = totalQuestionsCount;
     document.getElementById('categoryCount').textContent = Object.keys(CATEGORY_CONFIG).length;
+}
+
+// ==================== SEARCH FUNCTIONALITY ====================
+function performSearch(searchTerm) {
+    if (!searchTerm || searchTerm.trim() === '') {
+        clearSearch();
+        return;
+    }
+    
+    const includeAnswers = document.getElementById('searchAnswersToggle')?.checked || false;
+    const term = searchTerm.toLowerCase().trim();
+    
+    searchResults = allQuestions.filter(question => {
+        // Search in question text
+        if (question.text.toLowerCase().includes(term)) {
+            return true;
+        }
+        
+        // Search in category
+        if (question.category.toLowerCase().includes(term)) {
+            return true;
+        }
+        
+        // Search in answers if enabled
+        if (includeAnswers) {
+            // Search in options
+            for (let option of question.originalOptions) {
+                if (option.toLowerCase().includes(term)) {
+                    return true;
+                }
+            }
+            
+            // Search in explanation
+            if (question.explanation && question.explanation.toLowerCase().includes(term)) {
+                return true;
+            }
+        }
+        
+        return false;
+    });
+    
+    if (searchResults.length > 0) {
+        // If we're in quiz mode, go back to categories to show search results
+        if (document.getElementById('quizSection').style.display === 'block') {
+            backToCategories();
+            // Wait a bit for the DOM to update
+            setTimeout(() => {
+                displaySearchResults(searchResults, term);
+                showMessage(`Found ${searchResults.length} matching questions`, "success");
+            }, 100);
+        } else {
+            displaySearchResults(searchResults, term);
+            showMessage(`Found ${searchResults.length} matching questions`, "success");
+        }
+    } else {
+        showMessage("No matching questions found", "info");
+    }
+}
+
+function displaySearchResults(results, searchTerm) {
+    isSearchActive = true;
+    
+    const container = document.getElementById('categoryGrid');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // Group results by category
+    const resultsByCategory = {};
+    results.forEach(question => {
+        if (!resultsByCategory[question.category]) {
+            resultsByCategory[question.category] = [];
+        }
+        resultsByCategory[question.category].push(question);
+    });
+    
+    // Display each category with matching questions
+    Object.keys(resultsByCategory).forEach(categoryName => {
+        const questionsInCategory = resultsByCategory[categoryName];
+        const config = CATEGORY_CONFIG[categoryName] || {
+            icon: "fa-question",
+            color: "#6c757d"
+        };
+        
+        const card = document.createElement('div');
+        card.className = 'category-card';
+        card.innerHTML = `
+            <div class="category-icon" style="background: ${config.color};">
+                <i class="fas ${config.icon}"></i>
+            </div>
+            <h5 class="fw-bold mb-2">${categoryName}</h5>
+            <div class="mb-2">
+                <span class="badge bg-primary">${questionsInCategory.length} matches</span>
+            </div>
+            <div class="question-preview">
+                ${questionsInCategory.slice(0, 3).map(q => 
+                    `<div class="mb-2">
+                        <strong>•</strong> ${highlightText(q.text, searchTerm)}
+                    </div>`
+                ).join('')}
+                ${questionsInCategory.length > 3 ? 
+                    `<div class="text-muted">...and ${questionsInCategory.length - 3} more</div>` : ''}
+            </div>
+            <button onclick="startCategoryFromSearch('${categoryName}', ${JSON.stringify(questionsInCategory.map(q => q.id)).replace(/"/g, '&quot;')})" 
+                    class="btn btn-sm btn-primary mt-2">
+                <i class="fas fa-play"></i> Start with these
+            </button>
+        `;
+        
+        container.appendChild(card);
+    });
+    
+    // Add a clear search button
+    const clearCard = document.createElement('div');
+    clearCard.className = 'category-card';
+    clearCard.style.border = '2px dashed #6c757d';
+    clearCard.innerHTML = `
+        <div class="category-icon" style="background: #6c757d;">
+            <i class="fas fa-times"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Clear Search</h5>
+        <div class="mb-2 text-muted">Return to all categories</div>
+        <button onclick="clearSearch()" class="btn btn-sm btn-outline-secondary mt-2">
+            <i class="fas fa-arrow-left"></i> Back to all
+        </button>
+    `;
+    container.appendChild(clearCard);
+}
+
+function highlightText(text, searchTerm) {
+    if (!searchTerm) return text;
+    const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escapedTerm})`, 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
+}
+
+function startCategoryFromSearch(categoryName, questionIds) {
+    // Filter questions to only include the searched ones
+    categoryQuestions = allQuestions.filter(q => questionIds.includes(q.id));
+    currentCategory = categoryName;
+    currentQuestionIndex = 0;
+    userScore = { correct: 0, attempted: 0 };
+    questionShuffledState.clear();
+    
+    document.getElementById('categorySection').style.display = 'none';
+    document.getElementById('quizSection').style.display = 'block';
+    document.getElementById('statsSection').style.display = 'none';
+    document.getElementById('categoryNameDisplay').textContent = `${categoryName} (Search Results)`;
+    
+    shuffleQuestionsAndAnswers();
+    displayQuestion();
+    updateProgress();
+    updateScoreDisplay();
+    
+    showMessage(`Starting with ${categoryQuestions.length} filtered questions`, 'info');
+}
+
+function clearSearch() {
+    isSearchActive = false;
+    searchResults = [];
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    // Only display categories if we're in category view
+    const categorySection = document.getElementById('categorySection');
+    if (categorySection && categorySection.style.display !== 'none') {
+        displayCategories();
+    }
 }
 
 // ==================== CSV PROCESSING ====================
@@ -126,7 +326,7 @@ function processCSV(csvText) {
             }
             
             const question = {
-                id: `q${i}`,
+                id: `q${i}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 category: columns[0].trim(),
                 text: columns[1].trim(),
                 originalOptions: [
@@ -193,7 +393,9 @@ async function startCategory(categoryName) {
     
     try {
         const config = CATEGORY_CONFIG[categoryName];
-        const response = await fetch(`./categories/${config.filename}`);
+        
+        // Load category-specific CSV file
+        const response = await fetch(config.filename);
         
         if (!response.ok) {
             throw new Error(`Failed to load ${categoryName} questions`);
@@ -254,19 +456,11 @@ function showLoading(isLoading) {
 // ==================== IMAGE HANDLING ====================
 function extractImageName(imagePath) {
     if (!imagePath) return '';
-    
-    // Get just the filename from the path
     const fileName = imagePath.split('/').pop();
-    
-    // Remove file extension ONLY (keep everything else exactly as is)
-    const nameWithoutExt = fileName.replace(/\.[^/.]+$/, "");
-    
-    // Return the exact name without extension
-    return nameWithoutExt;
+    return fileName.replace(/\.[^/.]+$/, "");
 }
 
 function handleImageError(img, imageUrl) {
-    console.log('Image failed to load:', imageUrl);
     const imageName = extractImageName(decodeURIComponent(imageUrl));
     img.src = 'https://via.placeholder.com/600x300/e0e7ff/0056a6?text=Chart+Not+Found';
     img.style.border = '2px dashed #0056a6';
@@ -277,7 +471,6 @@ function handleImageError(img, imageUrl) {
         label.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Image not available';
     }
     
-    // Update image name display even on error
     const imageNameElem = img.parentElement.querySelector('.image-name');
     if (imageNameElem && imageName) {
         imageNameElem.innerHTML = `<i class="fas fa-file-image me-1"></i> ${imageName}`;
@@ -287,22 +480,17 @@ function handleImageError(img, imageUrl) {
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     const decodedUrl = decodeURIComponent(imageUrl);
-    
-    // Extract image name
     const imageName = extractImageName(decodedUrl);
     
-    // Try to load the image
     const img = document.getElementById('enlargedImage');
     img.src = decodedUrl;
     img.alt = imageName;
     
-    // Update image name in modal footer
     const imageNameText = document.getElementById('imageNameText');
     if (imageNameText) {
         imageNameText.textContent = imageName;
     }
     
-    // Set up error handling for modal image too
     img.onerror = function() {
         this.src = 'https://via.placeholder.com/800x600/e0e7ff/0056a6?text=Image+Not+Available';
         this.alt = 'Image not available';
@@ -319,7 +507,7 @@ function displayQuestion() {
     if (!categoryQuestions || categoryQuestions.length === 0) {
         document.getElementById('questionDisplay').innerHTML = `
             <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle"></i> No questions available for this category.
+                <i class="fas fa-exclamation-circle"></i> No questions available.
             </div>
         `;
         return;
@@ -334,10 +522,7 @@ function displayQuestion() {
     `;
     
     if (question.image && question.image.trim() !== '') {
-        // Clean up the image path
         let imagePath = question.image.trim();
-        
-        // Extract image name without extension for display
         let imageName = extractImageName(imagePath);
         
         html += `
@@ -371,16 +556,11 @@ function displayQuestion() {
     document.getElementById('questionCounter').textContent = currentQuestionIndex + 1;
     document.getElementById('totalCounter').textContent = categoryQuestions.length;
     
-    // Update navigation buttons
     document.getElementById('prevButton').disabled = currentQuestionIndex === 0;
     
     const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
     const nextBtn = document.getElementById('nextButton');
-    
-    // Remove any emphasis from previous wrong answer
     nextBtn.classList.remove('next-emphasis');
-    
-    // Reset Next button to normal state
     nextBtn.disabled = false;
     nextBtn.innerHTML = isLastQuestion 
         ? 'Finish <i class="fas fa-flag-checkered"></i>' 
@@ -396,10 +576,8 @@ function selectAnswer(selectedIndex) {
     const buttons = document.querySelectorAll('.answer-option');
     const nextBtn = document.getElementById('nextButton');
     
-    // Disable all answer buttons immediately
     buttons.forEach(btn => btn.disabled = true);
     
-    // Mark correct and incorrect answers
     buttons.forEach((btn, index) => {
         if (index === question.currentCorrect) {
             btn.classList.add('answer-correct');
@@ -409,39 +587,31 @@ function selectAnswer(selectedIndex) {
         }
     });
     
-    // Update score
     userScore.attempted++;
     
     if (selectedIndex === question.currentCorrect) {
         userScore.correct++;
-        
-        // Visual feedback for correct answer
         const correctBtn = buttons[selectedIndex];
         correctBtn.classList.add('auto-advance');
         
         showMessage("Correct! ✓ Auto-advancing to next question...", "success");
         
-        // AUTO-ADVANCE after 1.5 seconds for CORRECT answer
         setTimeout(() => {
             if (currentQuestionIndex < categoryQuestions.length - 1) {
                 currentQuestionIndex++;
                 displayQuestion();
                 updateProgress();
             } else {
-                // Last question completed
                 showMessage("Category completed! Review your statistics.", "success");
                 updateStatistics();
-                // Change Next button to "Finish" if it's the last question
                 nextBtn.innerHTML = 'Finish <i class="fas fa-flag-checkered"></i>';
             }
-        }, 1500); // 1.5 second delay
+        }, 1500);
         
     } else {
-        // WRONG answer - highlight Next button and wait for click
         nextBtn.classList.add('next-emphasis');
         showMessage("Incorrect ✗ Click 'Next' to continue", "error");
         
-        // Remove emphasis after 5 seconds if user doesn't click
         setTimeout(() => {
             nextBtn.classList.remove('next-emphasis');
         }, 5000);
@@ -461,24 +631,17 @@ function resetAnswerButtons() {
         btn.disabled = false;
     });
     
-    // Remove any emphasis from Next button
     nextBtn.classList.remove('next-emphasis');
 }
 
 function nextQuestion() {
-    // Check if there are more questions
     if (currentQuestionIndex < categoryQuestions.length - 1) {
         currentQuestionIndex++;
         displayQuestion();
         updateProgress();
     } else {
-        // This is the last question
         showMessage("Category completed! Review your statistics.", "success");
-        
-        // Make sure statistics are visible
         updateStatistics();
-        
-        // Update Next button to show "Finish" state
         const nextBtn = document.getElementById('nextButton');
         nextBtn.innerHTML = 'Finish <i class="fas fa-flag-checkered"></i>';
         nextBtn.disabled = false;
@@ -497,7 +660,14 @@ function backToCategories() {
     document.getElementById('quizSection').style.display = 'none';
     document.getElementById('categorySection').style.display = 'block';
     document.getElementById('statsSection').style.display = 'none';
-    displayCategories();
+    
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput && searchInput.value.trim() !== '') {
+        performSearch(searchInput.value);
+    } else {
+        displayCategories();
+    }
+    
     showMessage("Returned to category selection", "info");
 }
 
