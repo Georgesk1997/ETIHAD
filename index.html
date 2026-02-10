@@ -295,6 +295,22 @@
             100% { transform: scale(1); }
         }
         
+        /* Loading spinner */
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-blue);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .aviation-container {
@@ -332,29 +348,10 @@
                 </div>
             </div>
 
-            <!-- Search Bar -->
-            <div class="row align-items-center mb-4">
-                <div class="col-md-6">
-                    <div class="input-group">
-                        <span class="input-group-text" style="background: white; border-right: 0;">
-                            <i class="fas fa-search"></i>
-                        </span>
-                        <input type="text" id="searchInput" class="form-control" 
-                               placeholder="Search questions or answers..." 
-                               style="border-left: 0; padding-left: 0;">
-                        <button onclick="clearSearch()" class="btn btn-outline-secondary" type="button">
-                            Clear
-                        </button>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-check form-switch float-end">
-                        <input class="form-check-input" type="checkbox" id="searchAnswersToggle">
-                        <label class="form-check-label" for="searchAnswersToggle">
-                            Include answers in search
-                        </label>
-                    </div>
-                </div>
+            <!-- Loading State -->
+            <div id="loadingSection" class="text-center py-5" style="display: none;">
+                <div class="loading-spinner mb-3"></div>
+                <p>Loading category questions...</p>
             </div>
 
             <!-- Category Selection -->
@@ -458,7 +455,7 @@
             <div class="footer-note">
                 <p class="mb-2">
                     <i class="fas fa-plane"></i> ETIHAD CP Aviation Training System 
-                    | <span id="questionCount">0</span> Questions | 
+                    | <span id="totalQuestionsCount">0</span> Total Questions | 
                     <span id="categoryCount">7</span> Categories
                 </p>
                 <small>Professional pilot certification preparation © 2024</small>
