@@ -348,6 +348,31 @@
                 </div>
             </div>
 
+            <!-- Search Bar -->
+            <div class="row align-items-center mb-4">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text" style="background: white; border-right: 0;">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control" 
+                               placeholder="Search across all categories..." 
+                               style="border-left: 0; padding-left: 0;">
+                        <button onclick="clearSearch()" class="btn btn-outline-secondary" type="button">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check form-switch float-end">
+                        <input class="form-check-input" type="checkbox" id="searchAnswersToggle">
+                        <label class="form-check-label" for="searchAnswersToggle">
+                            Include answers in search
+                        </label>
+                    </div>
+                </div>
+            </div>
+
             <!-- Loading State -->
             <div id="loadingSection" class="text-center py-5" style="display: none;">
                 <div class="loading-spinner mb-3"></div>
