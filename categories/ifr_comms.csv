@@ -14,7 +14,7 @@ IFR Comms,"What does the abbreviation ""MLS"" mean?",Mean Sea Level.,Minimum Sec
 IFR Comms,"What does ""SELCAL"" mean?","A system of selective calling to facilitate the handling of radiotelephone messages.","A system which permits the selective calling of individual aircraft over radiotelephone channels.","A system which permits a ground station to alert a specific aircraft that it wishes to communicate.","A system in which radiotelephony communication can be established between aircraft only.",3,,
 IFR Comms,"What does the abbreviation ""INS"" mean?","International Navigation Service.","Inertial Navigation System.","International NOTAM System.","Instrument Navigation System.",2,,
 IFR Comms,"What does the abbreviation ""RVR"" mean?","Runway Visual Range.","Runway Visibility Report.","Radar Vectors Required.","Re-cleared Via Route.",1,,
-IFR Comms,What does the abbreviation "AIS" mean?,Aeronautical Information Service.,Aerodrome Information Service.,Aerodrome Identification Signal area.,Airport Information System.,1,,
+IFR Comms,"What does the abbreviation ""AIS"" mean?","Aeronautical Information Service.","Aerodrome Information Service.","Aerodrome Identification Signal area.","Airport Information System.",1,,
 IFR Comms,What does the abbreviation "H24" mean?,No specific working hours.,Continuous day and night service.,Sunrise to Sunset.,Aircraft handling available 24 hours a day.,2,,
 IFR Comms,What does the abbreviation "IMC" mean?,International Meteorological Channel.,Instrument Meteorological Conditions.,In Most Cases.,In Meteorological Conditions.,2,,
 IFR Comms,What does the abbreviation "SSR" mean?,Standard Snow Report.,Surface Strength of Runway.,Secondary Surveillance Radar.,Search and Surveillance Radar.,3,,
