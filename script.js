@@ -570,17 +570,38 @@ function viewImage(imageUrl) {
         imageNameText.textContent = imageName;
     }
     
+    // Add zoom controls
+    img.style.cursor = 'zoom-in';
+    img.onclick = function(e) {
+        e.stopPropagation();
+        if (this.style.transform === 'scale(2)') {
+            this.style.transform = 'scale(1)';
+            this.style.cursor = 'zoom-in';
+        } else {
+            this.style.transform = 'scale(2)';
+            this.style.cursor = 'zoom-out';
+        }
+    };
+    
     img.onerror = function() {
         this.src = 'https://via.placeholder.com/800x600/e0e7ff/0056a6?text=Image+Not+Available';
         this.alt = 'Image not available';
         if (imageNameText) {
             imageNameText.textContent = imageName;
         }
+        this.onclick = null;
+        this.style.cursor = 'default';
     };
     
     modal.show();
+    
+    // Reset zoom when modal is hidden
+    document.getElementById('imageViewer').addEventListener('hidden.bs.modal', function() {
+        img.style.transform = 'scale(1)';
+        img.style.cursor = 'zoom-in';
+        img.onclick = null;
+    }, { once: true });
 }
-
 // ==================== QUIZ FUNCTIONS ====================
 function displayQuestion() {
     if (!categoryQuestions || categoryQuestions.length === 0) {
