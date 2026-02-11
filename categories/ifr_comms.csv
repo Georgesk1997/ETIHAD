@@ -20,7 +20,7 @@ IFR Comms,"What does the abbreviation ""IMC"" mean?","International Meteorologic
 IFR Comms,"What does the abbreviation ""SSR"" mean?","Standard Snow Report.","Surface Strength of Runway.","Secondary Surveillance Radar.","Search and Surveillance Radar.",3,,
 IFR Comms,"What does the abbreviation ""ATIS"" mean?","Automatic Terminal Information Service.","Aircraft Terminal Information Service.","Airport Terminal Information Service.","Air Traffic Information Service.",1,,
 IFR Comms,"What does the abbreviation ""RNAV"" mean?","Radar Aided Navigation.","Route Navigation.","Area Navigation.","Radio Navigation.",3,,
-IFR Comms,What does the abbreviation "SID" mean?,standard instrument departure,selective identification detection,standard equipment inoperable detection,supercell identification,1,,
+IFR Comms,"What does the abbreviation ""SID"" mean?","standard instrument departure","selective identification detection","standard equipment inoperable detection","supercell identification",1,,
 IFR Comms,What does the abbreviation "SAR" mean?,Standard Arrival Route.,Surveillance Airport Radar.,Secondary Altimeter Responder.,Search and Rescue.,4,,
 IFR Comms,What does QTE mean?,True bearing from the station.,Magnetic heading to the station.,Magnetic bearing from the station.,True heading to the station (no wind).,1,,
 IFR Comms,What does QDR mean?,Magnetic bearing from the station.,True heading to the station.,Magnetic heading to the station (no wind).,True bearing from the station.,1,,
