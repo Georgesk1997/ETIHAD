@@ -103,7 +103,7 @@ IFR Comms,"What is the radiotelephony call sign suffix for the aeronautical stat
 IFR Comms,"What is the radiotelephony call sign for the aeronautical station indicating Area Control Centre (no radar)?","RADAR","CONTROL","CENTRE","APPROACH",2,,
 IFR Comms,"What is the radiotelephony call sign suffix for the aeronautical station providing radar service (in general)?","RADAR CONTROL","RADAR SERVICE","CONTROL","RADAR",4,,
 IFR Comms,"What is the radiotelephony call sign for the aeronautical station indicating approach control radar arrivals?","APPROACH","DIRECTOR","ARRIVAL","RADAR",3,,
-IFR Comms,An Airbus 321 registered as G-HBTD has call sign "Sun Air HBTD". What is its abbreviated call sign?,"Sun Air HВ","Airbus HВ","Airbus TD","Sun Air TD",4,,
+IFR Comms,"An Airbus 321 registered as G-HBTD has call sign ""Sun Air HBTD"". What is its abbreviated call sign?","Sun Air HВ","Airbus HВ","Airbus TD","Sun Air TD",4,,
 IFR Comms,When shall an aircraft in the heavy wake turbulence category include the word HEAVY immediately after its call sign e.g. FASTAIR 345 HEAVY?,"in all calls to the aerodrome tower and the approach control unit.","in all calls.","in the initial call to the aerodrome control tower and the approach control unit.","never.",3,,
 IFR Comms,When is an aircraft station allowed to use its abbreviated call sign?,"In dense traffic.","After it has been addressed in this manner by the aeronautical ground station.","Only after satisfactory communication has been established.","Provided no confusion is likely to result.",2,,
 IFR Comms,Which of the following abbreviated call signs of aircraft XYABC is correct?,BC,"X-BC",ABC,"XY-BC",2,,
