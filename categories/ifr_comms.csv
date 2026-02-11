@@ -65,7 +65,7 @@ IFR Comms,"What does the phrase ""BREAK BREAK"" mean?","The exchange of transmis
 IFR Comms,"What does the word ""APPROVED"" mean?","I repeat for clarity or emphasis.","That is correct.","Permission for proposed action granted.","Authorized to proceed under the conditions specified.",3,,
 IFR Comms,Which word or phrase shall be used in order to repeat for clarity or emphasis?,I SAY AGAIN.,VERIFY.,READ BAСК.,CONFIRM.,1,,
 IFR Comms,ATC clears FASTAIR 345 to descend from FL100 to FL80. What is the correct read back by the pilot?,"Leaving flight level 100 descending to flight level 80, FASTAIR 345.","Down to flight level 80, FASTAIR 345.","Leaving 100 to 80, FASTAIR 345.","Descending to 80, FASTAIR 345.",1,,
-IFR Comms,What does the word "DISREGARD" mean?,An error has been made in this transmission.,Consider that transmission as not sent.,Wait and I will call you.,Annul the previously transmitted clearance.,2,,
+IFR Comms,What does the word "DISREGARD" mean?,An error has been made in this transmission.,Consider that transmission as not sent.,Wait and I will call you.,Annul the previously transmitted clearance.,4,,
 IFR Comms,The Air Traffic Control unit has reported "radar contact". What does that mean to the pilot?,Position reports may be omitted.,The aircraft is subject to positive control.,The radar identity of the aircraft has been established.,The pilot does not have to follow up the position of the aircraft,3,,
 IFR Comms,Which word or phrase shall be used if you want to say "REDUCE YOUR RATE OF SPEECH"?,SPEAK SLOWER.,SAY AGAIN.,REPEAT.,WORDS TWICE.,1,,
 IFR Comms,You are making an approach to land, at what range would you make the call "SHORT FINAL"?,6 NM,4 NM,5 NM,2 NM,4,,
