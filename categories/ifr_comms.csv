@@ -72,7 +72,7 @@ IFR Comms,"You are making an approach to land, at what range would you make the 
 IFR Comms,"What does the word ""RECLEARED"" mean?","Permission for proposed action granted.","A change has been made to your last clearance.","Consider that transmission as not sent.","An error has been made in my last transmission.",2,,
 IFR Comms,How shall a pilot inform the control tower that he has to abandon the take-off manoeuvre?,"CANCELLING TAKEOFF.",STOPPING.,"ABORTING TAKEOFF.","ABANDONING TAKEOFF.",2,,
 IFR Comms,"What does the word ""CANCEL"" mean?","Annul the previously transmitted clearance.","Wait and I will call you.","Consider that transmission as not sent.","A change has been made to your last clearance.",1,,
-IFR Comms,Which phrase shall be used if you want to say "YES"?,AFFIRM,AFFIRMATIVE,ROGER,YES,1,,
+IFR Comms,"Which phrase shall be used if you want to say ""YES""?",AFFIRM,AFFIRMATIVE,ROGER,YES,1,,
 IFR Comms,"What does the word ""CONTACT"" mean?","Establish radio contact with...","Radar contact established.","Listen out on (frequency).","That is correct.",1,,
 IFR Comms,"What does the word ""CORRECT"" mean?","Permission for proposed action not granted.","Negative, the correct version is...","That is correct.","An error has been made in this transmission. The correct version is...",3,,
 IFR Comms,"What does the word ""ACKNOWLEDGE"" mean?","Let me know that you have received and understood this message.","Repeat all of your last transmission.","Pass me the following information.","Repeat all of this message back to me exactly as received.",1,,
