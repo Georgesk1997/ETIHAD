@@ -311,6 +311,52 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* Image viewer controls */
+        .image-controls {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .image-controls .btn-group {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .image-controls .btn {
+            border: 1px solid #dee2e6;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .image-controls .btn:hover {
+            background: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+
+        #enlargedImage {
+            transition: transform 0.3s ease;
+            cursor: move;
+            max-height: 70vh;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* Modal adjustments for image viewer */
+        #imageViewer .modal-body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            background: #f0f2f5;
+            overflow: hidden;
+        }
+
+        #imageViewer .modal-dialog {
+            max-width: 95vw;
+            margin: 1.75rem auto;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .aviation-container {
@@ -325,6 +371,21 @@
             
             .header-section {
                 padding: 15px;
+            }
+            
+            .image-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-bottom: 10px;
+            }
+            
+            #imageViewer .modal-footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .image-controls .btn-group {
+                margin-bottom: 5px;
             }
         }
     </style>
@@ -490,7 +551,7 @@
 
     <!-- Image Viewer Modal -->
     <div class="modal fade" id="imageViewer" tabindex="-1">
-        <div class="modal-dialog modal-xl modal-dialog-centered"> <!-- Changed modal-lg to modal-xl -->
+        <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
@@ -498,14 +559,17 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body text-center p-3" style="background: #f0f2f5;"> <!-- Added background -->
-                    <img id="enlargedImage" src="" class="img-fluid" 
-                         style="max-height: 90vh; width: auto; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);"> <!-- Increased to 90vh -->
+                <div class="modal-body text-center p-3" style="background: #f0f2f5;">
+                    <div style="overflow: auto; max-height: 70vh;">
+                        <img id="enlargedImage" src="" class="img-fluid" 
+                             style="transition: transform 0.3s ease; max-height: 70vh; width: auto; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <small id="imageFileName" class="text-muted me-auto">
                         <i class="fas fa-file-image me-1"></i> <span id="imageNameText">No image name</span>
                     </small>
+                    <!-- Controls will be inserted here dynamically -->
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
