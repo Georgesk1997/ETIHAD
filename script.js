@@ -45,6 +45,8 @@ let userScore = { correct: 0, attempted: 0 };
 let questionShuffledState = new Map();
 let categoryQuestionCounts = {};
 let totalQuestionsCount = 0;
+let currentRotation = 0;
+let currentZoom = 1;
 
 // For search - we'll load on demand
 let searchQuestions = null;
@@ -561,27 +563,83 @@ function viewImage(imageUrl) {
     const decodedUrl = decodeURIComponent(imageUrl);
     const imageName = extractImageName(decodedUrl);
     
+    // Reset rotation and zoom for new image
+    currentRotation = 0;
+    currentZoom = 1;
+    
     const img = document.getElementById('enlargedImage');
     img.src = decodedUrl;
     img.alt = imageName;
+    img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
     
     const imageNameText = document.getElementById('imageNameText');
     if (imageNameText) {
         imageNameText.textContent = imageName;
     }
     
-    // Add zoom controls
-    img.style.cursor = 'zoom-in';
-    img.onclick = function(e) {
-        e.stopPropagation();
-        if (this.style.transform === 'scale(2)') {
-            this.style.transform = 'scale(1)';
-            this.style.cursor = 'zoom-in';
-        } else {
-            this.style.transform = 'scale(2)';
-            this.style.cursor = 'zoom-out';
+    // Remove any existing rotation buttons before adding new ones
+    const existingControls = document.querySelector('.image-controls');
+    if (existingControls) {
+        existingControls.remove();
+    }
+    
+    // Add rotation controls to modal footer
+    const modalFooter = document.querySelector('#imageViewer .modal-footer');
+    const controlsDiv = document.createElement('div');
+    controlsDiv.className = 'image-controls me-auto';
+    controlsDiv.innerHTML = `
+        <div class="btn-group btn-group-sm me-2">
+            <button class="btn btn-outline-primary rotate-left" title="Rotate Left">
+                <i class="fas fa-undo-alt"></i>
+            </button>
+            <button class="btn btn-outline-primary rotate-right" title="Rotate Right">
+                <i class="fas fa-redo-alt"></i>
+            </button>
+        </div>
+        <div class="btn-group btn-group-sm me-2">
+            <button class="btn btn-outline-primary zoom-in" title="Zoom In">
+                <i class="fas fa-search-plus"></i>
+            </button>
+            <button class="btn btn-outline-primary zoom-out" title="Zoom Out">
+                <i class="fas fa-search-minus"></i>
+            </button>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm reset-image" title="Reset">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+    `;
+    
+    // Insert controls before the close button
+    modalFooter.insertBefore(controlsDiv, modalFooter.firstChild);
+    
+    // Add event listeners for rotation and zoom
+    document.querySelector('.rotate-left').addEventListener('click', () => rotateImage(-90));
+    document.querySelector('.rotate-right').addEventListener('click', () => rotateImage(90));
+    document.querySelector('.zoom-in').addEventListener('click', () => zoomImage(0.1));
+    document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-0.1));
+    document.querySelector('.reset-image').addEventListener('click', resetImage);
+    
+    // Add keyboard shortcuts
+    const keyHandler = (e) => {
+        if (e.key === 'ArrowLeft' && e.ctrlKey) {
+            e.preventDefault();
+            rotateImage(-90);
+        } else if (e.key === 'ArrowRight' && e.ctrlKey) {
+            e.preventDefault();
+            rotateImage(90);
+        } else if (e.key === '+' && e.ctrlKey) {
+            e.preventDefault();
+            zoomImage(0.1);
+        } else if (e.key === '-' && e.ctrlKey) {
+            e.preventDefault();
+            zoomImage(-0.1);
+        } else if (e.key === '0' && e.ctrlKey) {
+            e.preventDefault();
+            resetImage();
         }
     };
+    
+    document.addEventListener('keydown', keyHandler);
     
     img.onerror = function() {
         this.src = 'https://via.placeholder.com/800x600/e0e7ff/0056a6?text=Image+Not+Available';
@@ -589,18 +647,41 @@ function viewImage(imageUrl) {
         if (imageNameText) {
             imageNameText.textContent = imageName;
         }
-        this.onclick = null;
-        this.style.cursor = 'default';
     };
     
     modal.show();
     
-    // Reset zoom when modal is hidden
+    // Clean up event listeners when modal is hidden
     document.getElementById('imageViewer').addEventListener('hidden.bs.modal', function() {
-        img.style.transform = 'scale(1)';
-        img.style.cursor = 'zoom-in';
-        img.onclick = null;
+        document.removeEventListener('keydown', keyHandler);
+        const controls = document.querySelector('.image-controls');
+        if (controls) {
+            controls.remove();
+        }
     }, { once: true });
+}
+
+// Add these new helper functions:
+function rotateImage(degrees) {
+    currentRotation = (currentRotation + degrees) % 360;
+    applyTransform();
+}
+
+function zoomImage(delta) {
+    // Limit zoom between 0.5 and 3
+    currentZoom = Math.min(3, Math.max(0.5, currentZoom + delta));
+    applyTransform();
+}
+
+function resetImage() {
+    currentRotation = 0;
+    currentZoom = 1;
+    applyTransform();
+}
+
+function applyTransform() {
+    const img = document.getElementById('enlargedImage');
+    img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
 }
 // ==================== QUIZ FUNCTIONS ====================
 function displayQuestion() {
