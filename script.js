@@ -567,7 +567,7 @@ function handleImageError(img, imageUrl) {
     }
 }
 
-// ==================== SIMPLIFIED: IMAGE VIEWER WITH ZOOM AND PAN ONLY ====================
+// ==================== FIXED: SMOOTH ZOOM WITH NO JUMPING ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     const decodedUrl = decodeURIComponent(imageUrl);
@@ -582,7 +582,7 @@ function viewImage(imageUrl) {
     let naturalWidth = 0;
     let naturalHeight = 0;
     
-    // Setup image
+    // Setup image - start in center mode
     img.src = decodedUrl;
     img.alt = imageName;
     img.style.transform = `scale(${currentZoom})`;
@@ -593,7 +593,7 @@ function viewImage(imageUrl) {
     img.style.display = 'block';
     img.style.margin = 'auto';
     
-    // Reset container
+    // Reset container - start in center mode
     container.scrollLeft = 0;
     container.scrollTop = 0;
     container.style.overflow = 'auto';
@@ -613,7 +613,7 @@ function viewImage(imageUrl) {
         existingControls.remove();
     }
     
-    // Add controls (ZOOM ONLY - no rotation)
+    // Add controls
     const modalFooter = document.querySelector('#imageViewer .modal-footer');
     const controlsDiv = document.createElement('div');
     controlsDiv.className = 'image-controls me-auto';
@@ -633,18 +633,17 @@ function viewImage(imageUrl) {
     
     modalFooter.insertBefore(controlsDiv, modalFooter.firstChild);
     
-    // Function to center the image
-    function centerImage() {
-        if (!naturalWidth || !naturalHeight) return;
+    // Function to update image position in pan mode
+    function updatePanPosition() {
+        if (!naturalWidth || !naturalHeight || currentZoom <= 1.05) return;
         
         const containerWidth = container.clientWidth;
         const containerHeight = container.clientHeight;
         
-        // Calculate display dimensions
         const displayWidth = naturalWidth * currentZoom;
         const displayHeight = naturalHeight * currentZoom;
         
-        // Calculate scroll position to center
+        // Calculate scroll position to keep image centered
         const targetScrollLeft = Math.max(0, (displayWidth - containerWidth) / 2);
         const targetScrollTop = Math.max(0, (displayHeight - containerHeight) / 2);
         
@@ -652,20 +651,36 @@ function viewImage(imageUrl) {
         container.scrollTop = targetScrollTop;
     }
     
-    // Update display mode based on zoom
-    function updateDisplayMode() {
-        if (currentZoom > 1.05) {
-            // Switch to pan mode
+    // Zoom function with smooth transition
+    function zoom(factor) {
+        // Store the previous zoom level
+        const previousZoom = currentZoom;
+        
+        // Calculate new zoom
+        currentZoom = currentZoom * factor;
+        if (currentZoom < 0.5) currentZoom = 0.5;
+        if (currentZoom > 5) currentZoom = 5;
+        
+        // Apply the transform
+        img.style.transform = `scale(${currentZoom})`;
+        
+        // Check if we crossed the threshold
+        const wasInPanMode = previousZoom > 1.05;
+        const nowInPanMode = currentZoom > 1.05;
+        
+        if (!wasInPanMode && nowInPanMode) {
+            // Just entered pan mode - switch container to block
             container.style.display = 'block';
             container.style.alignItems = 'normal';
             container.style.justifyContent = 'normal';
             img.style.margin = '0';
             img.style.transformOrigin = '0 0';
             
-            // Center the image in the viewport
-            setTimeout(centerImage, 10);
-        } else {
-            // Switch to center mode
+            // Position the image to maintain center
+            setTimeout(updatePanPosition, 10);
+        } 
+        else if (wasInPanMode && !nowInPanMode) {
+            // Just exited pan mode - switch back to center mode
             container.style.display = 'flex';
             container.style.alignItems = 'center';
             container.style.justifyContent = 'center';
@@ -674,17 +689,12 @@ function viewImage(imageUrl) {
             container.scrollLeft = 0;
             container.scrollTop = 0;
         }
-    }
-    
-    // Zoom function
-    function zoom(factor) {
-        currentZoom = currentZoom * factor;
-        if (currentZoom < 0.5) currentZoom = 0.5;
-        if (currentZoom > 5) currentZoom = 5;
+        else if (nowInPanMode) {
+            // Already in pan mode - just update position to maintain center
+            updatePanPosition();
+        }
         
-        img.style.transform = `scale(${currentZoom})`;
-        updateDisplayMode();
-        
+        // Update cursor
         img.style.cursor = currentZoom > 1.05 ? 'grab' : 'default';
     }
     
@@ -692,7 +702,15 @@ function viewImage(imageUrl) {
     function reset() {
         currentZoom = 1;
         img.style.transform = 'scale(1)';
-        updateDisplayMode();
+        
+        // Return to center mode
+        container.style.display = 'flex';
+        container.style.alignItems = 'center';
+        container.style.justifyContent = 'center';
+        img.style.margin = 'auto';
+        img.style.transformOrigin = 'center center';
+        container.scrollLeft = 0;
+        container.scrollTop = 0;
         img.style.cursor = 'default';
     }
     
@@ -741,7 +759,7 @@ function viewImage(imageUrl) {
         }
     });
     
-    // Keyboard shortcuts (ZOOM ONLY)
+    // Keyboard shortcuts
     const keyHandler = (e) => {
         if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
             e.preventDefault();
@@ -776,7 +794,6 @@ function viewImage(imageUrl) {
     img.onload = function() {
         naturalWidth = img.naturalWidth;
         naturalHeight = img.naturalHeight;
-        updateDisplayMode();
     };
     
     img.onerror = function() {
