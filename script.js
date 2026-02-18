@@ -567,14 +567,13 @@ function handleImageError(img, imageUrl) {
     }
 }
 
-// ==================== FINAL FIXED: IMAGE VIEWER WITH PERFECT ROTATION AND ZOOM ====================
+// ==================== SIMPLIFIED: IMAGE VIEWER WITH ZOOM AND PAN ONLY ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     const decodedUrl = decodeURIComponent(imageUrl);
     const imageName = extractImageName(decodedUrl);
     
     let currentZoom = 1;
-    let currentRotation = 0;
     
     const img = document.getElementById('enlargedImage');
     const container = document.querySelector('#imageViewer .modal-body div');
@@ -586,7 +585,7 @@ function viewImage(imageUrl) {
     // Setup image
     img.src = decodedUrl;
     img.alt = imageName;
-    img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+    img.style.transform = `scale(${currentZoom})`;
     img.style.transformOrigin = 'center center';
     img.style.maxWidth = '100%';
     img.style.maxHeight = '70vh';
@@ -614,29 +613,21 @@ function viewImage(imageUrl) {
         existingControls.remove();
     }
     
-    // Add controls
+    // Add controls (ZOOM ONLY - no rotation)
     const modalFooter = document.querySelector('#imageViewer .modal-footer');
     const controlsDiv = document.createElement('div');
     controlsDiv.className = 'image-controls me-auto';
     controlsDiv.innerHTML = `
         <div class="btn-group btn-group-sm me-2">
-            <button class="btn btn-outline-primary" id="zoomInBtn" title="Zoom In">
+            <button class="btn btn-outline-primary" id="zoomInBtn" title="Zoom In (Ctrl++)">
                 <i class="fas fa-search-plus"></i>
             </button>
-            <button class="btn btn-outline-primary" id="zoomOutBtn" title="Zoom Out">
+            <button class="btn btn-outline-primary" id="zoomOutBtn" title="Zoom Out (Ctrl+-)">
                 <i class="fas fa-search-minus"></i>
             </button>
         </div>
-        <div class="btn-group btn-group-sm me-2">
-            <button class="btn btn-outline-primary" id="rotateLeftBtn" title="Rotate Left">
-                <i class="fas fa-undo-alt"></i>
-            </button>
-            <button class="btn btn-outline-primary" id="rotateRightBtn" title="Rotate Right">
-                <i class="fas fa-redo-alt"></i>
-            </button>
-        </div>
-        <button class="btn btn-outline-secondary btn-sm" id="resetBtn" title="Reset">
-            <i class="fas fa-sync-alt"></i>
+        <button class="btn btn-outline-secondary btn-sm" id="resetBtn" title="Reset (Ctrl+0)">
+            <i class="fas fa-sync-alt"></i> Reset
         </button>
     `;
     
@@ -649,15 +640,9 @@ function viewImage(imageUrl) {
         const containerWidth = container.clientWidth;
         const containerHeight = container.clientHeight;
         
-        // Calculate display dimensions based on rotation
-        let displayWidth, displayHeight;
-        if (currentRotation % 180 === 0) {
-            displayWidth = naturalWidth * currentZoom;
-            displayHeight = naturalHeight * currentZoom;
-        } else {
-            displayWidth = naturalHeight * currentZoom;
-            displayHeight = naturalWidth * currentZoom;
-        }
+        // Calculate display dimensions
+        const displayWidth = naturalWidth * currentZoom;
+        const displayHeight = naturalHeight * currentZoom;
         
         // Calculate scroll position to center
         const targetScrollLeft = Math.max(0, (displayWidth - containerWidth) / 2);
@@ -697,35 +682,16 @@ function viewImage(imageUrl) {
         if (currentZoom < 0.5) currentZoom = 0.5;
         if (currentZoom > 5) currentZoom = 5;
         
-        applyTransform();
+        img.style.transform = `scale(${currentZoom})`;
         updateDisplayMode();
         
         img.style.cursor = currentZoom > 1.05 ? 'grab' : 'default';
     }
     
-    // Rotate function
-    function rotate(degrees) {
-        currentRotation = (currentRotation + degrees) % 360;
-        applyTransform();
-        
-        // If we're in pan mode, recalculate center position
-        if (currentZoom > 1.05) {
-            setTimeout(centerImage, 10);
-        }
-        
-        img.style.cursor = currentZoom > 1.05 ? 'grab' : 'default';
-    }
-    
-    // Apply transform
-    function applyTransform() {
-        img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
-    }
-    
     // Reset function
     function reset() {
         currentZoom = 1;
-        currentRotation = 0;
-        applyTransform();
+        img.style.transform = 'scale(1)';
         updateDisplayMode();
         img.style.cursor = 'default';
     }
@@ -733,8 +699,6 @@ function viewImage(imageUrl) {
     // Add event listeners
     document.getElementById('zoomInBtn').addEventListener('click', () => zoom(1.2));
     document.getElementById('zoomOutBtn').addEventListener('click', () => zoom(0.8));
-    document.getElementById('rotateLeftBtn').addEventListener('click', () => rotate(-90));
-    document.getElementById('rotateRightBtn').addEventListener('click', () => rotate(90));
     document.getElementById('resetBtn').addEventListener('click', reset);
     
     // Drag to pan
@@ -777,15 +741,9 @@ function viewImage(imageUrl) {
         }
     });
     
-    // Keyboard shortcuts
+    // Keyboard shortcuts (ZOOM ONLY)
     const keyHandler = (e) => {
-        if (e.ctrlKey && e.key === 'ArrowLeft') {
-            e.preventDefault();
-            rotate(-90);
-        } else if (e.ctrlKey && e.key === 'ArrowRight') {
-            e.preventDefault();
-            rotate(90);
-        } else if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
+        if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
             e.preventDefault();
             zoom(1.2);
         } else if (e.ctrlKey && e.key === '-') {
