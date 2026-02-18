@@ -567,36 +567,31 @@ function handleImageError(img, imageUrl) {
     }
 }
 
-// ==================== COMPLETELY REWRITTEN: IMAGE VIEWER WITH PROPER ZOOM AND SCROLL ====================
+// ==================== SIMPLE ZOOM THAT WORKS ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     const decodedUrl = decodeURIComponent(imageUrl);
     const imageName = extractImageName(decodedUrl);
     
-    // Reset rotation and zoom
-    currentRotation = 0;
-    currentZoom = 1;
+    let currentZoom = 1;
+    let currentRotation = 0;
     
     const img = document.getElementById('enlargedImage');
     const container = document.querySelector('#imageViewer .modal-body div');
     
-    // Reset image to default state
+    // Setup image
     img.src = decodedUrl;
     img.alt = imageName;
-    img.style.transform = `rotate(0deg) scale(1)`;
-    img.style.cursor = 'default';
+    img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+    img.style.transformOrigin = 'center center';
     img.style.maxWidth = '100%';
     img.style.maxHeight = '70vh';
-    img.style.width = 'auto';
-    img.style.height = 'auto';
-    img.style.minWidth = 'auto';
-    img.style.minHeight = 'auto';
+    img.style.cursor = 'default';
     
     // Reset container
     container.scrollLeft = 0;
     container.scrollTop = 0;
-    container.style.overflow = 'hidden';
-    container.classList.remove('overflow-auto');
+    container.style.overflow = 'auto';
     
     const imageNameText = document.getElementById('imageNameText');
     if (imageNameText) {
@@ -615,120 +610,70 @@ function viewImage(imageUrl) {
     controlsDiv.className = 'image-controls me-auto';
     controlsDiv.innerHTML = `
         <div class="btn-group btn-group-sm me-2">
-            <button class="btn btn-outline-primary rotate-left" title="Rotate Left (Ctrl+←)">
-                <i class="fas fa-undo-alt"></i>
-            </button>
-            <button class="btn btn-outline-primary rotate-right" title="Rotate Right (Ctrl+→)">
-                <i class="fas fa-redo-alt"></i>
-            </button>
-        </div>
-        <div class="btn-group btn-group-sm me-2">
-            <button class="btn btn-outline-primary zoom-in" title="Zoom In">
+            <button class="btn btn-outline-primary" id="zoomInBtn" title="Zoom In">
                 <i class="fas fa-search-plus"></i>
             </button>
-            <button class="btn btn-outline-primary zoom-out" title="Zoom Out">
+            <button class="btn btn-outline-primary" id="zoomOutBtn" title="Zoom Out">
                 <i class="fas fa-search-minus"></i>
             </button>
         </div>
-        <button class="btn btn-outline-secondary btn-sm reset-image" title="Reset">
+        <div class="btn-group btn-group-sm me-2">
+            <button class="btn btn-outline-primary" id="rotateLeftBtn" title="Rotate Left">
+                <i class="fas fa-undo-alt"></i>
+            </button>
+            <button class="btn btn-outline-primary" id="rotateRightBtn" title="Rotate Right">
+                <i class="fas fa-redo-alt"></i>
+            </button>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm" id="resetBtn" title="Reset">
             <i class="fas fa-sync-alt"></i>
         </button>
     `;
     
     modalFooter.insertBefore(controlsDiv, modalFooter.firstChild);
     
-    // ===== SIMPLE LINEAR ZOOM - FIXED =====
-    window.zoomImage = function(direction) {
-        // Linear zoom: add or subtract 0.1 each time (10%)
-        if (direction > 0) {
-            currentZoom = currentZoom + 0.1;
-            if (currentZoom > 3) currentZoom = 3; // Max 3x
-        } else {
-            currentZoom = currentZoom - 0.1;
-            if (currentZoom < 0.5) currentZoom = 0.5; // Min 0.5x
-        }
+    // Zoom function
+    function zoom(factor) {
+        currentZoom = currentZoom * factor;
+        if (currentZoom < 0.5) currentZoom = 0.5;
+        if (currentZoom > 5) currentZoom = 5;
         
-        // Round to 1 decimal to prevent floating point issues
-        currentZoom = Math.round(currentZoom * 10) / 10;
-        
-        applyZoomAndRotation();
-    };
-    
-    // ===== ROTATION =====
-    window.rotateImage = function(degrees) {
-        currentRotation = (currentRotation + degrees) % 360;
-        applyZoomAndRotation();
-    };
-    
-    // ===== RESET =====
-    window.resetImage = function() {
-        currentRotation = 0;
-        currentZoom = 1;
-        
-        img.style.transform = 'rotate(0deg) scale(1)';
-        img.style.cursor = 'default';
-        img.style.maxWidth = '100%';
-        img.style.maxHeight = '70vh';
-        img.style.minWidth = 'auto';
-        img.style.minHeight = 'auto';
-        
-        container.scrollLeft = 0;
-        container.scrollTop = 0;
-        container.style.overflow = 'hidden';
-        container.classList.remove('overflow-auto');
-    };
-    
-    function applyZoomAndRotation() {
-        // Apply transform
         img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
         
-        // Handle zoom state
-        if (currentZoom > 1.05) {
-            // Zoomed in
-            img.style.cursor = 'grab';
-            container.style.overflow = 'auto';
-            container.classList.add('overflow-auto');
-            
-            // Remove size constraints
-            img.style.maxWidth = 'none';
-            img.style.maxHeight = 'none';
-            
-            // Set minimum dimensions to enable scrolling to edges
-            if (img.naturalWidth && img.naturalHeight) {
-                // Account for rotation when setting dimensions
-                if (currentRotation % 180 === 0) {
-                    // Normal orientation
-                    img.style.minWidth = (img.naturalWidth * currentZoom) + 'px';
-                    img.style.minHeight = (img.naturalHeight * currentZoom) + 'px';
-                } else {
-                    // Rotated 90 or 270 degrees - swap dimensions
-                    img.style.minWidth = (img.naturalHeight * currentZoom) + 'px';
-                    img.style.minHeight = (img.naturalWidth * currentZoom) + 'px';
-                }
-            }
-        } else {
-            // Not zoomed
-            img.style.cursor = 'default';
-            container.style.overflow = 'hidden';
-            container.classList.remove('overflow-auto');
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '70vh';
-            img.style.minWidth = 'auto';
-            img.style.minHeight = 'auto';
-            
-            // Center image
-            container.scrollLeft = 0;
-            container.scrollTop = 0;
-        }
+        // Update cursor for dragging
+        img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
     }
     
-    // ===== DRAG TO PAN =====
+    // Rotate function
+    function rotate(degrees) {
+        currentRotation = (currentRotation + degrees) % 360;
+        img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+    }
+    
+    // Reset function
+    function reset() {
+        currentZoom = 1;
+        currentRotation = 0;
+        img.style.transform = 'rotate(0deg) scale(1)';
+        img.style.cursor = 'default';
+        container.scrollLeft = 0;
+        container.scrollTop = 0;
+    }
+    
+    // Add event listeners
+    document.getElementById('zoomInBtn').addEventListener('click', () => zoom(1.2));
+    document.getElementById('zoomOutBtn').addEventListener('click', () => zoom(0.8));
+    document.getElementById('rotateLeftBtn').addEventListener('click', () => rotate(-90));
+    document.getElementById('rotateRightBtn').addEventListener('click', () => rotate(90));
+    document.getElementById('resetBtn').addEventListener('click', reset);
+    
+    // Simple drag to pan
     let isDragging = false;
     let startX, startY;
     let scrollLeft, scrollTop;
     
     img.addEventListener('mousedown', (e) => {
-        if (currentZoom > 1.05) {
+        if (currentZoom > 1) {
             isDragging = true;
             img.style.cursor = 'grabbing';
             startX = e.pageX - container.offsetLeft;
@@ -742,10 +687,8 @@ function viewImage(imageUrl) {
     container.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
         e.preventDefault();
-        
         const x = e.pageX - container.offsetLeft;
         const y = e.pageY - container.offsetTop;
-        
         container.scrollLeft = scrollLeft - (x - startX);
         container.scrollTop = scrollTop - (y - startY);
     });
@@ -753,66 +696,9 @@ function viewImage(imageUrl) {
     document.addEventListener('mouseup', () => {
         if (isDragging) {
             isDragging = false;
-            img.style.cursor = currentZoom > 1.05 ? 'grab' : 'default';
+            img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
         }
     });
-    
-    container.addEventListener('mouseleave', () => {
-        if (isDragging) {
-            isDragging = false;
-            img.style.cursor = currentZoom > 1.05 ? 'grab' : 'default';
-        }
-    });
-    
-    // ===== KEYBOARD SHORTCUTS =====
-    const keyHandler = (e) => {
-        if (e.ctrlKey && e.key === 'ArrowLeft') {
-            e.preventDefault();
-            rotateImage(-90);
-        } else if (e.ctrlKey && e.key === 'ArrowRight') {
-            e.preventDefault();
-            rotateImage(90);
-        } else if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
-            e.preventDefault();
-            currentZoom = currentZoom + 0.1;
-            if (currentZoom > 3) currentZoom = 3;
-            currentZoom = Math.round(currentZoom * 10) / 10;
-            applyZoomAndRotation();
-        } else if (e.ctrlKey && e.key === '-') {
-            e.preventDefault();
-            currentZoom = currentZoom - 0.1;
-            if (currentZoom < 0.5) currentZoom = 0.5;
-            currentZoom = Math.round(currentZoom * 10) / 10;
-            applyZoomAndRotation();
-        } else if (e.ctrlKey && e.key === '0') {
-            e.preventDefault();
-            resetImage();
-        } else if (!e.ctrlKey && currentZoom > 1.05) {
-            const panAmount = 50;
-            if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                container.scrollTop -= panAmount;
-            } else if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                container.scrollTop += panAmount;
-            } else if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                container.scrollLeft -= panAmount;
-            } else if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                container.scrollLeft += panAmount;
-            }
-        }
-    };
-    
-    document.addEventListener('keydown', keyHandler);
-    
-    // Button event listeners
-    document.querySelector('.zoom-in').addEventListener('click', () => zoomImage(1));
-    document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-1));
-    document.querySelector('.rotate-left').addEventListener('click', () => rotateImage(-90));
-    document.querySelector('.rotate-right').addEventListener('click', () => rotateImage(90));
-    document.querySelector('.reset-image').addEventListener('click', resetImage);
     
     img.onerror = function() {
         this.src = 'https://via.placeholder.com/800x600/e0e7ff/0056a6?text=Image+Not+Available';
@@ -822,23 +708,16 @@ function viewImage(imageUrl) {
         }
     };
     
-    // Set dimensions once image loads
-    img.onload = function() {
-        applyZoomAndRotation();
-    };
-    
     modal.show();
     
     // Clean up
     document.getElementById('imageViewer').addEventListener('hidden.bs.modal', function() {
-        document.removeEventListener('keydown', keyHandler);
         const controls = document.querySelector('.image-controls');
         if (controls) {
             controls.remove();
         }
     }, { once: true });
 }
-
 function rotateImage(degrees) {
     currentRotation = (currentRotation + degrees) % 360;
     applyTransform();
