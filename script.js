@@ -1029,27 +1029,22 @@ function backToCategories() {
 }
 
 // ==================== SHUFFLING FUNCTIONS ====================
-// MODIFIED: Shuffle only the questions (not the answers)
+// MODIFIED: Shuffle all questions and stay at current position
 function randomizeQuestions() {
     if (!categoryQuestions.length) return;
     
-    // Store current question text to try to find it after shuffle
-    const currentQuestionText = categoryQuestions[currentQuestionIndex]?.text;
+    // Store the current position (we want to stay at this position number)
+    const currentPosition = currentQuestionIndex;
     
-    // Shuffle ONLY the questions array, not the answers within each question
+    // Shuffle ALL questions
     shuffleArray(categoryQuestions);
     
-    // Find the index of the current question after shuffle, or start at 0
-    if (currentQuestionText) {
-        const newIndex = categoryQuestions.findIndex(q => q.text === currentQuestionText);
-        currentQuestionIndex = newIndex !== -1 ? newIndex : 0;
-    } else {
-        currentQuestionIndex = 0;
-    }
+    // Stay at the same position number (now showing a different question)
+    currentQuestionIndex = currentPosition;
     
     displayQuestion();
     updateProgress();
-    showMessage("Questions shuffled! (Answers unchanged)", "info");
+    showMessage(`Questions shuffled! You're still on question ${currentPosition + 1}`, "info");
 }
 
 // MODIFIED: Shuffle only answers for current question
@@ -1057,12 +1052,6 @@ function randomizeAnswers() {
     if (!categoryQuestions.length) return;
     
     const question = categoryQuestions[currentQuestionIndex];
-    
-    // Save original order if not already saved (though it should be from originalOptions)
-    if (!question.originalOptions) {
-        question.originalOptions = [...question.currentOptions];
-        question.originalCorrect = question.currentCorrect;
-    }
     
     // Shuffle the answers for current question
     shuffleQuestionAnswers(question);
