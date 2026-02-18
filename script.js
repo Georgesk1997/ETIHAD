@@ -567,7 +567,7 @@ function handleImageError(img, imageUrl) {
     }
 }
 
-// ==================== FIXED: IMAGE VIEWER FUNCTION ====================
+// ==================== FIXED: IMAGE VIEWER FUNCTION WITH SMOOTH ZOOM ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     const decodedUrl = decodeURIComponent(imageUrl);
@@ -630,14 +630,23 @@ function viewImage(imageUrl) {
     
     modalFooter.insertBefore(controlsDiv, modalFooter.firstChild);
     
-    // ===== SIMPLIFIED: Zoom with small increments =====
+    // ===== FIXED: Zoom with small additive increments =====
     window.zoomImage = function(delta) {
-        // Very small zoom increments (0.1 = 10%)
-        currentZoom = currentZoom + delta;
+        // Calculate new zoom - additive approach for more control
+        // Start with current zoom, add a small percentage of current zoom
+        const zoomFactor = 0.15; // 15% of current zoom per click
+        
+        if (delta > 0) {
+            // Zoom in: increase by 15% of current zoom
+            currentZoom = currentZoom * (1 + zoomFactor);
+        } else {
+            // Zoom out: decrease by 15% of current zoom
+            currentZoom = currentZoom / (1 + zoomFactor);
+        }
         
         // Limits
         if (currentZoom < 0.8) currentZoom = 0.8; // Can zoom out a bit
-        if (currentZoom > 3) currentZoom = 3;     // Max 3x zoom
+        if (currentZoom > 5) currentZoom = 5;     // Max 5x zoom
         
         applyTransform();
         
@@ -653,6 +662,9 @@ function viewImage(imageUrl) {
             container.scrollLeft = 0;
             container.scrollTop = 0;
         }
+        
+        // Show current zoom level in console for debugging (remove in production)
+        console.log('Zoom level:', currentZoom.toFixed(2));
     };
     
     // ===== SIMPLIFIED: Rotation =====
@@ -720,7 +732,7 @@ function viewImage(imageUrl) {
         }
     });
     
-    // ===== SIMPLIFIED: Keyboard shortcuts =====
+    // ===== FIXED: Keyboard shortcuts with same zoom factor =====
     const keyHandler = (e) => {
         if (e.ctrlKey && e.key === 'ArrowLeft') {
             e.preventDefault();
@@ -730,10 +742,26 @@ function viewImage(imageUrl) {
             rotateImage(90);
         } else if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
             e.preventDefault();
-            zoomImage(0.1); // 10% zoom increment
+            // Use the same zoom factor
+            const zoomFactor = 0.15;
+            currentZoom = currentZoom * (1 + zoomFactor);
+            if (currentZoom > 5) currentZoom = 5;
+            applyTransform();
+            img.classList.add('zoomed');
+            img.style.cursor = 'grab';
         } else if (e.ctrlKey && e.key === '-') {
             e.preventDefault();
-            zoomImage(-0.1); // 10% zoom increment
+            // Use the same zoom factor
+            const zoomFactor = 0.15;
+            currentZoom = currentZoom / (1 + zoomFactor);
+            if (currentZoom < 0.8) currentZoom = 0.8;
+            applyTransform();
+            if (currentZoom <= 1.05) {
+                img.classList.remove('zoomed');
+                img.style.cursor = 'default';
+                container.scrollLeft = 0;
+                container.scrollTop = 0;
+            }
         } else if (e.ctrlKey && e.key === '0') {
             e.preventDefault();
             resetImage();
@@ -757,8 +785,8 @@ function viewImage(imageUrl) {
     document.addEventListener('keydown', keyHandler);
     
     // Button event listeners
-    document.querySelector('.zoom-in').addEventListener('click', () => zoomImage(0.1));
-    document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-0.1));
+    document.querySelector('.zoom-in').addEventListener('click', () => zoomImage(1)); // Positive for zoom in
+    document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-1)); // Negative for zoom out
     document.querySelector('.rotate-left').addEventListener('click', () => rotateImage(-90));
     document.querySelector('.rotate-right').addEventListener('click', () => rotateImage(90));
     document.querySelector('.reset-image').addEventListener('click', resetImage);
