@@ -150,6 +150,7 @@
             box-shadow: 0 5px 15px rgba(255,153,0,0.3);
         }
         
+        /* Multiple Images Container */
         .multiple-images-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -158,6 +159,7 @@
             padding: 10px;
         }
         
+        /* Image Styles */
         .chart-image {
             text-align: center;
             background: white;
@@ -238,6 +240,7 @@
             color: white;
         }
         
+        /* Search styles */
         mark {
             background-color: #fff3cd;
             padding: 2px 4px;
@@ -274,6 +277,7 @@
             background: #a8a8a8;
         }
         
+        /* Auto-advance animations */
         @keyframes autoAdvancePulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.02); }
@@ -284,6 +288,7 @@
             animation: autoAdvancePulse 1.5s ease-in-out;
         }
         
+        /* Next button emphasis for wrong answers */
         .next-emphasis {
             animation: pulse 1s infinite;
             background: var(--accent-red) !important;
@@ -297,6 +302,7 @@
             100% { transform: scale(1); }
         }
         
+        /* Loading spinner */
         .loading-spinner {
             border: 3px solid #f3f3f3;
             border-top: 3px solid var(--primary-blue);
@@ -312,7 +318,7 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* ===== FIXED: Image viewer styles ===== */
+        /* ===== UPDATED: Image viewer controls ===== */
         .image-controls {
             display: flex;
             gap: 5px;
@@ -336,7 +342,7 @@
             border-color: var(--primary-blue);
         }
 
-       /* IMAGE VIEWER CONTAINER */
+        /* ===== UPDATED: Image container styles ===== */
         #imageViewer .modal-body {
             display: flex;
             align-items: center;
@@ -344,22 +350,22 @@
             min-height: 60vh;
             max-height: 80vh;
             background: #f0f2f5;
-            overflow: auto !important;   /* ✔ MUST BE AUTO */
+            overflow: hidden;
             padding: 0;
         }
 
-        /* INNER SCROLL CONTAINER */
         #imageViewer .modal-body div {
             width: 100%;
             height: 100%;
-            overflow: auto;   /* ✔ allow scroll inside */
+            overflow: hidden;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
-        /* DEFAULT IMAGE STYLE */
+        /* ===== UPDATED: Image styles ===== */
         #enlargedImage {
             max-width: 100%;
             max-height: 70vh;
@@ -370,24 +376,28 @@
             cursor: default;
             display: block;
             margin: auto;
+            transform-origin: center center;
         }
 
-        /* ZOOMED IMAGE BEHAVIOR */
+        /* When zoomed in */
         #enlargedImage.zoomed {
-            max-width: none;       /* ✔ allow image to become larger */
+            max-width: none;
             max-height: none;
-            cursor: grab;          /* ✔ for dragging */
+            cursor: grab;
         }
 
         #enlargedImage.zoomed:active {
             cursor: grabbing;
         }
 
+        /* ===== UPDATED: Scrollbar styles for when zoomed ===== */
+        #imageViewer .modal-body div.overflow-auto {
+            overflow: auto !important;
+        }
 
-        /* Scrollbar styles */
         #imageViewer .modal-body div::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
         }
 
         #imageViewer .modal-body div::-webkit-scrollbar-track {
@@ -396,16 +406,29 @@
 
         #imageViewer .modal-body div::-webkit-scrollbar-thumb {
             background: var(--primary-blue);
-            border-radius: 5px;
+            border-radius: 6px;
+            border: 2px solid #f1f1f1;
         }
 
         #imageViewer .modal-body div::-webkit-scrollbar-thumb:hover {
             background: #003d7a;
         }
 
+        /* Firefox scrollbar styling */
+        #imageViewer .modal-body div {
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-blue) #f1f1f1;
+        }
+
         #imageViewer .modal-dialog {
             max-width: 95vw;
             margin: 1.75rem auto;
+        }
+
+        /* Prevent text selection while dragging */
+        .dragging {
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         /* Responsive */
@@ -432,18 +455,25 @@
             .image-controls {
                 justify-content: center;
                 margin-bottom: 10px;
+                width: 100%;
             }
             
             #imageViewer .modal-footer {
                 flex-direction: column;
                 gap: 10px;
             }
+            
+            #imageViewer .modal-footer .me-auto {
+                margin-right: 0 !important;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Main Application -->
     <div id="mainApp">
         <div class="aviation-container">
+            <!-- Header -->
             <div class="header-section">
                 <div class="row align-items-center">
                     <div class="col-md-9">
@@ -458,6 +488,7 @@
                 </div>
             </div>
 
+            <!-- Search Bar -->
             <div class="row align-items-center mb-4">
                 <div class="col-md-6">
                     <div class="input-group">
@@ -482,18 +513,23 @@
                 </div>
             </div>
 
+            <!-- Loading State -->
             <div id="loadingSection" class="text-center py-5" style="display: none;">
                 <div class="loading-spinner mb-3"></div>
                 <p>Loading category questions...</p>
             </div>
 
+            <!-- Category Selection -->
             <div id="categorySection">
                 <h3 class="mb-4" style="color: var(--primary-blue);">
                     <i class="fas fa-list-check"></i> Training Categories
                 </h3>
-                <div id="categoryGrid" class="d-flex flex-wrap justify-content-center"></div>
+                <div id="categoryGrid" class="d-flex flex-wrap justify-content-center">
+                    <!-- Categories loaded dynamically -->
+                </div>
             </div>
 
+            <!-- Quiz Interface -->
             <div id="quizSection" style="display: none;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h3 id="currentCategoryTitle" style="color: var(--primary-blue);">
@@ -510,6 +546,7 @@
                     </div>
                 </div>
 
+                <!-- Progress -->
                 <div class="mb-4">
                     <div class="d-flex justify-content-between mb-2">
                         <span>
@@ -526,8 +563,12 @@
                     </div>
                 </div>
 
-                <div id="questionDisplay"></div>
+                <!-- Question Display -->
+                <div id="questionDisplay">
+                    <!-- Questions loaded here -->
+                </div>
 
+                <!-- Navigation -->
                 <div class="d-flex justify-content-between mt-4">
                     <button onclick="prevQuestion()" id="prevButton" class="btn btn-outline-primary" disabled>
                         <i class="fas fa-arrow-left"></i> Previous
@@ -542,6 +583,7 @@
                 </div>
             </div>
 
+            <!-- Statistics -->
             <div id="statsSection" class="mt-5" style="display: none;">
                 <h4 class="mb-4" style="color: var(--primary-blue);">
                     <i class="fas fa-chart-line"></i> Performance Metrics
@@ -574,6 +616,7 @@
                 </div>
             </div>
 
+            <!-- Footer -->
             <div class="footer-note">
                 <p class="mb-2">
                     <i class="fas fa-plane"></i> ETIHAD CP Aviation Training System 
@@ -585,7 +628,7 @@
         </div>
     </div>
 
-    <!-- FIXED: Image Viewer Modal -->
+    <!-- ===== UPDATED: Image Viewer Modal ===== -->
     <div class="modal fade" id="imageViewer" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
@@ -596,7 +639,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-center p-0" style="background: #f0f2f5;">
-                    <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                    <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; overflow: hidden;">
                         <img id="enlargedImage" src="" alt="Chart">
                     </div>
                 </div>
@@ -604,12 +647,14 @@
                     <small id="imageFileName" class="text-muted me-auto">
                         <i class="fas fa-file-image me-1"></i> <span id="imageNameText">No image name</span>
                     </small>
+                    <!-- Controls will be inserted here dynamically -->
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
