@@ -567,7 +567,7 @@ function handleImageError(img, imageUrl) {
     }
 }
 
-// ==================== FIXED: IMAGE VIEWER FUNCTION WITH SMOOTH ZOOM AND PROPER SCROLLING ====================
+// ==================== COMPLETELY REWRITTEN: IMAGE VIEWER WITH PROPER ZOOM AND SCROLL ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     const decodedUrl = decodeURIComponent(imageUrl);
@@ -583,7 +583,7 @@ function viewImage(imageUrl) {
     // Reset image to default state
     img.src = decodedUrl;
     img.alt = imageName;
-    img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+    img.style.transform = `rotate(0deg) scale(1)`;
     img.style.cursor = 'default';
     img.style.maxWidth = '100%';
     img.style.maxHeight = '70vh';
@@ -592,10 +592,11 @@ function viewImage(imageUrl) {
     img.style.minWidth = 'auto';
     img.style.minHeight = 'auto';
     
-    // Reset container scroll
+    // Reset container
     container.scrollLeft = 0;
     container.scrollTop = 0;
     container.style.overflow = 'hidden';
+    container.classList.remove('overflow-auto');
     
     const imageNameText = document.getElementById('imageNameText');
     if (imageNameText) {
@@ -636,47 +637,27 @@ function viewImage(imageUrl) {
     
     modalFooter.insertBefore(controlsDiv, modalFooter.firstChild);
     
-    // ===== FIXED: VERY SMALL ZOOM INCREMENTS =====
-    window.zoomImage = function(delta) {
-        // Very small fixed increment (5% per click)
-        if (delta > 0) {
-            currentZoom += 0.05; // Add only 0.05 each time
+    // ===== SIMPLE LINEAR ZOOM - FIXED =====
+    window.zoomImage = function(direction) {
+        // Linear zoom: add or subtract 0.1 each time (10%)
+        if (direction > 0) {
+            currentZoom = currentZoom + 0.1;
+            if (currentZoom > 3) currentZoom = 3; // Max 3x
         } else {
-            currentZoom -= 0.05; // Subtract 0.05 each time
+            currentZoom = currentZoom - 0.1;
+            if (currentZoom < 0.5) currentZoom = 0.5; // Min 0.5x
         }
         
-        // Limits
-        if (currentZoom < 0.8) currentZoom = 0.8;
-        if (currentZoom > 3) currentZoom = 3; // Max 3x zoom
+        // Round to 1 decimal to prevent floating point issues
+        currentZoom = Math.round(currentZoom * 10) / 10;
         
-        applyTransform();
-        
-        // Update container for scrolling
-        if (currentZoom > 1.05) {
-            container.style.overflow = 'auto';
-            img.style.cursor = 'grab';
-            
-            // Remove constraints when zoomed
-            img.style.maxWidth = 'none';
-            img.style.maxHeight = 'none';
-        } else {
-            container.style.overflow = 'hidden';
-            img.style.cursor = 'default';
-            
-            // Restore constraints when not zoomed
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '70vh';
-            
-            // Center image
-            container.scrollLeft = 0;
-            container.scrollTop = 0;
-        }
+        applyZoomAndRotation();
     };
     
     // ===== ROTATION =====
     window.rotateImage = function(degrees) {
         currentRotation = (currentRotation + degrees) % 360;
-        applyTransform();
+        applyZoomAndRotation();
     };
     
     // ===== RESET =====
@@ -694,20 +675,50 @@ function viewImage(imageUrl) {
         container.scrollLeft = 0;
         container.scrollTop = 0;
         container.style.overflow = 'hidden';
+        container.classList.remove('overflow-auto');
     };
     
-    function applyTransform() {
+    function applyZoomAndRotation() {
+        // Apply transform
         img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
         
-        // Ensure proper scrolling dimensions when zoomed
+        // Handle zoom state
         if (currentZoom > 1.05) {
-            // Use setTimeout to ensure image dimensions are available
-            setTimeout(() => {
-                if (img.naturalWidth) {
-                    img.style.minWidth = img.naturalWidth * currentZoom + 'px';
-                    img.style.minHeight = img.naturalHeight * currentZoom + 'px';
+            // Zoomed in
+            img.style.cursor = 'grab';
+            container.style.overflow = 'auto';
+            container.classList.add('overflow-auto');
+            
+            // Remove size constraints
+            img.style.maxWidth = 'none';
+            img.style.maxHeight = 'none';
+            
+            // Set minimum dimensions to enable scrolling to edges
+            if (img.naturalWidth && img.naturalHeight) {
+                // Account for rotation when setting dimensions
+                if (currentRotation % 180 === 0) {
+                    // Normal orientation
+                    img.style.minWidth = (img.naturalWidth * currentZoom) + 'px';
+                    img.style.minHeight = (img.naturalHeight * currentZoom) + 'px';
+                } else {
+                    // Rotated 90 or 270 degrees - swap dimensions
+                    img.style.minWidth = (img.naturalHeight * currentZoom) + 'px';
+                    img.style.minHeight = (img.naturalWidth * currentZoom) + 'px';
                 }
-            }, 10);
+            }
+        } else {
+            // Not zoomed
+            img.style.cursor = 'default';
+            container.style.overflow = 'hidden';
+            container.classList.remove('overflow-auto');
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '70vh';
+            img.style.minWidth = 'auto';
+            img.style.minHeight = 'auto';
+            
+            // Center image
+            container.scrollLeft = 0;
+            container.scrollTop = 0;
         }
     }
     
@@ -753,7 +764,7 @@ function viewImage(imageUrl) {
         }
     });
     
-    // ===== FIXED: KEYBOARD SHORTCUTS =====
+    // ===== KEYBOARD SHORTCUTS =====
     const keyHandler = (e) => {
         if (e.ctrlKey && e.key === 'ArrowLeft') {
             e.preventDefault();
@@ -763,33 +774,21 @@ function viewImage(imageUrl) {
             rotateImage(90);
         } else if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
             e.preventDefault();
-            currentZoom += 0.05; // Match button increment
+            currentZoom = currentZoom + 0.1;
             if (currentZoom > 3) currentZoom = 3;
-            applyTransform();
-            if (currentZoom > 1.05) {
-                container.style.overflow = 'auto';
-                img.style.cursor = 'grab';
-                img.style.maxWidth = 'none';
-                img.style.maxHeight = 'none';
-            }
+            currentZoom = Math.round(currentZoom * 10) / 10;
+            applyZoomAndRotation();
         } else if (e.ctrlKey && e.key === '-') {
             e.preventDefault();
-            currentZoom -= 0.05; // Match button increment
-            if (currentZoom < 0.8) currentZoom = 0.8;
-            applyTransform();
-            if (currentZoom <= 1.05) {
-                container.style.overflow = 'hidden';
-                img.style.cursor = 'default';
-                img.style.maxWidth = '100%';
-                img.style.maxHeight = '70vh';
-                container.scrollLeft = 0;
-                container.scrollTop = 0;
-            }
+            currentZoom = currentZoom - 0.1;
+            if (currentZoom < 0.5) currentZoom = 0.5;
+            currentZoom = Math.round(currentZoom * 10) / 10;
+            applyZoomAndRotation();
         } else if (e.ctrlKey && e.key === '0') {
             e.preventDefault();
             resetImage();
         } else if (!e.ctrlKey && currentZoom > 1.05) {
-            const panAmount = 30;
+            const panAmount = 50;
             if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 container.scrollTop -= panAmount;
@@ -821,6 +820,11 @@ function viewImage(imageUrl) {
         if (imageNameText) {
             imageNameText.textContent = imageName;
         }
+    };
+    
+    // Set dimensions once image loads
+    img.onload = function() {
+        applyZoomAndRotation();
     };
     
     modal.show();
