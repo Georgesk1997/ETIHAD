@@ -68,7 +68,8 @@ window.addEventListener('DOMContentLoaded', function() {
     const searchToggle = document.getElementById('searchAnswersToggle');
     if (searchToggle) {
         searchToggle.addEventListener('change', function() {
-            if (searchInput.value.trim() !== '') {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput && searchInput.value.trim() !== '') {
                 performSearch(searchInput.value);
             }
         });
@@ -418,8 +419,9 @@ async function startCategoryFromSearch(categoryName, questionIds) {
         document.getElementById('statsSection').style.display = 'none';
         document.getElementById('categoryNameDisplay').textContent = `${categoryName} (Search Results)`;
         
-        // Shuffle questions and display first one
-        shuffleQuestionsAndAnswers();
+        // Reset questions to original order and answers
+        resetQuestionsToOriginal();
+        
         displayQuestion();
         updateProgress();
         updateScoreDisplay();
@@ -512,8 +514,9 @@ async function startCategory(categoryName) {
         document.getElementById('statsSection').style.display = 'none';
         document.getElementById('categoryNameDisplay').textContent = categoryName;
         
-        // Shuffle questions and display first one
-        shuffleQuestionsAndAnswers();
+        // Reset questions to original order and answers (NO SHUFFLING)
+        resetQuestionsToOriginal();
+        
         displayQuestion();
         updateProgress();
         updateScoreDisplay();
@@ -526,6 +529,20 @@ async function startCategory(categoryName) {
     } finally {
         showLoading(false);
     }
+}
+
+// NEW FUNCTION: Reset all questions to their original state
+function resetQuestionsToOriginal() {
+    if (!categoryQuestions.length) return;
+    
+    categoryQuestions.forEach((question) => {
+        // Reset to original options and correct answer
+        question.currentOptions = [...question.originalOptions];
+        question.currentCorrect = question.originalCorrect;
+        
+        // Clear any shuffled state
+        questionShuffledState.delete(question.id);
+    });
 }
 
 // ==================== LOADING STATE ====================
@@ -815,6 +832,7 @@ function viewImage(imageUrl) {
         }
     }, { once: true });
 }
+
 function rotateImage(degrees) {
     currentRotation = (currentRotation + degrees) % 360;
     applyTransform();
@@ -1011,21 +1029,54 @@ function backToCategories() {
 }
 
 // ==================== SHUFFLING FUNCTIONS ====================
-function shuffleQuestionsAndAnswers() {
+// MODIFIED: Shuffle only the questions (not the answers)
+function randomizeQuestions() {
     if (!categoryQuestions.length) return;
     
+    // Store current question text to try to find it after shuffle
+    const currentQuestionText = categoryQuestions[currentQuestionIndex]?.text;
+    
+    // Shuffle ONLY the questions array, not the answers within each question
     shuffleArray(categoryQuestions);
     
-    categoryQuestions.forEach((question) => {
-        shuffleQuestionAnswers(question);
-    });
+    // Find the index of the current question after shuffle, or start at 0
+    if (currentQuestionText) {
+        const newIndex = categoryQuestions.findIndex(q => q.text === currentQuestionText);
+        currentQuestionIndex = newIndex !== -1 ? newIndex : 0;
+    } else {
+        currentQuestionIndex = 0;
+    }
+    
+    displayQuestion();
+    updateProgress();
+    showMessage("Questions shuffled! (Answers unchanged)", "info");
 }
 
+// MODIFIED: Shuffle only answers for current question
+function randomizeAnswers() {
+    if (!categoryQuestions.length) return;
+    
+    const question = categoryQuestions[currentQuestionIndex];
+    
+    // Save original order if not already saved (though it should be from originalOptions)
+    if (!question.originalOptions) {
+        question.originalOptions = [...question.currentOptions];
+        question.originalCorrect = question.currentCorrect;
+    }
+    
+    // Shuffle the answers for current question
+    shuffleQuestionAnswers(question);
+    
+    displayQuestion();
+    showMessage("Answers shuffled for this question only", "info");
+}
+
+// NEW FUNCTION: Shuffle just the answers for a specific question
 function shuffleQuestionAnswers(question) {
     if (!question) return;
     
-    const correctAnswerText = question.originalOptions[question.originalCorrect];
-    const shuffledOptions = [...question.originalOptions];
+    const correctAnswerText = question.currentOptions[question.currentCorrect];
+    const shuffledOptions = [...question.currentOptions];
     shuffleArray(shuffledOptions);
     
     const newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
@@ -1041,24 +1092,20 @@ function shuffleQuestionAnswers(question) {
     return question;
 }
 
-function randomizeQuestions() {
-    if (!categoryQuestions.length) return;
-    
-    shuffleQuestionsAndAnswers();
-    currentQuestionIndex = 0;
-    displayQuestion();
-    showMessage("Questions and answers shuffled!", "info");
-}
-
-function randomizeAnswers() {
+// NEW FUNCTION: Reset current question's answers to original order
+function resetCurrentQuestionAnswers() {
     if (!categoryQuestions.length) return;
     
     const question = categoryQuestions[currentQuestionIndex];
-    shuffleQuestionAnswers(question);
+    question.currentOptions = [...question.originalOptions];
+    question.currentCorrect = question.originalCorrect;
+    questionShuffledState.delete(question.id);
+    
     displayQuestion();
-    showMessage("Answers shuffled for this question", "info");
+    showMessage("Answers restored to original order", "info");
 }
 
+// Helper function to shuffle array (used by multiple functions)
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
