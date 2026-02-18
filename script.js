@@ -573,43 +573,36 @@ function viewImage(imageUrl) {
     const decodedUrl = decodeURIComponent(imageUrl);
     const imageName = extractImageName(decodedUrl);
     
-    // Reset rotation and zoom for new image
+    // Reset rotation and zoom
     currentRotation = 0;
     currentZoom = 1;
     
     const img = document.getElementById('enlargedImage');
     const container = document.querySelector('#imageViewer .modal-body div');
     
-    // Reset image styles to default
+    // Reset image to default state
     img.src = decodedUrl;
     img.alt = imageName;
+    img.classList.remove('zoomed');
     img.style.transform = 'rotate(0deg) scale(1)';
     img.style.cursor = 'default';
-    img.style.maxWidth = '100%';
-    img.style.maxHeight = '70vh';
-    img.style.width = 'auto';
-    img.style.height = 'auto';
-    img.style.minWidth = 'auto';
-    img.style.minHeight = 'auto';
-    img.style.transformOrigin = 'center center';
     
-    // Reset container
+    // Reset container scroll
     container.scrollLeft = 0;
     container.scrollTop = 0;
-    container.style.overflow = 'hidden';
     
     const imageNameText = document.getElementById('imageNameText');
     if (imageNameText) {
         imageNameText.textContent = imageName;
     }
     
-    // Remove any existing controls
+    // Remove existing controls
     const existingControls = document.querySelector('.image-controls');
     if (existingControls) {
         existingControls.remove();
     }
     
-    // Add controls to modal footer
+    // Add controls
     const modalFooter = document.querySelector('#imageViewer .modal-footer');
     const controlsDiv = document.createElement('div');
     controlsDiv.className = 'image-controls me-auto';
@@ -637,13 +630,61 @@ function viewImage(imageUrl) {
     
     modalFooter.insertBefore(controlsDiv, modalFooter.firstChild);
     
-    // ===== SIMPLIFIED: Pan/Drag Functionality =====
+    // ===== SIMPLIFIED: Zoom with small increments =====
+    window.zoomImage = function(delta) {
+        // Very small zoom increments (0.1 = 10%)
+        currentZoom = currentZoom + delta;
+        
+        // Limits
+        if (currentZoom < 0.8) currentZoom = 0.8; // Can zoom out a bit
+        if (currentZoom > 3) currentZoom = 3;     // Max 3x zoom
+        
+        applyTransform();
+        
+        // Update UI based on zoom
+        if (currentZoom > 1.05) {
+            img.classList.add('zoomed');
+            img.style.cursor = 'grab';
+        } else {
+            img.classList.remove('zoomed');
+            img.style.cursor = 'default';
+            
+            // Center image when not zoomed
+            container.scrollLeft = 0;
+            container.scrollTop = 0;
+        }
+    };
+    
+    // ===== SIMPLIFIED: Rotation =====
+    window.rotateImage = function(degrees) {
+        currentRotation = (currentRotation + degrees) % 360;
+        applyTransform();
+    };
+    
+    // ===== SIMPLIFIED: Reset =====
+    window.resetImage = function() {
+        currentRotation = 0;
+        currentZoom = 1;
+        
+        img.classList.remove('zoomed');
+        img.style.transform = 'rotate(0deg) scale(1)';
+        img.style.cursor = 'default';
+        
+        container.scrollLeft = 0;
+        container.scrollTop = 0;
+    };
+    
+    function applyTransform() {
+        img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+    }
+    
+    // ===== SIMPLIFIED: Pan/Drag =====
     let isDragging = false;
     let startX, startY;
     let scrollLeft, scrollTop;
     
     img.addEventListener('mousedown', (e) => {
-        if (currentZoom > 1.05) { // Small threshold to detect zoom
+        if (currentZoom > 1.05) {
             isDragging = true;
             img.style.cursor = 'grabbing';
             startX = e.pageX - container.offsetLeft;
@@ -679,64 +720,6 @@ function viewImage(imageUrl) {
         }
     });
     
-    // ===== SIMPLIFIED: Zoom with small increments =====
-    window.zoomImage = function(delta) {
-        // Small zoom increments (0.2 instead of 0.5)
-        currentZoom = currentZoom + delta;
-        if (currentZoom < 0.5) currentZoom = 0.5; // Min zoom
-        if (currentZoom > 5) currentZoom = 5; // Max zoom to prevent too extreme
-        
-        applyTransform();
-        
-        // Update UI based on zoom level
-        if (currentZoom > 1.05) {
-            img.style.cursor = 'grab';
-            container.style.overflow = 'auto';
-            
-            // Remove constraints when zoomed
-            img.style.maxWidth = 'none';
-            img.style.maxHeight = 'none';
-        } else {
-            img.style.cursor = 'default';
-            container.style.overflow = 'hidden';
-            
-            // Restore constraints when not zoomed
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '70vh';
-            
-            // Center the image when not zoomed
-            container.scrollLeft = 0;
-            container.scrollTop = 0;
-        }
-    };
-    
-    // ===== SIMPLIFIED: Rotation =====
-    window.rotateImage = function(degrees) {
-        currentRotation = (currentRotation + degrees) % 360;
-        applyTransform();
-    };
-    
-    // ===== SIMPLIFIED: Reset =====
-    window.resetImage = function() {
-        currentRotation = 0;
-        currentZoom = 1;
-        
-        img.style.transform = 'rotate(0deg) scale(1)';
-        img.style.cursor = 'default';
-        img.style.maxWidth = '100%';
-        img.style.maxHeight = '70vh';
-        img.style.minWidth = 'auto';
-        img.style.minHeight = 'auto';
-        
-        container.scrollLeft = 0;
-        container.scrollTop = 0;
-        container.style.overflow = 'hidden';
-    };
-    
-    function applyTransform() {
-        img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
-    }
-    
     // ===== SIMPLIFIED: Keyboard shortcuts =====
     const keyHandler = (e) => {
         if (e.ctrlKey && e.key === 'ArrowLeft') {
@@ -747,36 +730,35 @@ function viewImage(imageUrl) {
             rotateImage(90);
         } else if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
             e.preventDefault();
-            zoomImage(0.2); // Smaller increment
+            zoomImage(0.1); // 10% zoom increment
         } else if (e.ctrlKey && e.key === '-') {
             e.preventDefault();
-            zoomImage(-0.2); // Smaller increment
+            zoomImage(-0.1); // 10% zoom increment
         } else if (e.ctrlKey && e.key === '0') {
             e.preventDefault();
             resetImage();
         } else if (!e.ctrlKey && currentZoom > 1.05) {
-            const panAmount = 30;
             if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                container.scrollTop -= panAmount;
+                container.scrollTop -= 30;
             } else if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                container.scrollTop += panAmount;
+                container.scrollTop += 30;
             } else if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                container.scrollLeft -= panAmount;
+                container.scrollLeft -= 30;
             } else if (e.key === 'ArrowRight') {
                 e.preventDefault();
-                container.scrollLeft += panAmount;
+                container.scrollLeft += 30;
             }
         }
     };
     
     document.addEventListener('keydown', keyHandler);
     
-    // Add button event listeners
-    document.querySelector('.zoom-in').addEventListener('click', () => zoomImage(0.2));
-    document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-0.2));
+    // Button event listeners
+    document.querySelector('.zoom-in').addEventListener('click', () => zoomImage(0.1));
+    document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-0.1));
     document.querySelector('.rotate-left').addEventListener('click', () => rotateImage(-90));
     document.querySelector('.rotate-right').addEventListener('click', () => rotateImage(90));
     document.querySelector('.reset-image').addEventListener('click', resetImage);
@@ -794,7 +776,6 @@ function viewImage(imageUrl) {
     // Clean up
     document.getElementById('imageViewer').addEventListener('hidden.bs.modal', function() {
         document.removeEventListener('keydown', keyHandler);
-        document.removeEventListener('mouseup', null);
         const controls = document.querySelector('.image-controls');
         if (controls) {
             controls.remove();
