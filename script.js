@@ -567,7 +567,7 @@ function handleImageError(img, imageUrl) {
     }
 }
 
-// ==================== FIXED: IMAGE VIEWER FUNCTION WITH SMOOTH ZOOM ====================
+// ==================== FIXED: IMAGE VIEWER FUNCTION WITH PROPER SCROLLING ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     const decodedUrl = decodeURIComponent(imageUrl);
@@ -583,13 +583,19 @@ function viewImage(imageUrl) {
     // Reset image to default state
     img.src = decodedUrl;
     img.alt = imageName;
-    img.classList.remove('zoomed');
-    img.style.transform = 'rotate(0deg) scale(1)';
+    img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
     img.style.cursor = 'default';
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '70vh';
+    img.style.width = 'auto';
+    img.style.height = 'auto';
+    img.style.minWidth = 'auto';
+    img.style.minHeight = 'auto';
     
     // Reset container scroll
     container.scrollLeft = 0;
     container.scrollTop = 0;
+    container.style.overflow = 'hidden';
     
     const imageNameText = document.getElementById('imageNameText');
     if (imageNameText) {
@@ -630,67 +636,78 @@ function viewImage(imageUrl) {
     
     modalFooter.insertBefore(controlsDiv, modalFooter.firstChild);
     
-    // ===== FIXED: Zoom with small additive increments =====
+    // ===== SIMPLE ZOOM WITH SMALL INCREMENTS =====
     window.zoomImage = function(delta) {
-        // Calculate new zoom - additive approach for more control
-        // Start with current zoom, add a small percentage of current zoom
-        const zoomFactor = 0.15; // 15% of current zoom per click
-        
+        // Small fixed increment
         if (delta > 0) {
-            // Zoom in: increase by 15% of current zoom
-            currentZoom = currentZoom * (1 + zoomFactor);
+            currentZoom += 0.1; // Add 0.1 each time
         } else {
-            // Zoom out: decrease by 15% of current zoom
-            currentZoom = currentZoom / (1 + zoomFactor);
+            currentZoom -= 0.1; // Subtract 0.1 each time
         }
         
         // Limits
-        if (currentZoom < 0.8) currentZoom = 0.8; // Can zoom out a bit
-        if (currentZoom > 5) currentZoom = 5;     // Max 5x zoom
+        if (currentZoom < 0.8) currentZoom = 0.8;
+        if (currentZoom > 3) currentZoom = 3; // Max 3x zoom
         
         applyTransform();
         
-        // Update UI based on zoom
+        // Update container for scrolling
         if (currentZoom > 1.05) {
-            img.classList.add('zoomed');
+            container.style.overflow = 'auto';
             img.style.cursor = 'grab';
+            
+            // Remove constraints when zoomed
+            img.style.maxWidth = 'none';
+            img.style.maxHeight = 'none';
         } else {
-            img.classList.remove('zoomed');
+            container.style.overflow = 'hidden';
             img.style.cursor = 'default';
             
-            // Center image when not zoomed
+            // Restore constraints when not zoomed
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '70vh';
+            
+            // Center image
             container.scrollLeft = 0;
             container.scrollTop = 0;
         }
-        
-        // Show current zoom level in console for debugging (remove in production)
-        console.log('Zoom level:', currentZoom.toFixed(2));
     };
     
-    // ===== SIMPLIFIED: Rotation =====
+    // ===== ROTATION =====
     window.rotateImage = function(degrees) {
         currentRotation = (currentRotation + degrees) % 360;
         applyTransform();
     };
     
-    // ===== SIMPLIFIED: Reset =====
+    // ===== RESET =====
     window.resetImage = function() {
         currentRotation = 0;
         currentZoom = 1;
         
-        img.classList.remove('zoomed');
         img.style.transform = 'rotate(0deg) scale(1)';
         img.style.cursor = 'default';
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '70vh';
+        img.style.minWidth = 'auto';
+        img.style.minHeight = 'auto';
         
         container.scrollLeft = 0;
         container.scrollTop = 0;
+        container.style.overflow = 'hidden';
     };
     
     function applyTransform() {
         img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+        
+        // Ensure proper scrolling dimensions when zoomed
+        if (currentZoom > 1.05 && img.naturalWidth) {
+            // This helps with scrolling to edges
+            img.style.minWidth = img.naturalWidth * currentZoom + 'px';
+            img.style.minHeight = img.naturalHeight * currentZoom + 'px';
+        }
     }
     
-    // ===== SIMPLIFIED: Pan/Drag =====
+    // ===== DRAG TO PAN =====
     let isDragging = false;
     let startX, startY;
     let scrollLeft, scrollTop;
@@ -732,7 +749,7 @@ function viewImage(imageUrl) {
         }
     });
     
-    // ===== FIXED: Keyboard shortcuts with same zoom factor =====
+    // ===== KEYBOARD SHORTCUTS =====
     const keyHandler = (e) => {
         if (e.ctrlKey && e.key === 'ArrowLeft') {
             e.preventDefault();
@@ -742,23 +759,25 @@ function viewImage(imageUrl) {
             rotateImage(90);
         } else if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
             e.preventDefault();
-            // Use the same zoom factor
-            const zoomFactor = 0.15;
-            currentZoom = currentZoom * (1 + zoomFactor);
-            if (currentZoom > 5) currentZoom = 5;
+            currentZoom += 0.1;
+            if (currentZoom > 3) currentZoom = 3;
             applyTransform();
-            img.classList.add('zoomed');
-            img.style.cursor = 'grab';
+            if (currentZoom > 1.05) {
+                container.style.overflow = 'auto';
+                img.style.cursor = 'grab';
+                img.style.maxWidth = 'none';
+                img.style.maxHeight = 'none';
+            }
         } else if (e.ctrlKey && e.key === '-') {
             e.preventDefault();
-            // Use the same zoom factor
-            const zoomFactor = 0.15;
-            currentZoom = currentZoom / (1 + zoomFactor);
+            currentZoom -= 0.1;
             if (currentZoom < 0.8) currentZoom = 0.8;
             applyTransform();
             if (currentZoom <= 1.05) {
-                img.classList.remove('zoomed');
+                container.style.overflow = 'hidden';
                 img.style.cursor = 'default';
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '70vh';
                 container.scrollLeft = 0;
                 container.scrollTop = 0;
             }
@@ -766,18 +785,19 @@ function viewImage(imageUrl) {
             e.preventDefault();
             resetImage();
         } else if (!e.ctrlKey && currentZoom > 1.05) {
+            const panAmount = 30;
             if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                container.scrollTop -= 30;
+                container.scrollTop -= panAmount;
             } else if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                container.scrollTop += 30;
+                container.scrollTop += panAmount;
             } else if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                container.scrollLeft -= 30;
+                container.scrollLeft -= panAmount;
             } else if (e.key === 'ArrowRight') {
                 e.preventDefault();
-                container.scrollLeft += 30;
+                container.scrollLeft += panAmount;
             }
         }
     };
@@ -785,8 +805,8 @@ function viewImage(imageUrl) {
     document.addEventListener('keydown', keyHandler);
     
     // Button event listeners
-    document.querySelector('.zoom-in').addEventListener('click', () => zoomImage(1)); // Positive for zoom in
-    document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-1)); // Negative for zoom out
+    document.querySelector('.zoom-in').addEventListener('click', () => zoomImage(1));
+    document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-1));
     document.querySelector('.rotate-left').addEventListener('click', () => rotateImage(-90));
     document.querySelector('.rotate-right').addEventListener('click', () => rotateImage(90));
     document.querySelector('.reset-image').addEventListener('click', resetImage);
@@ -810,7 +830,6 @@ function viewImage(imageUrl) {
         }
     }, { once: true });
 }
-
 function rotateImage(degrees) {
     currentRotation = (currentRotation + degrees) % 360;
     applyTransform();
