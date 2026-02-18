@@ -567,7 +567,7 @@ function handleImageError(img, imageUrl) {
     }
 }
 
-// ==================== FIXED: IMAGE VIEWER WITH CENTERING DURING ZOOM ====================
+// ==================== FIXED: IMAGE VIEWER WITH PROPER SCROLLING ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     const decodedUrl = decodeURIComponent(imageUrl);
@@ -579,26 +579,23 @@ function viewImage(imageUrl) {
     const img = document.getElementById('enlargedImage');
     const container = document.querySelector('#imageViewer .modal-body div');
     
-    // Store original image dimensions once loaded
-    let naturalWidth = 0;
-    let naturalHeight = 0;
-    
     // Setup image
     img.src = decodedUrl;
     img.alt = imageName;
     img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
-    img.style.transformOrigin = '0 0'; // Always top-left for predictable math
+    img.style.transformOrigin = '0 0'; // Changed from 'center center' to '0 0' (top-left)
     img.style.maxWidth = '100%';
     img.style.maxHeight = '70vh';
     img.style.cursor = 'default';
-    img.style.display = 'block';
-    img.style.margin = '0'; // Remove margin, we'll handle positioning with scroll
+    img.style.display = 'block'; // Ensure block display
+    img.style.margin = '0'; // Remove any margins
     
     // Reset container
     container.scrollLeft = 0;
     container.scrollTop = 0;
     container.style.overflow = 'auto';
-    container.style.display = 'block'; // Always block for scrolling
+    container.style.display = 'block';
+    container.style.textAlign = 'left'; // Align content to left
     container.style.padding = '0';
     
     const imageNameText = document.getElementById('imageNameText');
@@ -640,34 +637,6 @@ function viewImage(imageUrl) {
     
     modalFooter.insertBefore(controlsDiv, modalFooter.firstChild);
     
-    // Function to center the image in the viewport
-    function centerImage() {
-        if (!naturalWidth || !naturalHeight) return;
-        
-        // Get container dimensions
-        const containerWidth = container.clientWidth;
-        const containerHeight = container.clientHeight;
-        
-        // Calculate scaled dimensions
-        let displayWidth, displayHeight;
-        
-        if (currentRotation % 180 === 0) {
-            displayWidth = naturalWidth * currentZoom;
-            displayHeight = naturalHeight * currentZoom;
-        } else {
-            // Swapped for rotated view
-            displayWidth = naturalHeight * currentZoom;
-            displayHeight = naturalWidth * currentZoom;
-        }
-        
-        // Calculate scroll position to center the image
-        const targetScrollLeft = Math.max(0, (displayWidth - containerWidth) / 2);
-        const targetScrollTop = Math.max(0, (displayHeight - containerHeight) / 2);
-        
-        container.scrollLeft = targetScrollLeft;
-        container.scrollTop = targetScrollTop;
-    }
-    
     // Zoom function
     function zoom(factor) {
         currentZoom = currentZoom * factor;
@@ -676,10 +645,7 @@ function viewImage(imageUrl) {
         
         applyTransform();
         
-        // Center the image after zoom
-        centerImage();
-        
-        // Update cursor
+        // Update cursor for dragging
         img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
     }
     
@@ -687,14 +653,22 @@ function viewImage(imageUrl) {
     function rotate(degrees) {
         currentRotation = (currentRotation + degrees) % 360;
         applyTransform();
-        
-        // Center the image after rotation
-        centerImage();
     }
     
-    // Apply transform
+    // Apply transform and adjust container
     function applyTransform() {
         img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+        
+        // Force container to recognize new dimensions
+        if (currentZoom > 1) {
+            // When zoomed, ensure container can scroll to all edges
+            setTimeout(() => {
+                // This forces the container to recalculate scroll dimensions
+                container.style.display = 'none';
+                container.offsetHeight; // Force reflow
+                container.style.display = 'block';
+            }, 10);
+        }
     }
     
     // Reset function
@@ -703,11 +677,8 @@ function viewImage(imageUrl) {
         currentRotation = 0;
         img.style.transform = 'rotate(0deg) scale(1)';
         img.style.cursor = 'default';
-        
-        // Reset scroll to center
-        setTimeout(() => {
-            centerImage();
-        }, 10);
+        container.scrollLeft = 0;
+        container.scrollTop = 0;
     }
     
     // Add event listeners
@@ -717,7 +688,7 @@ function viewImage(imageUrl) {
     document.getElementById('rotateRightBtn').addEventListener('click', () => rotate(90));
     document.getElementById('resetBtn').addEventListener('click', reset);
     
-    // Drag to pan
+    // Simple drag to pan
     let isDragging = false;
     let startX, startY;
     let scrollLeft, scrollTop;
@@ -794,17 +765,6 @@ function viewImage(imageUrl) {
     
     document.addEventListener('keydown', keyHandler);
     
-    // When image loads, get natural dimensions and center it
-    img.onload = function() {
-        naturalWidth = img.naturalWidth;
-        naturalHeight = img.naturalHeight;
-        
-        // Center the image initially
-        setTimeout(() => {
-            centerImage();
-        }, 10);
-    };
-    
     img.onerror = function() {
         this.src = 'https://via.placeholder.com/800x600/e0e7ff/0056a6?text=Image+Not+Available';
         this.alt = 'Image not available';
@@ -815,13 +775,9 @@ function viewImage(imageUrl) {
     
     modal.show();
     
-    // Also center when window resizes
-    window.addEventListener('resize', centerImage);
-    
     // Clean up
     document.getElementById('imageViewer').addEventListener('hidden.bs.modal', function() {
         document.removeEventListener('keydown', keyHandler);
-        window.removeEventListener('resize', centerImage);
         const controls = document.querySelector('.image-controls');
         if (controls) {
             controls.remove();
