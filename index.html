@@ -344,9 +344,7 @@
 
         /* ===== UPDATED: Image container styles ===== */
         #imageViewer .modal-body {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: block;
             min-height: 60vh;
             max-height: 80vh;
             background: #f0f2f5;
@@ -357,12 +355,11 @@
         #imageViewer .modal-body div {
             width: 100%;
             height: 100%;
-            overflow: hidden;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+            overflow: auto;
+            display: block;
+            text-align: left;
+            padding: 0;
+            margin: 0;
         }
 
         /* ===== UPDATED: Image styles ===== */
@@ -375,8 +372,8 @@
             transition: transform 0.1s ease;
             cursor: default;
             display: block;
-            margin: auto;
-            transform-origin: center center;
+            margin: 0;
+            transform-origin: 0 0; /* Top-left origin */
         }
 
         /* When zoomed in */
