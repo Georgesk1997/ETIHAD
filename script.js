@@ -173,7 +173,7 @@ function processCSV(csvText, categoryName) {
                     columns[5].trim()
                 ],
                 originalCorrect: correctIndex,
-                images: images, // Changed from single image to array
+                images: images,
                 explanation: explanation,
                 currentOptions: null,
                 currentCorrect: null
@@ -567,126 +567,273 @@ function handleImageError(img, imageUrl) {
     }
 }
 
-// ==================== FIXED: IMAGE VIEWER FUNCTION WITH PROPER SCROLLING ====================
-// ==========================================
-// FIXED & COMPLETE IMAGE VIEWER SYSTEM
-// ==========================================
-
-let currentZoom = 1;
-let currentRotation = 0;
-let isDragging = false;
-let dragStartX = 0;
-let dragStartY = 0;
-
-const img = document.getElementById("enlargedImage");
-const container = document.querySelector("#imageViewer .modal-body div");
-const imageNameText = document.getElementById("imageNameText");
-
-// OPEN IMAGE VIEWER
+// ==================== FIXED: IMAGE VIEWER FUNCTION WITH SMOOTH ZOOM AND PROPER SCROLLING ====================
 function viewImage(imageUrl) {
-    const modal = new bootstrap.Modal(document.getElementById("imageViewer"));
-
-    currentZoom = 1;
-    currentRotation = 0;
-    isDragging = false;
-
+    const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     const decodedUrl = decodeURIComponent(imageUrl);
-    const name = decodedUrl.split("/").pop();
-
+    const imageName = extractImageName(decodedUrl);
+    
+    // Reset rotation and zoom
+    currentRotation = 0;
+    currentZoom = 1;
+    
+    const img = document.getElementById('enlargedImage');
+    const container = document.querySelector('#imageViewer .modal-body div');
+    
+    // Reset image to default state
     img.src = decodedUrl;
-    imageNameText.textContent = name;
-
-    img.classList.remove("zoomed");
-    img.style.transform = "scale(1) rotate(0deg)";
-
+    img.alt = imageName;
+    img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+    img.style.cursor = 'default';
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '70vh';
+    img.style.width = 'auto';
+    img.style.height = 'auto';
+    img.style.minWidth = 'auto';
+    img.style.minHeight = 'auto';
+    
+    // Reset container scroll
     container.scrollLeft = 0;
     container.scrollTop = 0;
-    container.style.overflow = "auto";
-
-    modal.show();
-}
-
-// ===========================
-// ZOOM CONTROLS
-// ===========================
-
-function zoomIn() {
-    currentZoom += 0.25;
-    applyTransform();
-}
-
-function zoomOut() {
-    currentZoom -= 0.25;
-    if (currentZoom < 1) currentZoom = 1;
-    applyTransform();
-}
-
-// ===========================
-// ROTATION CONTROLS
-// ===========================
-
-function rotateLeft() {
-    currentRotation -= 90;
-    applyTransform();
-}
-
-function rotateRight() {
-    currentRotation += 90;
-    applyTransform();
-}
-
-// ===========================
-// APPLY TRANSFORM
-// ===========================
-
-function applyTransform() {
-    if (currentZoom > 1) {
-        img.classList.add("zoomed");
-        container.style.overflow = "auto";
-        img.style.cursor = "grab";
-    } else {
-        img.classList.remove("zoomed");
-        container.style.overflow = "auto";
-        img.style.cursor = "default";
+    container.style.overflow = 'hidden';
+    
+    const imageNameText = document.getElementById('imageNameText');
+    if (imageNameText) {
+        imageNameText.textContent = imageName;
     }
-
-    img.style.transform = `scale(${currentZoom}) rotate(${currentRotation}deg)`;
+    
+    // Remove existing controls
+    const existingControls = document.querySelector('.image-controls');
+    if (existingControls) {
+        existingControls.remove();
+    }
+    
+    // Add controls
+    const modalFooter = document.querySelector('#imageViewer .modal-footer');
+    const controlsDiv = document.createElement('div');
+    controlsDiv.className = 'image-controls me-auto';
+    controlsDiv.innerHTML = `
+        <div class="btn-group btn-group-sm me-2">
+            <button class="btn btn-outline-primary rotate-left" title="Rotate Left (Ctrl+←)">
+                <i class="fas fa-undo-alt"></i>
+            </button>
+            <button class="btn btn-outline-primary rotate-right" title="Rotate Right (Ctrl+→)">
+                <i class="fas fa-redo-alt"></i>
+            </button>
+        </div>
+        <div class="btn-group btn-group-sm me-2">
+            <button class="btn btn-outline-primary zoom-in" title="Zoom In">
+                <i class="fas fa-search-plus"></i>
+            </button>
+            <button class="btn btn-outline-primary zoom-out" title="Zoom Out">
+                <i class="fas fa-search-minus"></i>
+            </button>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm reset-image" title="Reset">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+    `;
+    
+    modalFooter.insertBefore(controlsDiv, modalFooter.firstChild);
+    
+    // ===== FIXED: VERY SMALL ZOOM INCREMENTS =====
+    window.zoomImage = function(delta) {
+        // Very small fixed increment (5% per click)
+        if (delta > 0) {
+            currentZoom += 0.05; // Add only 0.05 each time
+        } else {
+            currentZoom -= 0.05; // Subtract 0.05 each time
+        }
+        
+        // Limits
+        if (currentZoom < 0.8) currentZoom = 0.8;
+        if (currentZoom > 3) currentZoom = 3; // Max 3x zoom
+        
+        applyTransform();
+        
+        // Update container for scrolling
+        if (currentZoom > 1.05) {
+            container.style.overflow = 'auto';
+            img.style.cursor = 'grab';
+            
+            // Remove constraints when zoomed
+            img.style.maxWidth = 'none';
+            img.style.maxHeight = 'none';
+        } else {
+            container.style.overflow = 'hidden';
+            img.style.cursor = 'default';
+            
+            // Restore constraints when not zoomed
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '70vh';
+            
+            // Center image
+            container.scrollLeft = 0;
+            container.scrollTop = 0;
+        }
+    };
+    
+    // ===== ROTATION =====
+    window.rotateImage = function(degrees) {
+        currentRotation = (currentRotation + degrees) % 360;
+        applyTransform();
+    };
+    
+    // ===== RESET =====
+    window.resetImage = function() {
+        currentRotation = 0;
+        currentZoom = 1;
+        
+        img.style.transform = 'rotate(0deg) scale(1)';
+        img.style.cursor = 'default';
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '70vh';
+        img.style.minWidth = 'auto';
+        img.style.minHeight = 'auto';
+        
+        container.scrollLeft = 0;
+        container.scrollTop = 0;
+        container.style.overflow = 'hidden';
+    };
+    
+    function applyTransform() {
+        img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+        
+        // Ensure proper scrolling dimensions when zoomed
+        if (currentZoom > 1.05) {
+            // Use setTimeout to ensure image dimensions are available
+            setTimeout(() => {
+                if (img.naturalWidth) {
+                    img.style.minWidth = img.naturalWidth * currentZoom + 'px';
+                    img.style.minHeight = img.naturalHeight * currentZoom + 'px';
+                }
+            }, 10);
+        }
+    }
+    
+    // ===== DRAG TO PAN =====
+    let isDragging = false;
+    let startX, startY;
+    let scrollLeft, scrollTop;
+    
+    img.addEventListener('mousedown', (e) => {
+        if (currentZoom > 1.05) {
+            isDragging = true;
+            img.style.cursor = 'grabbing';
+            startX = e.pageX - container.offsetLeft;
+            startY = e.pageY - container.offsetTop;
+            scrollLeft = container.scrollLeft;
+            scrollTop = container.scrollTop;
+            e.preventDefault();
+        }
+    });
+    
+    container.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        
+        const x = e.pageX - container.offsetLeft;
+        const y = e.pageY - container.offsetTop;
+        
+        container.scrollLeft = scrollLeft - (x - startX);
+        container.scrollTop = scrollTop - (y - startY);
+    });
+    
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            img.style.cursor = currentZoom > 1.05 ? 'grab' : 'default';
+        }
+    });
+    
+    container.addEventListener('mouseleave', () => {
+        if (isDragging) {
+            isDragging = false;
+            img.style.cursor = currentZoom > 1.05 ? 'grab' : 'default';
+        }
+    });
+    
+    // ===== FIXED: KEYBOARD SHORTCUTS =====
+    const keyHandler = (e) => {
+        if (e.ctrlKey && e.key === 'ArrowLeft') {
+            e.preventDefault();
+            rotateImage(-90);
+        } else if (e.ctrlKey && e.key === 'ArrowRight') {
+            e.preventDefault();
+            rotateImage(90);
+        } else if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
+            e.preventDefault();
+            currentZoom += 0.05; // Match button increment
+            if (currentZoom > 3) currentZoom = 3;
+            applyTransform();
+            if (currentZoom > 1.05) {
+                container.style.overflow = 'auto';
+                img.style.cursor = 'grab';
+                img.style.maxWidth = 'none';
+                img.style.maxHeight = 'none';
+            }
+        } else if (e.ctrlKey && e.key === '-') {
+            e.preventDefault();
+            currentZoom -= 0.05; // Match button increment
+            if (currentZoom < 0.8) currentZoom = 0.8;
+            applyTransform();
+            if (currentZoom <= 1.05) {
+                container.style.overflow = 'hidden';
+                img.style.cursor = 'default';
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '70vh';
+                container.scrollLeft = 0;
+                container.scrollTop = 0;
+            }
+        } else if (e.ctrlKey && e.key === '0') {
+            e.preventDefault();
+            resetImage();
+        } else if (!e.ctrlKey && currentZoom > 1.05) {
+            const panAmount = 30;
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                container.scrollTop -= panAmount;
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                container.scrollTop += panAmount;
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                container.scrollLeft -= panAmount;
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                container.scrollLeft += panAmount;
+            }
+        }
+    };
+    
+    document.addEventListener('keydown', keyHandler);
+    
+    // Button event listeners
+    document.querySelector('.zoom-in').addEventListener('click', () => zoomImage(1));
+    document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-1));
+    document.querySelector('.rotate-left').addEventListener('click', () => rotateImage(-90));
+    document.querySelector('.rotate-right').addEventListener('click', () => rotateImage(90));
+    document.querySelector('.reset-image').addEventListener('click', resetImage);
+    
+    img.onerror = function() {
+        this.src = 'https://via.placeholder.com/800x600/e0e7ff/0056a6?text=Image+Not+Available';
+        this.alt = 'Image not available';
+        if (imageNameText) {
+            imageNameText.textContent = imageName;
+        }
+    };
+    
+    modal.show();
+    
+    // Clean up
+    document.getElementById('imageViewer').addEventListener('hidden.bs.modal', function() {
+        document.removeEventListener('keydown', keyHandler);
+        const controls = document.querySelector('.image-controls');
+        if (controls) {
+            controls.remove();
+        }
+    }, { once: true });
 }
-
-// ===========================
-// DRAGGING (PANNING) WHEN ZOOMED
-// ===========================
-
-img.addEventListener("mousedown", (e) => {
-    if (currentZoom <= 1) return;
-
-    isDragging = true;
-    dragStartX = e.clientX + container.scrollLeft;
-    dragStartY = e.clientY + container.scrollTop;
-
-    img.style.cursor = "grabbing";
-    e.preventDefault();
-});
-
-document.addEventListener("mousemove", (e) => {
-    if (!isDragging) return;
-
-    container.scrollLeft = dragStartX - e.clientX;
-    container.scrollTop = dragStartY - e.clientY;
-});
-
-document.addEventListener("mouseup", () => {
-    if (!isDragging) return;
-
-    isDragging = false;
-    img.style.cursor = currentZoom > 1 ? "grab" : "default";
-});
-
-// Double-click to zoom
-img.addEventListener("dblclick", () => {
-    currentZoom = currentZoom === 1 ? 1.5 : 1;
-    applyTransform();
-});
 
 function rotateImage(degrees) {
     currentRotation = (currentRotation + degrees) % 360;
