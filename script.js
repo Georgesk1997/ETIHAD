@@ -137,12 +137,21 @@ function processCSV(csvText, categoryName) {
                 correctIndex = 0;
             }
             
-            let imagePath = '';
+            // Handle multiple images (pipe-separated)
+            let images = [];
             if (columns.length > 7 && columns[7]) {
-                imagePath = columns[7].trim();
-                if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('/') && !imagePath.startsWith('./')) {
-                    imagePath = './' + imagePath;
-                }
+                const imageField = columns[7].trim();
+                // Split by pipe character to get multiple image paths
+                const imagePaths = imageField.split('|').map(path => path.trim());
+                
+                imagePaths.forEach(imagePath => {
+                    if (imagePath) {
+                        if (!imagePath.startsWith('http') && !imagePath.startsWith('/') && !imagePath.startsWith('./')) {
+                            imagePath = './' + imagePath;
+                        }
+                        images.push(imagePath);
+                    }
+                });
             }
             
             let explanation = '';
@@ -155,7 +164,7 @@ function processCSV(csvText, categoryName) {
             
             const question = {
                 id: questionId,
-                category: categoryName, // Use provided category name
+                category: categoryName,
                 text: columns[1].trim(),
                 originalOptions: [
                     columns[2].trim(),
@@ -164,7 +173,7 @@ function processCSV(csvText, categoryName) {
                     columns[5].trim()
                 ],
                 originalCorrect: correctIndex,
-                image: imagePath,
+                images: images, // Changed from single image to array
                 explanation: explanation,
                 currentOptions: null,
                 currentCorrect: null
@@ -661,7 +670,6 @@ function viewImage(imageUrl) {
     }, { once: true });
 }
 
-// Add these new helper functions:
 function rotateImage(degrees) {
     currentRotation = (currentRotation + degrees) % 360;
     applyTransform();
@@ -683,6 +691,7 @@ function applyTransform() {
     const img = document.getElementById('enlargedImage');
     img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
 }
+
 // ==================== QUIZ FUNCTIONS ====================
 function displayQuestion() {
     if (!categoryQuestions || categoryQuestions.length === 0) {
@@ -702,23 +711,27 @@ function displayQuestion() {
             <h4 class="mb-3">${question.text}</h4>
     `;
     
-    if (question.image && question.image.trim() !== '') {
-        let imagePath = question.image.trim();
-        let imageName = extractImageName(imagePath);
+    // Display multiple images if available
+    if (question.images && question.images.length > 0) {
+        html += `<div class="multiple-images-container">`;
         
-        html += `
-            <div class="chart-image">
-                <img src="${imagePath}" alt="${imageName}" 
-                     onerror="handleImageError(this, '${encodeURIComponent(imagePath)}')"
-                     style="max-width: 100%; max-height: 300px; object-fit: contain;"
-                     onclick="viewImage('${encodeURIComponent(imagePath)}')">
-                <div class="image-label">Click to enlarge</div>
-                ${imageName ? `
-                <div class="image-name">
-                    <i class="fas fa-file-image me-1"></i> ${imageName}
-                </div>` : ''}
-            </div>
-        `;
+        question.images.forEach((imagePath, index) => {
+            let imageName = extractImageName(imagePath);
+            
+            html += `
+                <div class="chart-image">
+                    <img src="${imagePath}" alt="${imageName}" 
+                         onerror="handleImageError(this, '${encodeURIComponent(imagePath)}')"
+                         style="width: 100%; height: 200px; object-fit: contain; cursor: pointer; border-radius: 6px; border: 2px solid #e0e7ff;"
+                         onclick="viewImage('${encodeURIComponent(imagePath)}')">
+                    <div class="image-label">
+                        <i class="fas fa-image"></i> Chart ${index + 1} - Click to enlarge
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `</div>`;
     }
     
     html += '<div class="mt-4">';
