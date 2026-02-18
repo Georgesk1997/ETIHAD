@@ -577,12 +577,13 @@ function viewImage(imageUrl) {
     currentZoom = 1;
     
     const img = document.getElementById('enlargedImage');
-    const imageContainer = document.querySelector('#imageViewer .modal-body div');
+    const container = document.querySelector('#imageViewer .modal-body div');
     
     img.src = decodedUrl;
     img.alt = imageName;
     img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
     img.style.cursor = 'grab';
+    img.style.transformOrigin = '0 0'; // Set origin to top-left for better zoom control
     
     const imageNameText = document.getElementById('imageNameText');
     if (imageNameText) {
@@ -624,108 +625,159 @@ function viewImage(imageUrl) {
     // Insert controls before the close button
     modalFooter.insertBefore(controlsDiv, modalFooter.firstChild);
     
-    // Add event listeners for rotation and zoom
-    document.querySelector('.rotate-left').addEventListener('click', () => rotateImage(-90));
-    document.querySelector('.rotate-right').addEventListener('click', () => rotateImage(90));
-    document.querySelector('.zoom-in').addEventListener('click', () => zoomImage(0.1));
-    document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-0.1));
-    document.querySelector('.reset-image').addEventListener('click', resetImage);
-    
-    // ===== NEW: Pan/Drag Functionality =====
+    // ===== IMPROVED: Pan/Drag Functionality =====
     let isDragging = false;
     let startX, startY;
     let scrollLeft, scrollTop;
     
+    // Mouse down on image - start dragging
     img.addEventListener('mousedown', (e) => {
-        if (currentZoom > 1) { // Only enable drag when zoomed in
-            isDragging = true;
-            img.style.cursor = 'grabbing';
-            startX = e.pageX - imageContainer.offsetLeft;
-            startY = e.pageY - imageContainer.offsetTop;
-            scrollLeft = imageContainer.scrollLeft;
-            scrollTop = imageContainer.scrollTop;
+        isDragging = true;
+        img.style.cursor = 'grabbing';
+        startX = e.pageX - container.offsetLeft;
+        startY = e.pageY - container.offsetTop;
+        scrollLeft = container.scrollLeft;
+        scrollTop = container.scrollTop;
+        e.preventDefault(); // Prevent default image dragging
+    });
+    
+    // Mouse move on container - handle dragging
+    container.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        
+        const x = e.pageX - container.offsetLeft;
+        const y = e.pageY - container.offsetTop;
+        
+        // Calculate scroll movement with multiplier for smoothness
+        const moveX = (x - startX) * 1.5;
+        const moveY = (y - startY) * 1.5;
+        
+        container.scrollLeft = scrollLeft - moveX;
+        container.scrollTop = scrollTop - moveY;
+    });
+    
+    // Mouse up anywhere - stop dragging
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
         }
     });
     
-    img.addEventListener('mouseleave', () => {
-        isDragging = false;
-        img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
+    // Mouse leave container - stop dragging
+    container.addEventListener('mouseleave', () => {
+        if (isDragging) {
+            isDragging = false;
+            img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
+        }
     });
     
-    img.addEventListener('mouseup', () => {
-        isDragging = false;
-        img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
-    });
-    
-    imageContainer.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        e.preventDefault();
-        const x = e.pageX - imageContainer.offsetLeft;
-        const y = e.pageY - imageContainer.offsetTop;
-        const walkX = (x - startX) * 2; // Scroll speed multiplier
-        const walkY = (y - startY) * 2;
-        imageContainer.scrollLeft = scrollLeft - walkX;
-        imageContainer.scrollTop = scrollTop - walkY;
-    });
-    
-    // Update cursor based on zoom level
-    const updateCursor = () => {
-        img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
-    };
-    
-    // Override zoom functions to update cursor
-    const originalZoomImage = zoomImage;
+    // ===== IMPROVED: Zoom without limits =====
     window.zoomImage = function(delta) {
-        originalZoomImage(delta);
-        updateCursor();
+        // Remove limits - allow any zoom level
+        currentZoom = currentZoom + delta;
+        if (currentZoom < 0.1) currentZoom = 0.1; // Minimum zoom to keep visible
+        
+        applyTransform();
+        
+        // Update cursor based on zoom level
+        img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
+        
+        // Show scrollbars when zoomed in
+        if (currentZoom > 1) {
+            container.style.overflow = 'auto';
+        }
     };
     
-    // Add keyboard shortcuts for panning when zoomed
-    const panHandler = (e) => {
+    window.rotateImage = function(degrees) {
+        currentRotation = (currentRotation + degrees) % 360;
+        applyTransform();
+    };
+    
+    window.resetImage = function() {
+        currentRotation = 0;
+        currentZoom = 1;
+        applyTransform();
+        img.style.cursor = 'default';
+        container.scrollLeft = 0;
+        container.scrollTop = 0;
+    };
+    
+    function applyTransform() {
+        // Apply rotation and scale
+        img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+        
+        // Adjust container for better viewing at high zoom
         if (currentZoom > 1) {
-            const panAmount = 50;
+            // Make container scrollable
+            container.style.overflow = 'auto';
+            
+            // Calculate natural image dimensions for better scrolling
+            if (img.naturalWidth) {
+                const scaledWidth = img.naturalWidth * currentZoom;
+                const scaledHeight = img.naturalHeight * currentZoom;
+                
+                // Ensure container can scroll to all parts of zoomed image
+                img.style.minWidth = scaledWidth + 'px';
+                img.style.minHeight = scaledHeight + 'px';
+            }
+        } else {
+            img.style.minWidth = 'auto';
+            img.style.minHeight = 'auto';
+            container.style.overflow = 'hidden';
+        }
+    }
+    
+    // ===== IMPROVED: Keyboard shortcuts with better panning =====
+    const keyHandler = (e) => {
+        // Rotation with Ctrl+Arrow
+        if (e.ctrlKey && e.key === 'ArrowLeft') {
+            e.preventDefault();
+            rotateImage(-90);
+        } else if (e.ctrlKey && e.key === 'ArrowRight') {
+            e.preventDefault();
+            rotateImage(90);
+        } 
+        // Zoom with Ctrl+Plus/Minus
+        else if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
+            e.preventDefault();
+            zoomImage(0.5);
+        } else if (e.ctrlKey && e.key === '-') {
+            e.preventDefault();
+            zoomImage(-0.5);
+        } else if (e.ctrlKey && e.key === '0') {
+            e.preventDefault();
+            resetImage();
+        }
+        // Pan with arrow keys (no Ctrl) - with larger increments at higher zoom
+        else if (!e.ctrlKey) {
+            const panAmount = 50 * (currentZoom > 1 ? currentZoom : 1);
+            
             if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                imageContainer.scrollTop -= panAmount;
+                container.scrollTop -= panAmount;
             } else if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                imageContainer.scrollTop += panAmount;
-            } else if (e.key === 'ArrowLeft' && !e.ctrlKey) { // Without Ctrl
+                container.scrollTop += panAmount;
+            } else if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                imageContainer.scrollLeft -= panAmount;
-            } else if (e.key === 'ArrowRight' && !e.ctrlKey) { // Without Ctrl
+                container.scrollLeft -= panAmount;
+            } else if (e.key === 'ArrowRight') {
                 e.preventDefault();
-                imageContainer.scrollLeft += panAmount;
+                container.scrollLeft += panAmount;
             }
         }
     };
     
-    document.addEventListener('keydown', panHandler);
-    
-    // Add keyboard shortcuts
-    const keyHandler = (e) => {
-        if (e.key === 'ArrowLeft' && e.ctrlKey) {
-            e.preventDefault();
-            rotateImage(-90);
-        } else if (e.key === 'ArrowRight' && e.ctrlKey) {
-            e.preventDefault();
-            rotateImage(90);
-        } else if (e.key === '+' && e.ctrlKey) {
-            e.preventDefault();
-            zoomImage(0.1);
-            updateCursor();
-        } else if (e.key === '-' && e.ctrlKey) {
-            e.preventDefault();
-            zoomImage(-0.1);
-            updateCursor();
-        } else if (e.key === '0' && e.ctrlKey) {
-            e.preventDefault();
-            resetImage();
-            updateCursor();
-        }
-    };
-    
     document.addEventListener('keydown', keyHandler);
+    
+    // Add event listeners for zoom buttons
+    document.querySelector('.zoom-in').addEventListener('click', () => zoomImage(0.5));
+    document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-0.5));
+    document.querySelector('.rotate-left').addEventListener('click', () => rotateImage(-90));
+    document.querySelector('.rotate-right').addEventListener('click', () => rotateImage(90));
+    document.querySelector('.reset-image').addEventListener('click', resetImage);
     
     img.onerror = function() {
         this.src = 'https://via.placeholder.com/800x600/e0e7ff/0056a6?text=Image+Not+Available';
@@ -735,14 +787,21 @@ function viewImage(imageUrl) {
         }
     };
     
+    // Load image to get natural dimensions
+    img.onload = function() {
+        applyTransform();
+    };
+    
     modal.show();
     
     // Clean up event listeners when modal is hidden
     document.getElementById('imageViewer').addEventListener('hidden.bs.modal', function() {
         document.removeEventListener('keydown', keyHandler);
-        document.removeEventListener('keydown', panHandler);
+        document.removeEventListener('mouseup', null);
+        container.removeEventListener('mousemove', null);
+        container.removeEventListener('mouseleave', null);
         img.removeEventListener('mousedown', null);
-        imageContainer.removeEventListener('mousemove', null);
+        
         const controls = document.querySelector('.image-controls');
         if (controls) {
             controls.remove();
