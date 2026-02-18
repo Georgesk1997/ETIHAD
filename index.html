@@ -533,12 +533,15 @@
                         <i class="fas fa-book-open"></i> 
                         <span id="categoryNameDisplay">Loading...</span>
                     </h3>
-                    <div>
+                    <div class="d-flex flex-wrap justify-content-end">
                         <button onclick="randomizeQuestions()" class="action-btn me-2">
-                            <i class="fas fa-random"></i> Shuffle
+                            <i class="fas fa-random"></i> Shuffle Questions
                         </button>
-                        <button onclick="randomizeAnswers()" class="btn btn-outline-primary">
+                        <button onclick="randomizeAnswers()" class="btn btn-outline-primary me-2">
                             <i class="fas fa-shuffle"></i> Mix Answers
+                        </button>
+                        <button onclick="resetCurrentQuestionAnswers()" class="btn btn-outline-secondary">
+                            <i class="fas fa-undo"></i> Reset Answers
                         </button>
                     </div>
                 </div>
