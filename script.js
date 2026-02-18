@@ -567,7 +567,7 @@ function handleImageError(img, imageUrl) {
     }
 }
 
-// ==================== FIXED: IMAGE VIEWER WITH PROPER ROTATION AND CENTERING ====================
+// ==================== FINAL FIXED: IMAGE VIEWER WITH PERFECT ROTATION AND ZOOM ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     const decodedUrl = decodeURIComponent(imageUrl);
@@ -587,14 +587,14 @@ function viewImage(imageUrl) {
     img.src = decodedUrl;
     img.alt = imageName;
     img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
-    img.style.transformOrigin = 'center center'; // Keep center origin for rotation
+    img.style.transformOrigin = 'center center';
     img.style.maxWidth = '100%';
     img.style.maxHeight = '70vh';
     img.style.cursor = 'default';
     img.style.display = 'block';
-    img.style.margin = 'auto'; // Center the image
+    img.style.margin = 'auto';
     
-    // Reset container - use flexbox for centering
+    // Reset container
     container.scrollLeft = 0;
     container.scrollTop = 0;
     container.style.overflow = 'auto';
@@ -642,35 +642,43 @@ function viewImage(imageUrl) {
     
     modalFooter.insertBefore(controlsDiv, modalFooter.firstChild);
     
-    // Function to switch to pan mode when zoomed
+    // Function to center the image
+    function centerImage() {
+        if (!naturalWidth || !naturalHeight) return;
+        
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        
+        // Calculate display dimensions based on rotation
+        let displayWidth, displayHeight;
+        if (currentRotation % 180 === 0) {
+            displayWidth = naturalWidth * currentZoom;
+            displayHeight = naturalHeight * currentZoom;
+        } else {
+            displayWidth = naturalHeight * currentZoom;
+            displayHeight = naturalWidth * currentZoom;
+        }
+        
+        // Calculate scroll position to center
+        const targetScrollLeft = Math.max(0, (displayWidth - containerWidth) / 2);
+        const targetScrollTop = Math.max(0, (displayHeight - containerHeight) / 2);
+        
+        container.scrollLeft = targetScrollLeft;
+        container.scrollTop = targetScrollTop;
+    }
+    
+    // Update display mode based on zoom
     function updateDisplayMode() {
         if (currentZoom > 1.05) {
-            // Switch to pan mode - image larger than container
+            // Switch to pan mode
             container.style.display = 'block';
             container.style.alignItems = 'normal';
             container.style.justifyContent = 'normal';
             img.style.margin = '0';
-            img.style.transformOrigin = '0 0'; // Top-left for panning
+            img.style.transformOrigin = '0 0';
             
-            // Center the image by adjusting scroll position
-            setTimeout(() => {
-                if (!naturalWidth || !naturalHeight) return;
-                
-                const containerWidth = container.clientWidth;
-                const containerHeight = container.clientHeight;
-                
-                let displayWidth, displayHeight;
-                if (currentRotation % 180 === 0) {
-                    displayWidth = naturalWidth * currentZoom;
-                    displayHeight = naturalHeight * currentZoom;
-                } else {
-                    displayWidth = naturalHeight * currentZoom;
-                    displayHeight = naturalWidth * currentZoom;
-                }
-                
-                container.scrollLeft = Math.max(0, (displayWidth - containerWidth) / 2);
-                container.scrollTop = Math.max(0, (displayHeight - containerHeight) / 2);
-            }, 10);
+            // Center the image in the viewport
+            setTimeout(centerImage, 10);
         } else {
             // Switch to center mode
             container.style.display = 'flex';
@@ -692,15 +700,20 @@ function viewImage(imageUrl) {
         applyTransform();
         updateDisplayMode();
         
-        // Update cursor
-        img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
+        img.style.cursor = currentZoom > 1.05 ? 'grab' : 'default';
     }
     
     // Rotate function
     function rotate(degrees) {
         currentRotation = (currentRotation + degrees) % 360;
         applyTransform();
-        updateDisplayMode();
+        
+        // If we're in pan mode, recalculate center position
+        if (currentZoom > 1.05) {
+            setTimeout(centerImage, 10);
+        }
+        
+        img.style.cursor = currentZoom > 1.05 ? 'grab' : 'default';
     }
     
     // Apply transform
@@ -712,9 +725,9 @@ function viewImage(imageUrl) {
     function reset() {
         currentZoom = 1;
         currentRotation = 0;
-        img.style.transform = 'rotate(0deg) scale(1)';
-        img.style.cursor = 'default';
+        applyTransform();
         updateDisplayMode();
+        img.style.cursor = 'default';
     }
     
     // Add event listeners
@@ -724,7 +737,7 @@ function viewImage(imageUrl) {
     document.getElementById('rotateRightBtn').addEventListener('click', () => rotate(90));
     document.getElementById('resetBtn').addEventListener('click', reset);
     
-    // Drag to pan (only when in pan mode)
+    // Drag to pan
     let isDragging = false;
     let startX, startY;
     let scrollLeft, scrollTop;
