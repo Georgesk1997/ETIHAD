@@ -567,7 +567,7 @@ function handleImageError(img, imageUrl) {
     }
 }
 
-// ==================== SIMPLE ZOOM THAT WORKS ====================
+// ==================== FIXED: IMAGE VIEWER WITH PROPER SCROLLING ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     const decodedUrl = decodeURIComponent(imageUrl);
@@ -583,15 +583,20 @@ function viewImage(imageUrl) {
     img.src = decodedUrl;
     img.alt = imageName;
     img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
-    img.style.transformOrigin = 'center center';
+    img.style.transformOrigin = '0 0'; // Changed from 'center center' to '0 0' (top-left)
     img.style.maxWidth = '100%';
     img.style.maxHeight = '70vh';
     img.style.cursor = 'default';
+    img.style.display = 'block'; // Ensure block display
+    img.style.margin = '0'; // Remove any margins
     
     // Reset container
     container.scrollLeft = 0;
     container.scrollTop = 0;
     container.style.overflow = 'auto';
+    container.style.display = 'block';
+    container.style.textAlign = 'left'; // Align content to left
+    container.style.padding = '0';
     
     const imageNameText = document.getElementById('imageNameText');
     if (imageNameText) {
@@ -638,7 +643,7 @@ function viewImage(imageUrl) {
         if (currentZoom < 0.5) currentZoom = 0.5;
         if (currentZoom > 5) currentZoom = 5;
         
-        img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+        applyTransform();
         
         // Update cursor for dragging
         img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
@@ -647,7 +652,23 @@ function viewImage(imageUrl) {
     // Rotate function
     function rotate(degrees) {
         currentRotation = (currentRotation + degrees) % 360;
+        applyTransform();
+    }
+    
+    // Apply transform and adjust container
+    function applyTransform() {
         img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+        
+        // Force container to recognize new dimensions
+        if (currentZoom > 1) {
+            // When zoomed, ensure container can scroll to all edges
+            setTimeout(() => {
+                // This forces the container to recalculate scroll dimensions
+                container.style.display = 'none';
+                container.offsetHeight; // Force reflow
+                container.style.display = 'block';
+            }, 10);
+        }
     }
     
     // Reset function
@@ -700,6 +721,50 @@ function viewImage(imageUrl) {
         }
     });
     
+    container.addEventListener('mouseleave', () => {
+        if (isDragging) {
+            isDragging = false;
+            img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
+        }
+    });
+    
+    // Keyboard shortcuts
+    const keyHandler = (e) => {
+        if (e.ctrlKey && e.key === 'ArrowLeft') {
+            e.preventDefault();
+            rotate(-90);
+        } else if (e.ctrlKey && e.key === 'ArrowRight') {
+            e.preventDefault();
+            rotate(90);
+        } else if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
+            e.preventDefault();
+            zoom(1.2);
+        } else if (e.ctrlKey && e.key === '-') {
+            e.preventDefault();
+            zoom(0.8);
+        } else if (e.ctrlKey && e.key === '0') {
+            e.preventDefault();
+            reset();
+        } else if (!e.ctrlKey && currentZoom > 1) {
+            const panAmount = 50;
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                container.scrollTop -= panAmount;
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                container.scrollTop += panAmount;
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                container.scrollLeft -= panAmount;
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                container.scrollLeft += panAmount;
+            }
+        }
+    };
+    
+    document.addEventListener('keydown', keyHandler);
+    
     img.onerror = function() {
         this.src = 'https://via.placeholder.com/800x600/e0e7ff/0056a6?text=Image+Not+Available';
         this.alt = 'Image not available';
@@ -712,6 +777,7 @@ function viewImage(imageUrl) {
     
     // Clean up
     document.getElementById('imageViewer').addEventListener('hidden.bs.modal', function() {
+        document.removeEventListener('keydown', keyHandler);
         const controls = document.querySelector('.image-controls');
         if (controls) {
             controls.remove();
