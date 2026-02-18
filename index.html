@@ -150,7 +150,7 @@
             box-shadow: 0 5px 15px rgba(255,153,0,0.3);
         }
         
-        /* Multiple Images Container - NEW */
+        /* Multiple Images Container */
         .multiple-images-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -159,7 +159,7 @@
             padding: 10px;
         }
         
-        /* Image Styles - Updated */
+        /* Image Styles */
         .chart-image {
             text-align: center;
             background: white;
@@ -318,7 +318,7 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Image viewer controls */
+        /* ===== UPDATED: Image viewer controls with pan functionality ===== */
         .image-controls {
             display: flex;
             gap: 5px;
@@ -343,13 +343,13 @@
 
         #enlargedImage {
             transition: transform 0.3s ease;
-            cursor: move;
             max-height: 70vh;
             width: auto;
             object-fit: contain;
+            transform-origin: center center;
         }
 
-        /* Modal adjustments for image viewer */
+        /* ===== UPDATED: Modal body container for scrolling ===== */
         #imageViewer .modal-body {
             display: flex;
             align-items: center;
@@ -357,6 +357,46 @@
             min-height: 60vh;
             background: #f0f2f5;
             overflow: hidden;
+            padding: 0;
+        }
+
+        /* ===== NEW: Scrollable container with styled scrollbars ===== */
+        #imageViewer .modal-body div {
+            overflow: auto;
+            max-height: 70vh;
+            width: 100%;
+            height: 100%;
+            cursor: default;
+            position: relative;
+            scroll-behavior: smooth;
+            padding: 15px;
+            text-align: center;
+        }
+
+        /* Styled scrollbars */
+        #imageViewer .modal-body div::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        #imageViewer .modal-body div::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        #imageViewer .modal-body div::-webkit-scrollbar-thumb {
+            background: var(--primary-blue);
+            border-radius: 5px;
+        }
+
+        #imageViewer .modal-body div::-webkit-scrollbar-thumb:hover {
+            background: #003d7a;
+        }
+
+        /* Firefox scrollbar styling */
+        #imageViewer .modal-body div {
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-blue) #f1f1f1;
         }
 
         #imageViewer .modal-dialog {
@@ -561,7 +601,7 @@
         </div>
     </div>
 
-    <!-- Image Viewer Modal -->
+    <!-- ===== UPDATED: Image Viewer Modal with proper container structure ===== -->
     <div class="modal fade" id="imageViewer" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
@@ -571,8 +611,9 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body text-center p-3" style="background: #f0f2f5;">
-                    <div style="overflow: auto; max-height: 70vh;">
+                <div class="modal-body text-center p-0" style="background: #f0f2f5;">
+                    <!-- Added container div for scrolling -->
+                    <div style="overflow: auto; max-height: 70vh; width: 100%; padding: 15px;">
                         <img id="enlargedImage" src="" class="img-fluid" 
                              style="transition: transform 0.3s ease; max-height: 70vh; width: auto; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
                     </div>
