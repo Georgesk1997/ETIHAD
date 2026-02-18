@@ -577,9 +577,12 @@ function viewImage(imageUrl) {
     currentZoom = 1;
     
     const img = document.getElementById('enlargedImage');
+    const imageContainer = document.querySelector('#imageViewer .modal-body div');
+    
     img.src = decodedUrl;
     img.alt = imageName;
     img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+    img.style.cursor = 'grab';
     
     const imageNameText = document.getElementById('imageNameText');
     if (imageNameText) {
@@ -598,22 +601,22 @@ function viewImage(imageUrl) {
     controlsDiv.className = 'image-controls me-auto';
     controlsDiv.innerHTML = `
         <div class="btn-group btn-group-sm me-2">
-            <button class="btn btn-outline-primary rotate-left" title="Rotate Left">
+            <button class="btn btn-outline-primary rotate-left" title="Rotate Left (Ctrl+←)">
                 <i class="fas fa-undo-alt"></i>
             </button>
-            <button class="btn btn-outline-primary rotate-right" title="Rotate Right">
+            <button class="btn btn-outline-primary rotate-right" title="Rotate Right (Ctrl+→)">
                 <i class="fas fa-redo-alt"></i>
             </button>
         </div>
         <div class="btn-group btn-group-sm me-2">
-            <button class="btn btn-outline-primary zoom-in" title="Zoom In">
+            <button class="btn btn-outline-primary zoom-in" title="Zoom In (Ctrl++)">
                 <i class="fas fa-search-plus"></i>
             </button>
-            <button class="btn btn-outline-primary zoom-out" title="Zoom Out">
+            <button class="btn btn-outline-primary zoom-out" title="Zoom Out (Ctrl+-)">
                 <i class="fas fa-search-minus"></i>
             </button>
         </div>
-        <button class="btn btn-outline-secondary btn-sm reset-image" title="Reset">
+        <button class="btn btn-outline-secondary btn-sm reset-image" title="Reset (Ctrl+0)">
             <i class="fas fa-sync-alt"></i>
         </button>
     `;
@@ -628,6 +631,77 @@ function viewImage(imageUrl) {
     document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-0.1));
     document.querySelector('.reset-image').addEventListener('click', resetImage);
     
+    // ===== NEW: Pan/Drag Functionality =====
+    let isDragging = false;
+    let startX, startY;
+    let scrollLeft, scrollTop;
+    
+    img.addEventListener('mousedown', (e) => {
+        if (currentZoom > 1) { // Only enable drag when zoomed in
+            isDragging = true;
+            img.style.cursor = 'grabbing';
+            startX = e.pageX - imageContainer.offsetLeft;
+            startY = e.pageY - imageContainer.offsetTop;
+            scrollLeft = imageContainer.scrollLeft;
+            scrollTop = imageContainer.scrollTop;
+        }
+    });
+    
+    img.addEventListener('mouseleave', () => {
+        isDragging = false;
+        img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
+    });
+    
+    img.addEventListener('mouseup', () => {
+        isDragging = false;
+        img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
+    });
+    
+    imageContainer.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const x = e.pageX - imageContainer.offsetLeft;
+        const y = e.pageY - imageContainer.offsetTop;
+        const walkX = (x - startX) * 2; // Scroll speed multiplier
+        const walkY = (y - startY) * 2;
+        imageContainer.scrollLeft = scrollLeft - walkX;
+        imageContainer.scrollTop = scrollTop - walkY;
+    });
+    
+    // Update cursor based on zoom level
+    const updateCursor = () => {
+        img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
+    };
+    
+    // Override zoom functions to update cursor
+    const originalZoomImage = zoomImage;
+    window.zoomImage = function(delta) {
+        originalZoomImage(delta);
+        updateCursor();
+    };
+    
+    // Add keyboard shortcuts for panning when zoomed
+    const panHandler = (e) => {
+        if (currentZoom > 1) {
+            const panAmount = 50;
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                imageContainer.scrollTop -= panAmount;
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                imageContainer.scrollTop += panAmount;
+            } else if (e.key === 'ArrowLeft' && !e.ctrlKey) { // Without Ctrl
+                e.preventDefault();
+                imageContainer.scrollLeft -= panAmount;
+            } else if (e.key === 'ArrowRight' && !e.ctrlKey) { // Without Ctrl
+                e.preventDefault();
+                imageContainer.scrollLeft += panAmount;
+            }
+        }
+    };
+    
+    document.addEventListener('keydown', panHandler);
+    
     // Add keyboard shortcuts
     const keyHandler = (e) => {
         if (e.key === 'ArrowLeft' && e.ctrlKey) {
@@ -639,12 +713,15 @@ function viewImage(imageUrl) {
         } else if (e.key === '+' && e.ctrlKey) {
             e.preventDefault();
             zoomImage(0.1);
+            updateCursor();
         } else if (e.key === '-' && e.ctrlKey) {
             e.preventDefault();
             zoomImage(-0.1);
+            updateCursor();
         } else if (e.key === '0' && e.ctrlKey) {
             e.preventDefault();
             resetImage();
+            updateCursor();
         }
     };
     
@@ -663,13 +740,15 @@ function viewImage(imageUrl) {
     // Clean up event listeners when modal is hidden
     document.getElementById('imageViewer').addEventListener('hidden.bs.modal', function() {
         document.removeEventListener('keydown', keyHandler);
+        document.removeEventListener('keydown', panHandler);
+        img.removeEventListener('mousedown', null);
+        imageContainer.removeEventListener('mousemove', null);
         const controls = document.querySelector('.image-controls');
         if (controls) {
             controls.remove();
         }
     }, { once: true });
 }
-
 function rotateImage(degrees) {
     currentRotation = (currentRotation + degrees) % 360;
     applyTransform();
