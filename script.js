@@ -572,7 +572,7 @@ function viewImage(imageUrl) {
     const decodedUrl = decodeURIComponent(imageUrl);
     const imageName = extractImageName(decodedUrl);
     
-    // Reset rotation and zoom for new image
+    // Reset rotation and zoom for new image - start at normal zoom
     currentRotation = 0;
     currentZoom = 1;
     
@@ -582,13 +582,19 @@ function viewImage(imageUrl) {
     img.src = decodedUrl;
     img.alt = imageName;
     img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
-    img.style.cursor = 'grab';
-    img.style.transformOrigin = '0 0'; // Set origin to top-left for better zoom control
+    img.style.cursor = 'default'; // Start with default cursor, not zoomed
+    img.style.transformOrigin = 'center center'; // Better for rotation
+    img.style.maxWidth = '100%'; // Ensure image fits initially
+    img.style.maxHeight = '70vh'; // Limit initial height
     
     const imageNameText = document.getElementById('imageNameText');
     if (imageNameText) {
         imageNameText.textContent = imageName;
     }
+    
+    // Reset container scroll position
+    container.scrollLeft = 0;
+    container.scrollTop = 0;
     
     // Remove any existing rotation buttons before adding new ones
     const existingControls = document.querySelector('.image-controls');
@@ -630,15 +636,17 @@ function viewImage(imageUrl) {
     let startX, startY;
     let scrollLeft, scrollTop;
     
-    // Mouse down on image - start dragging
+    // Mouse down on image - start dragging (only if zoomed)
     img.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        img.style.cursor = 'grabbing';
-        startX = e.pageX - container.offsetLeft;
-        startY = e.pageY - container.offsetTop;
-        scrollLeft = container.scrollLeft;
-        scrollTop = container.scrollTop;
-        e.preventDefault(); // Prevent default image dragging
+        if (currentZoom > 1) { // Only allow drag when zoomed in
+            isDragging = true;
+            img.style.cursor = 'grabbing';
+            startX = e.pageX - container.offsetLeft;
+            startY = e.pageY - container.offsetTop;
+            scrollLeft = container.scrollLeft;
+            scrollTop = container.scrollTop;
+            e.preventDefault(); // Prevent default image dragging
+        }
     });
     
     // Mouse move on container - handle dragging
@@ -673,63 +681,101 @@ function viewImage(imageUrl) {
         }
     });
     
-    // ===== IMPROVED: Zoom without limits =====
+    // ===== IMPROVED: Zoom with better handling =====
     window.zoomImage = function(delta) {
-        // Remove limits - allow any zoom level
+        // Allow unlimited zoom, but set minimum
         currentZoom = currentZoom + delta;
-        if (currentZoom < 0.1) currentZoom = 0.1; // Minimum zoom to keep visible
+        if (currentZoom < 0.5) currentZoom = 0.5; // Minimum zoom
         
         applyTransform();
         
         // Update cursor based on zoom level
         img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
         
-        // Show scrollbars when zoomed in
+        // Adjust container for better viewing at high zoom
         if (currentZoom > 1) {
             container.style.overflow = 'auto';
+            
+            // Calculate scaled dimensions based on natural size
+            if (img.naturalWidth) {
+                const scaledWidth = img.naturalWidth * currentZoom;
+                const scaledHeight = img.naturalHeight * currentZoom;
+                
+                // Set min dimensions to ensure scrollable area
+                img.style.minWidth = scaledWidth + 'px';
+                img.style.minHeight = scaledHeight + 'px';
+            }
+            
+            // Remove max height/width constraints when zoomed
+            img.style.maxHeight = 'none';
+            img.style.maxWidth = 'none';
+        } else {
+            // Return to normal constraints when not zoomed
+            img.style.minWidth = 'auto';
+            img.style.minHeight = 'auto';
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '70vh';
+            container.style.overflow = 'hidden';
         }
     };
     
+    // ===== IMPROVED: Rotation that works with zoom =====
     window.rotateImage = function(degrees) {
         currentRotation = (currentRotation + degrees) % 360;
-        applyTransform();
+        
+        // Apply rotation while preserving zoom
+        img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
+        
+        // Adjust container for rotated image dimensions
+        if (currentZoom > 1) {
+            // When rotated, width and height swap conceptually
+            // We need to ensure scroll area accounts for rotation
+            setTimeout(() => {
+                if (currentRotation % 180 !== 0) {
+                    // Image is rotated 90 or 270 degrees, swap dimensions
+                    if (img.naturalWidth && img.naturalHeight) {
+                        const scaledWidth = img.naturalHeight * currentZoom;
+                        const scaledHeight = img.naturalWidth * currentZoom;
+                        img.style.minWidth = scaledWidth + 'px';
+                        img.style.minHeight = scaledHeight + 'px';
+                    }
+                } else {
+                    // Normal orientation
+                    if (img.naturalWidth && img.naturalHeight) {
+                        const scaledWidth = img.naturalWidth * currentZoom;
+                        const scaledHeight = img.naturalHeight * currentZoom;
+                        img.style.minWidth = scaledWidth + 'px';
+                        img.style.minHeight = scaledHeight + 'px';
+                    }
+                }
+            }, 10);
+        }
     };
     
     window.resetImage = function() {
         currentRotation = 0;
         currentZoom = 1;
-        applyTransform();
+        
+        // Reset image styles
+        img.style.transform = 'rotate(0deg) scale(1)';
         img.style.cursor = 'default';
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '70vh';
+        img.style.minWidth = 'auto';
+        img.style.minHeight = 'auto';
+        
+        // Reset container
         container.scrollLeft = 0;
         container.scrollTop = 0;
+        container.style.overflow = 'hidden';
     };
     
     function applyTransform() {
-        // Apply rotation and scale
+        // Apply rotation and scale together
         img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
-        
-        // Adjust container for better viewing at high zoom
-        if (currentZoom > 1) {
-            // Make container scrollable
-            container.style.overflow = 'auto';
-            
-            // Calculate natural image dimensions for better scrolling
-            if (img.naturalWidth) {
-                const scaledWidth = img.naturalWidth * currentZoom;
-                const scaledHeight = img.naturalHeight * currentZoom;
-                
-                // Ensure container can scroll to all parts of zoomed image
-                img.style.minWidth = scaledWidth + 'px';
-                img.style.minHeight = scaledHeight + 'px';
-            }
-        } else {
-            img.style.minWidth = 'auto';
-            img.style.minHeight = 'auto';
-            container.style.overflow = 'hidden';
-        }
     }
     
-    // ===== IMPROVED: Keyboard shortcuts with better panning =====
+    // ===== IMPROVED: Keyboard shortcuts =====
     const keyHandler = (e) => {
         // Rotation with Ctrl+Arrow
         if (e.ctrlKey && e.key === 'ArrowLeft') {
@@ -750,9 +796,9 @@ function viewImage(imageUrl) {
             e.preventDefault();
             resetImage();
         }
-        // Pan with arrow keys (no Ctrl) - with larger increments at higher zoom
-        else if (!e.ctrlKey) {
-            const panAmount = 50 * (currentZoom > 1 ? currentZoom : 1);
+        // Pan with arrow keys (no Ctrl) - only if zoomed
+        else if (!e.ctrlKey && currentZoom > 1) {
+            const panAmount = 50;
             
             if (e.key === 'ArrowUp') {
                 e.preventDefault();
@@ -787,9 +833,10 @@ function viewImage(imageUrl) {
         }
     };
     
-    // Load image to get natural dimensions
+    // Ensure image starts at normal size
     img.onload = function() {
-        applyTransform();
+        // Reset to normal view
+        resetImage();
     };
     
     modal.show();
