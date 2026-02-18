@@ -567,42 +567,49 @@ function handleImageError(img, imageUrl) {
     }
 }
 
+// ==================== FIXED: IMAGE VIEWER FUNCTION ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     const decodedUrl = decodeURIComponent(imageUrl);
     const imageName = extractImageName(decodedUrl);
     
-    // Reset rotation and zoom for new image - start at normal zoom
+    // Reset rotation and zoom for new image
     currentRotation = 0;
     currentZoom = 1;
     
     const img = document.getElementById('enlargedImage');
     const container = document.querySelector('#imageViewer .modal-body div');
     
+    // Reset image styles to default
     img.src = decodedUrl;
     img.alt = imageName;
-    img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
-    img.style.cursor = 'default'; // Start with default cursor, not zoomed
-    img.style.transformOrigin = 'center center'; // Better for rotation
-    img.style.maxWidth = '100%'; // Ensure image fits initially
-    img.style.maxHeight = '70vh'; // Limit initial height
+    img.style.transform = 'rotate(0deg) scale(1)';
+    img.style.cursor = 'default';
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '70vh';
+    img.style.width = 'auto';
+    img.style.height = 'auto';
+    img.style.minWidth = 'auto';
+    img.style.minHeight = 'auto';
+    img.style.transformOrigin = 'center center';
+    
+    // Reset container
+    container.scrollLeft = 0;
+    container.scrollTop = 0;
+    container.style.overflow = 'hidden';
     
     const imageNameText = document.getElementById('imageNameText');
     if (imageNameText) {
         imageNameText.textContent = imageName;
     }
     
-    // Reset container scroll position
-    container.scrollLeft = 0;
-    container.scrollTop = 0;
-    
-    // Remove any existing rotation buttons before adding new ones
+    // Remove any existing controls
     const existingControls = document.querySelector('.image-controls');
     if (existingControls) {
         existingControls.remove();
     }
     
-    // Add rotation controls to modal footer
+    // Add controls to modal footer
     const modalFooter = document.querySelector('#imageViewer .modal-footer');
     const controlsDiv = document.createElement('div');
     controlsDiv.className = 'image-controls me-auto';
@@ -616,40 +623,37 @@ function viewImage(imageUrl) {
             </button>
         </div>
         <div class="btn-group btn-group-sm me-2">
-            <button class="btn btn-outline-primary zoom-in" title="Zoom In (Ctrl++)">
+            <button class="btn btn-outline-primary zoom-in" title="Zoom In">
                 <i class="fas fa-search-plus"></i>
             </button>
-            <button class="btn btn-outline-primary zoom-out" title="Zoom Out (Ctrl+-)">
+            <button class="btn btn-outline-primary zoom-out" title="Zoom Out">
                 <i class="fas fa-search-minus"></i>
             </button>
         </div>
-        <button class="btn btn-outline-secondary btn-sm reset-image" title="Reset (Ctrl+0)">
+        <button class="btn btn-outline-secondary btn-sm reset-image" title="Reset">
             <i class="fas fa-sync-alt"></i>
         </button>
     `;
     
-    // Insert controls before the close button
     modalFooter.insertBefore(controlsDiv, modalFooter.firstChild);
     
-    // ===== IMPROVED: Pan/Drag Functionality =====
+    // ===== SIMPLIFIED: Pan/Drag Functionality =====
     let isDragging = false;
     let startX, startY;
     let scrollLeft, scrollTop;
     
-    // Mouse down on image - start dragging (only if zoomed)
     img.addEventListener('mousedown', (e) => {
-        if (currentZoom > 1) { // Only allow drag when zoomed in
+        if (currentZoom > 1.05) { // Small threshold to detect zoom
             isDragging = true;
             img.style.cursor = 'grabbing';
             startX = e.pageX - container.offsetLeft;
             startY = e.pageY - container.offsetTop;
             scrollLeft = container.scrollLeft;
             scrollTop = container.scrollTop;
-            e.preventDefault(); // Prevent default image dragging
+            e.preventDefault();
         }
     });
     
-    // Mouse move on container - handle dragging
     container.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
         e.preventDefault();
@@ -657,106 +661,66 @@ function viewImage(imageUrl) {
         const x = e.pageX - container.offsetLeft;
         const y = e.pageY - container.offsetTop;
         
-        // Calculate scroll movement with multiplier for smoothness
-        const moveX = (x - startX) * 1.5;
-        const moveY = (y - startY) * 1.5;
-        
-        container.scrollLeft = scrollLeft - moveX;
-        container.scrollTop = scrollTop - moveY;
+        container.scrollLeft = scrollLeft - (x - startX);
+        container.scrollTop = scrollTop - (y - startY);
     });
     
-    // Mouse up anywhere - stop dragging
     document.addEventListener('mouseup', () => {
         if (isDragging) {
             isDragging = false;
-            img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
+            img.style.cursor = currentZoom > 1.05 ? 'grab' : 'default';
         }
     });
     
-    // Mouse leave container - stop dragging
     container.addEventListener('mouseleave', () => {
         if (isDragging) {
             isDragging = false;
-            img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
+            img.style.cursor = currentZoom > 1.05 ? 'grab' : 'default';
         }
     });
     
-    // ===== IMPROVED: Zoom with better handling =====
+    // ===== SIMPLIFIED: Zoom with small increments =====
     window.zoomImage = function(delta) {
-        // Allow unlimited zoom, but set minimum
+        // Small zoom increments (0.2 instead of 0.5)
         currentZoom = currentZoom + delta;
-        if (currentZoom < 0.5) currentZoom = 0.5; // Minimum zoom
+        if (currentZoom < 0.5) currentZoom = 0.5; // Min zoom
+        if (currentZoom > 5) currentZoom = 5; // Max zoom to prevent too extreme
         
         applyTransform();
         
-        // Update cursor based on zoom level
-        img.style.cursor = currentZoom > 1 ? 'grab' : 'default';
-        
-        // Adjust container for better viewing at high zoom
-        if (currentZoom > 1) {
+        // Update UI based on zoom level
+        if (currentZoom > 1.05) {
+            img.style.cursor = 'grab';
             container.style.overflow = 'auto';
             
-            // Calculate scaled dimensions based on natural size
-            if (img.naturalWidth) {
-                const scaledWidth = img.naturalWidth * currentZoom;
-                const scaledHeight = img.naturalHeight * currentZoom;
-                
-                // Set min dimensions to ensure scrollable area
-                img.style.minWidth = scaledWidth + 'px';
-                img.style.minHeight = scaledHeight + 'px';
-            }
-            
-            // Remove max height/width constraints when zoomed
-            img.style.maxHeight = 'none';
+            // Remove constraints when zoomed
             img.style.maxWidth = 'none';
+            img.style.maxHeight = 'none';
         } else {
-            // Return to normal constraints when not zoomed
-            img.style.minWidth = 'auto';
-            img.style.minHeight = 'auto';
+            img.style.cursor = 'default';
+            container.style.overflow = 'hidden';
+            
+            // Restore constraints when not zoomed
             img.style.maxWidth = '100%';
             img.style.maxHeight = '70vh';
-            container.style.overflow = 'hidden';
+            
+            // Center the image when not zoomed
+            container.scrollLeft = 0;
+            container.scrollTop = 0;
         }
     };
     
-    // ===== IMPROVED: Rotation that works with zoom =====
+    // ===== SIMPLIFIED: Rotation =====
     window.rotateImage = function(degrees) {
         currentRotation = (currentRotation + degrees) % 360;
-        
-        // Apply rotation while preserving zoom
-        img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
-        
-        // Adjust container for rotated image dimensions
-        if (currentZoom > 1) {
-            // When rotated, width and height swap conceptually
-            // We need to ensure scroll area accounts for rotation
-            setTimeout(() => {
-                if (currentRotation % 180 !== 0) {
-                    // Image is rotated 90 or 270 degrees, swap dimensions
-                    if (img.naturalWidth && img.naturalHeight) {
-                        const scaledWidth = img.naturalHeight * currentZoom;
-                        const scaledHeight = img.naturalWidth * currentZoom;
-                        img.style.minWidth = scaledWidth + 'px';
-                        img.style.minHeight = scaledHeight + 'px';
-                    }
-                } else {
-                    // Normal orientation
-                    if (img.naturalWidth && img.naturalHeight) {
-                        const scaledWidth = img.naturalWidth * currentZoom;
-                        const scaledHeight = img.naturalHeight * currentZoom;
-                        img.style.minWidth = scaledWidth + 'px';
-                        img.style.minHeight = scaledHeight + 'px';
-                    }
-                }
-            }, 10);
-        }
+        applyTransform();
     };
     
+    // ===== SIMPLIFIED: Reset =====
     window.resetImage = function() {
         currentRotation = 0;
         currentZoom = 1;
         
-        // Reset image styles
         img.style.transform = 'rotate(0deg) scale(1)';
         img.style.cursor = 'default';
         img.style.maxWidth = '100%';
@@ -764,42 +728,34 @@ function viewImage(imageUrl) {
         img.style.minWidth = 'auto';
         img.style.minHeight = 'auto';
         
-        // Reset container
         container.scrollLeft = 0;
         container.scrollTop = 0;
         container.style.overflow = 'hidden';
     };
     
     function applyTransform() {
-        // Apply rotation and scale together
         img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
     }
     
-    // ===== IMPROVED: Keyboard shortcuts =====
+    // ===== SIMPLIFIED: Keyboard shortcuts =====
     const keyHandler = (e) => {
-        // Rotation with Ctrl+Arrow
         if (e.ctrlKey && e.key === 'ArrowLeft') {
             e.preventDefault();
             rotateImage(-90);
         } else if (e.ctrlKey && e.key === 'ArrowRight') {
             e.preventDefault();
             rotateImage(90);
-        } 
-        // Zoom with Ctrl+Plus/Minus
-        else if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
+        } else if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
             e.preventDefault();
-            zoomImage(0.5);
+            zoomImage(0.2); // Smaller increment
         } else if (e.ctrlKey && e.key === '-') {
             e.preventDefault();
-            zoomImage(-0.5);
+            zoomImage(-0.2); // Smaller increment
         } else if (e.ctrlKey && e.key === '0') {
             e.preventDefault();
             resetImage();
-        }
-        // Pan with arrow keys (no Ctrl) - only if zoomed
-        else if (!e.ctrlKey && currentZoom > 1) {
-            const panAmount = 50;
-            
+        } else if (!e.ctrlKey && currentZoom > 1.05) {
+            const panAmount = 30;
             if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 container.scrollTop -= panAmount;
@@ -818,9 +774,9 @@ function viewImage(imageUrl) {
     
     document.addEventListener('keydown', keyHandler);
     
-    // Add event listeners for zoom buttons
-    document.querySelector('.zoom-in').addEventListener('click', () => zoomImage(0.5));
-    document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-0.5));
+    // Add button event listeners
+    document.querySelector('.zoom-in').addEventListener('click', () => zoomImage(0.2));
+    document.querySelector('.zoom-out').addEventListener('click', () => zoomImage(-0.2));
     document.querySelector('.rotate-left').addEventListener('click', () => rotateImage(-90));
     document.querySelector('.rotate-right').addEventListener('click', () => rotateImage(90));
     document.querySelector('.reset-image').addEventListener('click', resetImage);
@@ -833,36 +789,27 @@ function viewImage(imageUrl) {
         }
     };
     
-    // Ensure image starts at normal size
-    img.onload = function() {
-        // Reset to normal view
-        resetImage();
-    };
-    
     modal.show();
     
-    // Clean up event listeners when modal is hidden
+    // Clean up
     document.getElementById('imageViewer').addEventListener('hidden.bs.modal', function() {
         document.removeEventListener('keydown', keyHandler);
         document.removeEventListener('mouseup', null);
-        container.removeEventListener('mousemove', null);
-        container.removeEventListener('mouseleave', null);
-        img.removeEventListener('mousedown', null);
-        
         const controls = document.querySelector('.image-controls');
         if (controls) {
             controls.remove();
         }
     }, { once: true });
 }
+
 function rotateImage(degrees) {
     currentRotation = (currentRotation + degrees) % 360;
     applyTransform();
 }
 
 function zoomImage(delta) {
-    // Limit zoom between 0.5 and 3
-    currentZoom = Math.min(3, Math.max(0.5, currentZoom + delta));
+    currentZoom = currentZoom + delta;
+    if (currentZoom < 0.5) currentZoom = 0.5;
     applyTransform();
 }
 
