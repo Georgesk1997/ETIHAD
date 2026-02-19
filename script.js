@@ -133,8 +133,14 @@ function processCSV(csvText, categoryName) {
         const columns = parseCSVRow(row);
         
         if (columns.length >= 7) {
+            // FIXED: Correct answer index mapping
+            // CSV: 1 = A, 2 = B, 3 = C, 4 = D
+            // Array: 0 = A, 1 = B, 2 = C, 3 = D
             let correctIndex = parseInt(columns[6].trim()) - 1;
+            
+            // Validate the index is within range (0-3)
             if (isNaN(correctIndex) || correctIndex < 0 || correctIndex > 3) {
+                console.warn(`Invalid correct answer index in row ${i}: ${columns[6]}, defaulting to A`);
                 correctIndex = 0;
             }
             
@@ -531,7 +537,7 @@ async function startCategory(categoryName) {
     }
 }
 
-// NEW FUNCTION: Reset all questions to their original state
+// Reset all questions to their original state
 function resetQuestionsToOriginal() {
     if (!categoryQuestions.length) return;
     
@@ -1029,7 +1035,7 @@ function backToCategories() {
 }
 
 // ==================== SHUFFLING FUNCTIONS ====================
-// MODIFIED: Shuffle all questions and stay at current position
+// Shuffle all questions and stay at current position
 function randomizeQuestions() {
     if (!categoryQuestions.length) return;
     
@@ -1047,20 +1053,21 @@ function randomizeQuestions() {
     showMessage(`Questions shuffled! You're still on question ${currentPosition + 1}`, "info");
 }
 
-// MODIFIED: Shuffle only answers for current question
+// FIXED: Shuffle answers for ALL questions, not just current one
 function randomizeAnswers() {
     if (!categoryQuestions.length) return;
     
-    const question = categoryQuestions[currentQuestionIndex];
+    // Shuffle answers for EVERY question in the category
+    categoryQuestions.forEach(question => {
+        shuffleQuestionAnswers(question);
+    });
     
-    // Shuffle the answers for current question
-    shuffleQuestionAnswers(question);
-    
+    // Redisplay current question with its shuffled answers
     displayQuestion();
-    showMessage("Answers shuffled for this question only", "info");
+    showMessage("Answers shuffled for ALL questions", "info");
 }
 
-// NEW FUNCTION: Shuffle just the answers for a specific question
+// Shuffle just the answers for a specific question
 function shuffleQuestionAnswers(question) {
     if (!question) return;
     
@@ -1081,7 +1088,7 @@ function shuffleQuestionAnswers(question) {
     return question;
 }
 
-// NEW FUNCTION: Reset current question's answers to original order
+// Reset current question's answers to original order
 function resetCurrentQuestionAnswers() {
     if (!categoryQuestions.length) return;
     
