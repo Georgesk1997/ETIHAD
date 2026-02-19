@@ -548,6 +548,9 @@ function resetQuestionsToOriginal() {
         
         // Clear any shuffled state
         questionShuffledState.delete(question.id);
+        
+        // Clear answered status
+        delete question.answered;
     });
 }
 
@@ -861,6 +864,59 @@ function applyTransform() {
     img.style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
 }
 
+// ==================== QUESTION NAVIGATOR FUNCTIONS ====================
+function toggleNavigator() {
+    const grid = document.getElementById('questionGrid');
+    const toggle = document.getElementById('navigatorToggle');
+    const header = document.querySelector('.navigator-header');
+    
+    if (!grid || !toggle) return;
+    
+    grid.classList.toggle('collapsed');
+    header.classList.toggle('collapsed');
+    
+    if (grid.classList.contains('collapsed')) {
+        toggle.style.transform = 'rotate(-90deg)';
+    } else {
+        toggle.style.transform = 'rotate(0deg)';
+    }
+}
+
+function updateQuestionNavigator() {
+    const grid = document.getElementById('questionGrid');
+    if (!grid || !categoryQuestions.length) return;
+    
+    let html = '';
+    
+    categoryQuestions.forEach((question, index) => {
+        let statusClass = 'unanswered';
+        
+        // Check if this question has been answered
+        if (question.answered !== undefined) {
+            statusClass = question.answered ? 'answered-correct' : 'answered-incorrect';
+        }
+        
+        // Add current class if this is the current question
+        if (index === currentQuestionIndex) {
+            statusClass += ' current';
+        }
+        
+        html += `<div class="question-number ${statusClass}" onclick="jumpToQuestion(${index})">${index + 1}</div>`;
+    });
+    
+    grid.innerHTML = html;
+}
+
+function jumpToQuestion(index) {
+    if (index >= 0 && index < categoryQuestions.length) {
+        currentQuestionIndex = index;
+        displayQuestion();
+        updateProgress();
+        updateQuestionNavigator();
+        showMessage(`Jumped to question ${index + 1}`, "info");
+    }
+}
+
 // ==================== QUIZ FUNCTIONS ====================
 function displayQuestion() {
     if (!categoryQuestions || categoryQuestions.length === 0) {
@@ -932,6 +988,9 @@ function displayQuestion() {
     nextBtn.style.color = 'white';
     
     resetAnswerButtons();
+    
+    // Update the question navigator
+    updateQuestionNavigator();
 }
 
 function selectAnswer(selectedIndex) {
@@ -950,7 +1009,9 @@ function selectAnswer(selectedIndex) {
         }
     });
     
+    // Mark question as answered
     userScore.attempted++;
+    question.answered = (selectedIndex === question.currentCorrect);
     
     if (selectedIndex === question.currentCorrect) {
         userScore.correct++;
@@ -983,6 +1044,7 @@ function selectAnswer(selectedIndex) {
     updateScoreDisplay();
     updateStatistics();
     updateProgress();
+    updateQuestionNavigator(); // Update navigator colors
 }
 
 function resetAnswerButtons() {
@@ -1050,10 +1112,11 @@ function randomizeQuestions() {
     
     displayQuestion();
     updateProgress();
+    updateQuestionNavigator();
     showMessage(`Questions shuffled! You're still on question ${currentPosition + 1}`, "info");
 }
 
-// FIXED: Shuffle answers for ALL questions, not just current one
+// Shuffle answers for ALL questions
 function randomizeAnswers() {
     if (!categoryQuestions.length) return;
     
