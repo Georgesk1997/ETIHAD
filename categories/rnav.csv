@@ -1,7 +1,7 @@
 category,question,optionA,optionB,optionC,optionD,correct,image,explanation
 RNAV,Refer to figure 062-22<br>An example of amplitude modulation is depicted in figure:,A,B,C,D,1,images/RNAV/062-22.jpg,
 RNAV,Refer to figure 062-20<br>Which number in the picture indicates the skip distance?,2,4,3,1,2,images/RNAV/062-20.jpg,
-RNAV,Refer to figure 062-23<br>The picture shows:,"1) diffraction, 2) disturbed, 3) reflection","1) refraction, 2) absorption, 3) reflection","1) refraction, 2) scattered, 3) reflection","1) reflection, 2) propagation, 3) refraction","2,images/RNAV/062-23.jpg,
+RNAV,"Refer to figure 062-23<br>The picture shows:","1) diffraction, 2) disturbed, 3) reflection","1) refraction, 2) absorption, 3) reflection","1) refraction, 2) scattered, 3) reflection","1) reflection, 2) propagation, 3) refraction",2,images/RNAV/062-23.jpg,
 RNAV,How is amplitude modulation accomplished?,The information is added onto the carrier wave by interrupting the carrier wave.,The information is added onto the carrier wave by altering the frequency of the carrier wave.,The information is added onto the carrier wave by altering the amplitude of the carrier wave.,The information is added onto the carrier wave by reversing the phases of the carrier wave.,3,,
 RNAV,"With regard to types of transmission, which of the following statements is true:",Continuous Wave transmission varies only in amplitude.,In pulse transmission the frequency is modulated to facilitate range measurement.,Continuous Wave transmission can be either frequency or amplitude modulated.,Pulse transmission is suitable only for NDB's.,3,,
 RNAV,The frequency which corresponds to a wavelength of 12 cm is:,2 500 kHz,360 MHz,3 600 MHz,2 500 MHz,4,,
