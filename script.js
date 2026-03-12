@@ -47,6 +47,7 @@ let categoryQuestionCounts = {};
 let totalQuestionsCount = 0;
 let currentRotation = 0;
 let currentZoom = 1;
+let showAnswersMode = false;
 
 // For search - we'll load on demand
 let searchQuestions = null;
@@ -63,7 +64,13 @@ window.addEventListener('DOMContentLoaded', function() {
             performSearch(e.target.value);
         });
     }
-    
+    const showAnswersToggle = document.getElementById('showAnswerMode');
+    if (showAnswersToggle) {
+    showAnswersToggle.addEventListener('change', function() {
+        showAnswersMode = this.checked;
+        displayQuestion();
+    });
+    }
     // Add search toggle listener
     const searchToggle = document.getElementById('searchAnswersToggle');
     if (searchToggle) {
@@ -959,15 +966,25 @@ function displayQuestion() {
         html += `</div>`;
     }
     
-    html += '<div class="mt-4">';
-    question.currentOptions.forEach((option, index) => {
-        const letter = String.fromCharCode(65 + index);
-        html += `
-            <button class="answer-option" onclick="selectAnswer(${index})">
-                <strong>${letter}.</strong> ${option}
-            </button>
-        `;
-    });
+    let optionClass = "answer-option";
+    let disabled = "";
+    let onclickAction = `onclick="selectAnswer(${index})"`;
+
+    // If show answers mode is enabled
+    if (showAnswersMode) {
+        disabled = "disabled";
+        onclickAction = "";
+
+        if (index === question.currentCorrect) {
+            optionClass += " answer-correct";
+        }
+    }
+
+    html += `
+        <button class="${optionClass}" ${onclickAction} ${disabled}>
+            <strong>${letter}.</strong> ${option}
+        </button>
+    `;
     html += '</div></div>';
     
     container.innerHTML = html;
