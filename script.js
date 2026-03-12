@@ -47,7 +47,7 @@ let categoryQuestionCounts = {};
 let totalQuestionsCount = 0;
 let currentRotation = 0;
 let currentZoom = 1;
-let showAnswersMode = false;
+let answerMode = 'try'; // 'try' or 'reveal'
 
 // For search - we'll load on demand
 let searchQuestions = null;
@@ -64,13 +64,7 @@ window.addEventListener('DOMContentLoaded', function() {
             performSearch(e.target.value);
         });
     }
-    const showAnswersToggle = document.getElementById('showAnswerMode');
-    if (showAnswersToggle) {
-    showAnswersToggle.addEventListener('change', function() {
-        showAnswersMode = this.checked;
-        displayQuestion();
-    });
-    }
+    
     // Add search toggle listener
     const searchToggle = document.getElementById('searchAnswersToggle');
     if (searchToggle) {
@@ -78,6 +72,32 @@ window.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('searchInput');
             if (searchInput && searchInput.value.trim() !== '') {
                 performSearch(searchInput.value);
+            }
+        });
+    }
+    
+    // Add answer mode toggle listener
+    const answerModeToggle = document.getElementById('answerModeToggle');
+    if (answerModeToggle) {
+        answerModeToggle.addEventListener('change', function() {
+            const modeBadge = document.getElementById('modeBadge');
+            const modeLabel = document.getElementById('modeToggleLabel');
+            
+            if (this.checked) {
+                answerMode = 'try';
+                modeBadge.textContent = 'Try Mode';
+                modeBadge.className = 'mode-badge try';
+                modeLabel.innerHTML = '<i class="fas fa-graduation-cap me-1"></i> Try Yourself';
+            } else {
+                answerMode = 'reveal';
+                modeBadge.textContent = 'Reveal Mode';
+                modeBadge.className = 'mode-badge reveal';
+                modeLabel.innerHTML = '<i class="fas fa-eye me-1"></i> Show Answers';
+            }
+            
+            // Refresh current question display if we're in quiz mode
+            if (document.getElementById('quizSection').style.display === 'block') {
+                displayQuestion();
             }
         });
     }
@@ -189,11 +209,11 @@ function processCSV(csvText, categoryName) {
                 originalCorrect: correctIndex,
                 images: images,
                 explanation: explanation,
-                : null,
+                currentOptions: null,
                 currentCorrect: null
             };
             
-            question. = [...question.originalOptions];
+            question.currentOptions = [...question.originalOptions];
             question.currentCorrect = question.originalCorrect;
             
             if (question.text && question.originalOptions[0]) {
@@ -600,7 +620,7 @@ function handleImageError(img, imageUrl) {
     }
 }
 
-// ==================== FIXED: SMOOTH ZOOM WITH NO JUMPING ====================
+// ==================== IMAGE VIEWER ====================
 function viewImage(imageUrl) {
     const modal = new bootstrap.Modal(document.getElementById('imageViewer'));
     const decodedUrl = decodeURIComponent(imageUrl);
@@ -924,6 +944,7 @@ function jumpToQuestion(index) {
     }
 }
 
+// ==================== QUIZ FUNCTIONS ====================
 function displayQuestion() {
     if (!categoryQuestions || categoryQuestions.length === 0) {
         document.getElementById('questionDisplay').innerHTML = `
@@ -933,92 +954,110 @@ function displayQuestion() {
         `;
         return;
     }
-
+    
     const question = categoryQuestions[currentQuestionIndex];
     const container = document.getElementById('questionDisplay');
-
+    
     let html = `
         <div class="question-box active-question">
             <h4 class="mb-3">${question.text}</h4>
     `;
-
+    
     // Display multiple images if available
     if (question.images && question.images.length > 0) {
         html += `<div class="multiple-images-container">`;
-
-        question.images.forEach((imagePath, idx) => {
-            const imageName = extractImageName(imagePath);
-
+        
+        question.images.forEach((imagePath, index) => {
+            let imageName = extractImageName(imagePath);
+            
             html += `
                 <div class="chart-image">
-                    <img src="${imagePath}" alt="${imageName}"
+                    <img src="${imagePath}" alt="${imageName}" 
                          onerror="handleImageError(this, '${encodeURIComponent(imagePath)}')"
-                         style="width:100%; height:200px; object-fit:contain; cursor:pointer; border-radius:6px; border:2px solid #e0e7ff;"
+                         style="width: 100%; height: 200px; object-fit: contain; cursor: pointer; border-radius: 6px; border: 2px solid #e0e7ff;"
                          onclick="viewImage('${encodeURIComponent(imagePath)}')">
                     <div class="image-label">
-                        <i class="fas fa-image"></i> Chart ${idx + 1} - Click to enlarge
+                        <i class="fas fa-image"></i> Chart ${index + 1} - Click to enlarge
                     </div>
                 </div>
             `;
         });
-
+        
         html += `</div>`;
     }
-
-    // ANSWER OPTIONS
-    html += `<div class="mt-4">`;
-
-    question.currentOptions.forEach((option, index) => {
-        const letter = String.fromCharCode(65 + index);
-
-        let optionClass = "answer-option";
-        let disabled = "";
-        let onclickAction = `onclick="selectAnswer(${index})"`;
-
-        // SHOW ANSWERS MODE
-        if (showAnswersMode) {
-            disabled = "disabled";
-            onclickAction = "";
-            if (index === question.currentCorrect) {
-                optionClass += " answer-correct";
-            }
+    
+    html += '<div class="mt-4">';
+    
+    // Check answer mode
+    if (answerMode === 'reveal') {
+        // REVEAL MODE: Show correct answer highlighted
+        question.currentOptions.forEach((option, index) => {
+            const letter = String.fromCharCode(65 + index);
+            const isCorrect = (index === question.currentCorrect);
+            const answerClass = isCorrect ? 'answer-reveal correct-highlight' : 'answer-reveal';
+            
+            html += `
+                <div class="answer-option ${answerClass}" style="cursor: default;">
+                    <strong>${letter}.</strong> ${option}
+                    ${isCorrect ? ' <i class="fas fa-check-circle text-success ms-2"></i>' : ''}
+                </div>
+            `;
+        });
+        
+        // Add explanation if available
+        if (question.explanation) {
+            html += `
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    ${question.explanation}
+                </div>
+            `;
         }
-
-        html += `
-            <button class="${optionClass}" ${onclickAction} ${disabled}>
-                <strong>${letter}.</strong> ${option}
-            </button>
-        `;
-    });
-
-    html += `</div></div>`;  // close question box
-
+    } else {
+        // TRY MODE: Show clickable answer buttons
+        question.currentOptions.forEach((option, index) => {
+            const letter = String.fromCharCode(65 + index);
+            html += `
+                <button class="answer-option" onclick="selectAnswer(${index})">
+                    <strong>${letter}.</strong> ${option}
+                </button>
+            `;
+        });
+    }
+    
+    html += '</div></div>';
+    
     container.innerHTML = html;
-
+    
     // Update counters
     document.getElementById('questionCounter').textContent = currentQuestionIndex + 1;
     document.getElementById('totalCounter').textContent = categoryQuestions.length;
-
+    
+    // Update navigation buttons
     document.getElementById('prevButton').disabled = currentQuestionIndex === 0;
-
-    // Update NEXT button state
+    
     const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
     const nextBtn = document.getElementById('nextButton');
-
     nextBtn.classList.remove('next-emphasis');
     nextBtn.disabled = false;
-    nextBtn.innerHTML = isLastQuestion
-        ? 'Finish <i class="fas fa-flag-checkered"></i>'
+    nextBtn.innerHTML = isLastQuestion 
+        ? 'Finish <i class="fas fa-flag-checkered"></i>' 
         : 'Next <i class="fas fa-arrow-right"></i>';
-
     nextBtn.style.background = 'var(--primary-blue)';
     nextBtn.style.color = 'white';
-
-    resetAnswerButtons();
-
+    
+    // Reset answer buttons state if in try mode
+    if (answerMode === 'try') {
+        resetAnswerButtons();
+    }
+    
+    // Update the question navigator
     updateQuestionNavigator();
 }
+
 function selectAnswer(selectedIndex) {
+    if (answerMode !== 'try') return; // Only allow selection in try mode
+    
     const question = categoryQuestions[currentQuestionIndex];
     const buttons = document.querySelectorAll('.answer-option');
     const nextBtn = document.getElementById('nextButton');
@@ -1069,7 +1108,7 @@ function selectAnswer(selectedIndex) {
     updateScoreDisplay();
     updateStatistics();
     updateProgress();
-    updateQuestionNavigator(); // Update navigator colors
+    updateQuestionNavigator();
 }
 
 function resetAnswerButtons() {
@@ -1122,7 +1161,6 @@ function backToCategories() {
 }
 
 // ==================== SHUFFLING FUNCTIONS ====================
-// Shuffle all questions and stay at current position
 function randomizeQuestions() {
     if (!categoryQuestions.length) return;
     
@@ -1141,7 +1179,6 @@ function randomizeQuestions() {
     showMessage(`Questions shuffled! You're still on question ${currentPosition + 1}`, "info");
 }
 
-// Shuffle answers for ALL questions
 function randomizeAnswers() {
     if (!categoryQuestions.length) return;
     
@@ -1155,7 +1192,6 @@ function randomizeAnswers() {
     showMessage("Answers shuffled for ALL questions", "info");
 }
 
-// Shuffle just the answers for a specific question
 function shuffleQuestionAnswers(question) {
     if (!question) return;
     
@@ -1176,7 +1212,6 @@ function shuffleQuestionAnswers(question) {
     return question;
 }
 
-// Reset current question's answers to original order
 function resetCurrentQuestionAnswers() {
     if (!categoryQuestions.length) return;
     
@@ -1189,7 +1224,6 @@ function resetCurrentQuestionAnswers() {
     showMessage("Answers restored to original order", "info");
 }
 
-// Helper function to shuffle array (used by multiple functions)
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -1271,7 +1305,7 @@ function showMessage(text, type = 'info') {
     }, 3000);
 }
 
-// Add animation styles
+// Add animation styles if not already present
 if (!document.querySelector('#animations')) {
     const style = document.createElement('style');
     style.id = 'animations';
