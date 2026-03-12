@@ -189,11 +189,11 @@ function processCSV(csvText, categoryName) {
                 originalCorrect: correctIndex,
                 images: images,
                 explanation: explanation,
-                currentOptions: null,
+                : null,
                 currentCorrect: null
             };
             
-            question.currentOptions = [...question.originalOptions];
+            question. = [...question.originalOptions];
             question.currentCorrect = question.originalCorrect;
             
             if (question.text && question.originalOptions[0]) {
@@ -924,7 +924,6 @@ function jumpToQuestion(index) {
     }
 }
 
-// ==================== QUIZ FUNCTIONS ====================
 function displayQuestion() {
     if (!categoryQuestions || categoryQuestions.length === 0) {
         document.getElementById('questionDisplay').innerHTML = `
@@ -934,82 +933,91 @@ function displayQuestion() {
         `;
         return;
     }
-    
+
     const question = categoryQuestions[currentQuestionIndex];
     const container = document.getElementById('questionDisplay');
-    
+
     let html = `
         <div class="question-box active-question">
             <h4 class="mb-3">${question.text}</h4>
     `;
-    
+
     // Display multiple images if available
     if (question.images && question.images.length > 0) {
         html += `<div class="multiple-images-container">`;
-        
-        question.images.forEach((imagePath, index) => {
-            let imageName = extractImageName(imagePath);
-            
+
+        question.images.forEach((imagePath, idx) => {
+            const imageName = extractImageName(imagePath);
+
             html += `
                 <div class="chart-image">
-                    <img src="${imagePath}" alt="${imageName}" 
+                    <img src="${imagePath}" alt="${imageName}"
                          onerror="handleImageError(this, '${encodeURIComponent(imagePath)}')"
-                         style="width: 100%; height: 200px; object-fit: contain; cursor: pointer; border-radius: 6px; border: 2px solid #e0e7ff;"
+                         style="width:100%; height:200px; object-fit:contain; cursor:pointer; border-radius:6px; border:2px solid #e0e7ff;"
                          onclick="viewImage('${encodeURIComponent(imagePath)}')">
                     <div class="image-label">
-                        <i class="fas fa-image"></i> Chart ${index + 1} - Click to enlarge
+                        <i class="fas fa-image"></i> Chart ${idx + 1} - Click to enlarge
                     </div>
                 </div>
             `;
         });
-        
+
         html += `</div>`;
     }
-    
-    let optionClass = "answer-option";
-    let disabled = "";
-    let onclickAction = `onclick="selectAnswer(${index})"`;
 
-    // If show answers mode is enabled
-    if (showAnswersMode) {
-        disabled = "disabled";
-        onclickAction = "";
+    // ANSWER OPTIONS
+    html += `<div class="mt-4">`;
 
-        if (index === question.currentCorrect) {
-            optionClass += " answer-correct";
+    question.currentOptions.forEach((option, index) => {
+        const letter = String.fromCharCode(65 + index);
+
+        let optionClass = "answer-option";
+        let disabled = "";
+        let onclickAction = `onclick="selectAnswer(${index})"`;
+
+        // SHOW ANSWERS MODE
+        if (showAnswersMode) {
+            disabled = "disabled";
+            onclickAction = "";
+            if (index === question.currentCorrect) {
+                optionClass += " answer-correct";
+            }
         }
-    }
 
-    html += `
-        <button class="${optionClass}" ${onclickAction} ${disabled}>
-            <strong>${letter}.</strong> ${option}
-        </button>
-    `;
-    html += '</div></div>';
-    
+        html += `
+            <button class="${optionClass}" ${onclickAction} ${disabled}>
+                <strong>${letter}.</strong> ${option}
+            </button>
+        `;
+    });
+
+    html += `</div></div>`;  // close question box
+
     container.innerHTML = html;
-    
+
+    // Update counters
     document.getElementById('questionCounter').textContent = currentQuestionIndex + 1;
     document.getElementById('totalCounter').textContent = categoryQuestions.length;
-    
+
     document.getElementById('prevButton').disabled = currentQuestionIndex === 0;
-    
+
+    // Update NEXT button state
     const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
     const nextBtn = document.getElementById('nextButton');
+
     nextBtn.classList.remove('next-emphasis');
     nextBtn.disabled = false;
-    nextBtn.innerHTML = isLastQuestion 
-        ? 'Finish <i class="fas fa-flag-checkered"></i>' 
+    nextBtn.innerHTML = isLastQuestion
+        ? 'Finish <i class="fas fa-flag-checkered"></i>'
         : 'Next <i class="fas fa-arrow-right"></i>';
+
     nextBtn.style.background = 'var(--primary-blue)';
     nextBtn.style.color = 'white';
-    
+
     resetAnswerButtons();
-    
-    // Update the question navigator
+
     updateQuestionNavigator();
 }
-
 function selectAnswer(selectedIndex) {
     const question = categoryQuestions[currentQuestionIndex];
     const buttons = document.querySelectorAll('.answer-option');
