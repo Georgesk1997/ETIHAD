@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Subscription Expired | ETIHAD CP Aviation Training</title>
+    <!-- Font Awesome 6 (free) for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Roboto', sans-serif;
+            background: linear-gradient(145deg, #0a1f2f 0%, #0c2a3b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        /* subtle aviation pattern overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="0.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>');
+            background-repeat: repeat;
+            background-size: 40px;
+            pointer-events: none;
+            opacity: 0.25;
+        }
+
+        /* main card container */
+        .expiry-card {
+            max-width: 780px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(0px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 165, 0, 0.2);
+            overflow: hidden;
+            transition: transform 0.25s ease;
+            animation: floatIn 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        @keyframes floatIn {
+            0% {
+                opacity: 0;
+                transform: translateY(35px) scale(0.96);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* top warning band */
+        .alert-banner {
+            background: #b91c1c;
+            background: linear-gradient(95deg, #9b2c2c, #c0392b);
+            padding: 1rem 1.5rem;
+            text-align: center;
+            color: white;
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .alert-banner i {
+            font-size: 1.4rem;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+        }
+
+        /* main content */
+        .content-block {
+            padding: 2.5rem 2rem 2.2rem;
+        }
+
+        .big-expired-text {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .big-expired-text .main-headline {
+            font-size: 3.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #b22234, #c0392b, #e67e22);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.02em;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 0.5rem;
+        }
+
+        .big-expired-text .sub-line {
+            font-size: 1.2rem;
+            color: #2c3e66;
+            font-weight: 500;
+            border-top: 2px solid #ffb34720;
+            display: inline-block;
+            padding-top: 8px;
+        }
+
+        .lock-icon {
+            font-size: 4rem;
+            color: #c0392b;
+            background: #fff0ed;
+            width: 85px;
+            height: 85px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+        }
+
+        .message-details {
+            font-size: 1.2rem;
+            line-height: 1.5;
+            color: #1e2f3e;
+            text-align: center;
+            margin: 1.8rem 0 1rem;
+            font-weight: 500;
+        }
+
+        .highlight-renew {
+            background: #fff2e0;
+            display: inline-block;
+            padding: 0.2rem 0.7rem;
+            border-radius: 40px;
+            font-weight: 700;
+            color: #c2410c;
+            margin: 0.2rem 0;
+        }
+
+        .payment-required {
+            background: #fef9e6;
+            border-left: 5px solid #f59e0b;
+            padding: 1.2rem 1rem;
+            border-radius: 24px;
+            margin: 1.2rem 0;
+            font-size: 1rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* whatsapp section */
+        .whatsapp-section {
+            background: #eef5ea;
+            border-radius: 28px;
+            padding: 1.5rem 1rem;
+            margin: 1.8rem 0 1.4rem;
+            text-align: center;
+            transition: all 0.2s;
+            border: 1px solid #c8e6c9;
+        }
+
+        .whatsapp-number {
+            font-size: 1.9rem;
+            font-weight: 800;
+            font-family: monospace;
+            letter-spacing: 1px;
+            background: #ffffff;
+            display: inline-block;
+            padding: 0.4rem 1.2rem;
+            border-radius: 60px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            margin: 10px 0;
+            color: #075e54;
+            word-break: break-all;
+        }
+
+        .btn-whatsapp {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: #25D366;
+            color: white;
+            font-weight: 700;
+            padding: 14px 28px;
+            font-size: 1.2rem;
+            border-radius: 60px;
+            text-decoration: none;
+            transition: 0.2s;
+            margin-top: 12px;
+            border: none;
+            box-shadow: 0 6px 14px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-whatsapp:hover {
+            background: #128C7E;
+            transform: scale(1.02);
+            box-shadow: 0 12px 22px rgba(0,0,0,0.15);
+            color: white;
+        }
+
+        .btn-whatsapp i {
+            font-size: 1.7rem;
+        }
+
+        .signature {
+            text-align: center;
+            margin-top: 1.8rem;
+            padding-top: 1rem;
+            border-top: 2px dashed #d4dcec;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1f3a5f;
+            letter-spacing: 0.5px;
+        }
+
+        .signature span {
+            background: #eef2ff;
+            padding: 0.2rem 1rem;
+            border-radius: 50px;
+            display: inline-block;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .small-note {
+            font-size: 0.85rem;
+            color: #5b6e8c;
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .footer-credit {
+            background: #f8fafc;
+            padding: 0.9rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #4a627a;
+            border-top: 1px solid #e9edf2;
+        }
+
+        /* responsive */
+        @media (max-width: 620px) {
+            .content-block {
+                padding: 1.8rem 1.2rem;
+            }
+            .big-expired-text .main-headline {
+                font-size: 2.3rem;
+            }
+            .whatsapp-number {
+                font-size: 1.2rem;
+                padding: 0.3rem 1rem;
+                word-break: break-word;
+            }
+            .btn-whatsapp {
+                padding: 10px 18px;
+                font-size: 1rem;
+            }
+            .message-details {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .big-expired-text .main-headline {
+                font-size: 1.9rem;
+            }
+            .whatsapp-number {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="expiry-card">
+    <!-- top banner: expired notice -->
+    <div class="alert-banner">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>ACCESS SUSPENDED · SUBSCRIPTION EXPIRED</span>
+        <i class="fas fa-lock"></i>
+    </div>
+
+    <div class="content-block">
+        <!-- big centered lock & text -->
+        <div class="big-expired-text">
+            <div class="lock-icon">
+                <i class="fas fa-hourglass-end"></i>
+            </div>
+            <div class="main-headline">
+                SUBSCRIPTION EXPIRED
+            </div>
+            <div class="sub-line">
+                <i class="fas fa-plane-slash"></i> Training access is currently locked
+            </div>
+        </div>
+
+        <!-- main message: needs renewal, payment required -->
+        <div class="message-details">
+            <strong>ETIHAD CP Aviation Training System</strong> — Your professional pilot certification access has been <span style="color:#b91c1c; font-weight:800;">deactivated</span> due to an expired subscription.
+        </div>
+
+        <div class="payment-required">
+            <i class="fas fa-credit-card" style="color:#e67e22; margin-right: 8px;"></i> 
+            <strong>Renewal required:</strong> To regain full system access and continue your training, a new payment is mandatory. 
+            <br>✅ <span class="highlight-renew">Immediate reactivation after confirmation</span>
+        </div>
+
+        <!-- WHATSAPP CONTACT SECTION (exactly as required) -->
+        <div class="whatsapp-section">
+            <i class="fab fa-whatsapp" style="font-size: 2rem; color: #25D366; margin-bottom: 8px; display: inline-block;"></i>
+            <p style="font-weight: 600; margin-bottom: 4px; color: #1f3a4b;">📞 Contact us on WhatsApp for payment & reactivation</p>
+            <div class="whatsapp-number">
+                0096176360825
+            </div>
+            <a href="https://wa.me/96176360825?text=Hello%2C%20I%20need%20to%20renew%20my%20ETIHAD%20CP%20subscription.%20Please%20guide%20me%20for%20payment%20to%20regain%20access." 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="btn-whatsapp">
+                <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+            </a>
+            <p style="font-size: 0.8rem; margin-top: 14px; color: #2c5a2e;">
+                <i class="fas fa-comment-dots"></i> Click the button → we will assist with renewal & grant access instantly after payment.
+            </p>
+        </div>
+
+        <!-- additional note: clear instruction to pay again -->
+        <div style="background: #FEF3C7; padding: 0.8rem; border-radius: 20px; text-align: center; font-size: 0.9rem; margin-top: 8px;">
+            <i class="fas fa-coins"></i> <strong>Action required:</strong> Your training license is paused. Please complete the renewal payment via the WhatsApp channel above. After payment verification, full access will be restored immediately.
+        </div>
+
+        <!-- SIGNATURE: K-TECH 1997 (exactly as requested) -->
+        <div class="signature">
+            <span><i class="fas fa-certificate"></i> K-TECH 1997 <i class="fas fa-registered"></i></span>
+        </div>
+
+        <div class="small-note">
+            <i class="fas fa-shield-alt"></i> Secure payment & instant reactivation • Authorized training partner
+        </div>
+    </div>
+
+    <div class="footer-credit">
+        <i class="fas fa-plane"></i> ETIHAD CP AVIATION • subscription management | K-TECH 1997 support
+    </div>
+</div>
+
+<!-- Optional micro-interaction: just for style, no scripts required -->
+</body>
+</html>
